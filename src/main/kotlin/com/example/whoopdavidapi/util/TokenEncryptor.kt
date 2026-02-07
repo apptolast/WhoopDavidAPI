@@ -20,8 +20,11 @@ class TokenEncryptor(
     private val algorithm = "AES/GCM/NoPadding"
     private val keySpec: SecretKeySpec
     private val secureRandom = SecureRandom()
-    private val GCM_IV_LENGTH = 12 // 96 bits recomendado para GCM
-    private val GCM_TAG_LENGTH = 128 // 128 bits de autenticación
+    
+    companion object {
+        private const val GCM_IV_LENGTH = 12 // 96 bits recommended for GCM
+        private const val GCM_TAG_LENGTH = 128 // 128 bits authentication tag
+    }
 
     init {
         // Fallar si no hay clave configurada

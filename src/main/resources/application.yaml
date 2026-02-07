@@ -50,6 +50,9 @@ app:
   whoop:
     base-url: https://api.prod.whoop.com
     sync-cron: "0 */30 * * * *"
+    # HTTP client timeouts (en segundos)
+    connect-timeout: 10  # Tiempo max para establecer conexión
+    read-timeout: 30     # Tiempo max para leer respuesta
   security:
     # REQUERIDO en producción: Clave de cifrado AES-256 para tokens OAuth2 en BD
     # Debe ser Base64 de exactamente 32 bytes (256 bits)
