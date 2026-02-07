@@ -1,0 +1,18 @@
+# Perfil demo: mock Whoop API en localhost, sin API keys reales
+app:
+  whoop:
+    base-url: http://localhost:8080/mock
+    sync-cron: "0 */5 * * * *"
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          whoop:
+            client-id: demo-client-id
+            client-secret: demo-client-secret
+
+logging:
+  level:
+    com.example.whoopdavidapi.mock: DEBUG
