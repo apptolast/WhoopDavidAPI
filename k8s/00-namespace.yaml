@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: apptolast-whoop-david-api
-  labels:
-    name: apptolast-whoop-david-api
-    app: whoop-david-api
