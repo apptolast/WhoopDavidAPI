@@ -12,17 +12,18 @@ import org.springframework.web.client.RestClient
 import java.time.Instant
 
 @Component
+@org.springframework.context.annotation.Profile("!demo")
 class WhoopTokenManager(
     private val tokenRepository: OAuthTokenRepository,
     @Value("\${spring.security.oauth2.client.registration.whoop.client-id}") private val clientId: String,
     @Value("\${spring.security.oauth2.client.registration.whoop.client-secret}") private val clientSecret: String,
     @Value("\${spring.security.oauth2.client.provider.whoop.token-uri}") private val tokenUri: String
-) {
+) : TokenManager {
 
     private val log = LoggerFactory.getLogger(javaClass)
     private val refreshClient = RestClient.builder().build()
 
-    fun getValidAccessToken(): String {
+    override fun getValidAccessToken(): String {
         val token = tokenRepository.findTopByOrderByUpdatedAtDesc()
             ?: throw WhoopApiException("No hay token OAuth2 guardado. Realiza el flujo de autorizacion primero.")
 
