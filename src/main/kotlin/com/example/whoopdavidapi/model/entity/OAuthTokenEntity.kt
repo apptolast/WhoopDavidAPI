@@ -1,5 +1,6 @@
 package com.example.whoopdavidapi.model.entity
 
+import com.example.whoopdavidapi.util.EncryptedStringConverter
 import jakarta.persistence.*
 import java.time.Instant
 
@@ -10,10 +11,12 @@ class OAuthTokenEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    @Column(name = "access_token", nullable = false, length = 2048)
+    @Column(name = "access_token", nullable = false, length = 4096)
+    @Convert(converter = EncryptedStringConverter::class)
     var accessToken: String = "",
 
-    @Column(name = "refresh_token", length = 2048)
+    @Column(name = "refresh_token", length = 4096)
+    @Convert(converter = EncryptedStringConverter::class)
     var refreshToken: String? = null,
 
     @Column(name = "token_type")

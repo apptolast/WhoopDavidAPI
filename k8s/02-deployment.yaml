@@ -26,7 +26,11 @@ spec:
     spec:
       containers:
         - name: whoop-david-api
+          # IMPORTANTE: Keel actualiza automáticamente esta imagen cuando detecta nuevos tags
+          # Se recomienda usar tags inmutables (SHA o versión semántica) en CI/CD
+          # El tag 'latest' se mantiene para compatibilidad con el flujo actual de despliegue
           image: ocholoko888/whoop-david-api:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:

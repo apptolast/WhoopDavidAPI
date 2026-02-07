@@ -12,12 +12,11 @@ El usuario (David, deportista de alto rendimiento) lleva una pulsera WHOOP. La A
 - **Framework:** Spring Boot 4.0.2
 - **Java:** 24
 - **Build:** Gradle con Kotlin DSL (`./gradlew`)
-- **Web:** WebFlux + WebMVC (coexisten como dependencias)
+- **Web:** Spring MVC (spring-boot-starter-web)
 - **Seguridad:** Spring Security + OAuth2 Client (Whoop) + Basic Auth (Power BI)
 - **Persistencia:** Spring Data JPA + H2 (dev) + PostgreSQL (prod)
 - **Resiliencia:** Resilience4j (circuit breaker, retry, rate limiter)
 - **Mapeo:** MapStruct (entity ↔ DTO)
-- **Reactivo:** Project Reactor + Kotlin Coroutines
 - **JSON:** Jackson Kotlin Module
 - **Monitoreo:** Spring Boot Actuator
 - **Scheduling:** Spring @Scheduled (sincronizacion periodica)
@@ -162,8 +161,8 @@ Pendiente de implementar:
 - **MODO APRENDIZAJE**: El usuario esta aprendiendo Spring Boot. NO codificar por el. Explicar con detalle y dar enlaces a docs oficiales.
 - No modificar `application.yaml` sin consultar (contendra secrets via env vars)
 - Spring Boot 4.0.2 - verificar API en docs oficiales, puede haber cambios vs 3.x
-- **Conflicto WebFlux vs WebMVC**: ambos estan como dependencias. Decision pendiente de resolver.
-- application.yaml esta en `.gitignore` - secrets via variables de entorno
+- **Conflicto WebFlux vs WebMVC**: resuelto - solo se usa WebMVC (WebFlux eliminado en Etapa 0)
+- `application.yaml` se versiona en el repositorio. NUNCA commitear secrets - usar variables de entorno o config externa para credenciales.
 - **Whoop API v2** (mayo 2024): la v1 esta deprecada. Especificacion OpenAPI disponible en `https://api.prod.whoop.com/developer/doc/openapi.json`
 - **RestClient** es el cliente HTTP recomendado (RestTemplate esta en deprecacion)
 - **Power BI requiere JSON plano, URL base estatica, y endpoints GET solamente**
@@ -185,29 +184,22 @@ Pendiente de implementar:
 
 ## Server Infrastructure
 
-### Hetzner Cloud
-- Server: PabloServerPersonalAppToLast
-- Plan: CPX62 (x86)
-- Storage: 320 GB + 100 GB
-- Location: Nuremberg (eu-central)
-- IP: 138.199.157.58
-
-### Kubernetes (RKE2 via Rancher)
-- Managed by Rancher
-- Networking: Calico (calico-system namespace)
-- Ingress: Traefik (traefik namespace)
-- Load Balancer: MetalLB (metallb-system namespace)
-- Storage: Longhorn (longhorn-system namespace) - persistent volumes
-- SSL: cert-manager with ClusterIssuer `cloudflare-clusterissuer`
-- Auto-deploy: Keel (keel namespace) - polls every 1m, force policy
-- DNS: CoreDNS (kube-system)
+### Deployment Environment
+- Cloud provider: Hetzner Cloud
+- Container orchestration: Kubernetes (RKE2 via Rancher)
+- Networking: Calico
+- Ingress: Traefik
+- Load Balancer: MetalLB
+- Storage: Longhorn (persistent volumes)
+- SSL/TLS: cert-manager with Cloudflare
+- Auto-deploy: Keel (polls every 1m, force policy)
+- DNS: CoreDNS
 - Docker registry: Docker Hub (ocholoko888/*)
 
-### Cloudflare DNS
+### DNS Configuration
 - Domain: apptolast.com
-- Nameservers: clark.ns.cloudflare.com / rosemary.ns.cloudflare.com
-- Root domain (apptolast.com): A records point to GitHub Pages (185.199.108-111.153)
-- All subdomain A records point to 138.199.157.58 (DNS only, no proxy)
+- DNS provider: Cloudflare
+- App subdomain: david-whoop.apptolast.com
 
 ### Deployment Patterns
 

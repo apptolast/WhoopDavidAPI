@@ -37,14 +37,20 @@ class WhoopSyncService(
             val lastUpdated = cycleRepository.findTopByOrderByUpdatedAtDesc()?.updatedAt
             val records = whoopApiClient.getAllCycles(start = lastUpdated)
             var saved = 0
+            var skipped = 0
 
             for (record in records) {
-                val cycle = mapToCycle(record)
-                cycleRepository.save(cycle)
-                saved++
+                try {
+                    val cycle = mapToCycle(record)
+                    cycleRepository.save(cycle)
+                    saved++
+                } catch (ex: IllegalArgumentException) {
+                    log.warn("Saltando cycle con datos invalidos: {}", ex.message)
+                    skipped++
+                }
             }
 
-            log.info("Cycles sincronizados: {} nuevos/actualizados", saved)
+            log.info("Cycles sincronizados: {} nuevos/actualizados, {} saltados", saved, skipped)
         } catch (ex: Exception) {
             log.error("Error sincronizando cycles: {}", ex.message, ex)
         }
@@ -73,14 +79,20 @@ class WhoopSyncService(
             val lastUpdated = sleepRepository.findTopByOrderByUpdatedAtDesc()?.updatedAt
             val records = whoopApiClient.getAllSleeps(start = lastUpdated)
             var saved = 0
+            var skipped = 0
 
             for (record in records) {
-                val sleep = mapToSleep(record)
-                sleepRepository.save(sleep)
-                saved++
+                try {
+                    val sleep = mapToSleep(record)
+                    sleepRepository.save(sleep)
+                    saved++
+                } catch (ex: IllegalArgumentException) {
+                    log.warn("Saltando sleep con datos invalidos: {}", ex.message)
+                    skipped++
+                }
             }
 
-            log.info("Sleeps sincronizados: {} nuevos/actualizados", saved)
+            log.info("Sleeps sincronizados: {} nuevos/actualizados, {} saltados", saved, skipped)
         } catch (ex: Exception) {
             log.error("Error sincronizando sleeps: {}", ex.message, ex)
         }
@@ -91,14 +103,20 @@ class WhoopSyncService(
             val lastUpdated = workoutRepository.findTopByOrderByUpdatedAtDesc()?.updatedAt
             val records = whoopApiClient.getAllWorkouts(start = lastUpdated)
             var saved = 0
+            var skipped = 0
 
             for (record in records) {
-                val workout = mapToWorkout(record)
-                workoutRepository.save(workout)
-                saved++
+                try {
+                    val workout = mapToWorkout(record)
+                    workoutRepository.save(workout)
+                    saved++
+                } catch (ex: IllegalArgumentException) {
+                    log.warn("Saltando workout con datos invalidos: {}", ex.message)
+                    skipped++
+                }
             }
 
-            log.info("Workouts sincronizados: {} nuevos/actualizados", saved)
+            log.info("Workouts sincronizados: {} nuevos/actualizados, {} saltados", saved, skipped)
         } catch (ex: Exception) {
             log.error("Error sincronizando workouts: {}", ex.message, ex)
         }
@@ -112,7 +130,9 @@ class WhoopSyncService(
             userId = (record["user_id"] as Number).toLong(),
             createdAt = parseInstant(record["created_at"]),
             updatedAt = parseInstant(record["updated_at"]),
-            start = parseInstant(record["start"]) ?: Instant.now(),
+            start = requireNotNull(parseInstant(record["start"])) { 
+                "Campo 'start' requerido en cycle id=${record["id"]}" 
+            },
             end = parseInstant(record["end"]),
             timezoneOffset = record["timezone_offset"] as? String,
             scoreState = record["score_state"] as? String ?: "PENDING_SCORE",
@@ -147,12 +167,16 @@ class WhoopSyncService(
         val sleepNeeded = score?.get("sleep_needed") as? Map<*, *>
 
         return WhoopSleep(
-            id = record["id"] as? String ?: "",
+            id = requireNotNull(record["id"] as? String) { 
+                "Campo 'id' requerido en sleep" 
+            },
             cycleId = (record["cycle_id"] as? Number)?.toLong(),
             userId = (record["user_id"] as Number).toLong(),
             createdAt = parseInstant(record["created_at"]),
             updatedAt = parseInstant(record["updated_at"]),
-            start = parseInstant(record["start"]) ?: Instant.now(),
+            start = requireNotNull(parseInstant(record["start"])) { 
+                "Campo 'start' requerido en sleep id=${record["id"]}" 
+            },
             end = parseInstant(record["end"]),
             timezoneOffset = record["timezone_offset"] as? String,
             nap = record["nap"] as? Boolean ?: false,
@@ -181,11 +205,15 @@ class WhoopSyncService(
         val zones = score?.get("zone_duration") as? Map<*, *>
 
         return WhoopWorkout(
-            id = record["id"] as? String ?: "",
+            id = requireNotNull(record["id"] as? String) { 
+                "Campo 'id' requerido en workout" 
+            },
             userId = (record["user_id"] as Number).toLong(),
             createdAt = parseInstant(record["created_at"]),
             updatedAt = parseInstant(record["updated_at"]),
-            start = parseInstant(record["start"]) ?: Instant.now(),
+            start = requireNotNull(parseInstant(record["start"])) { 
+                "Campo 'start' requerido en workout id=${record["id"]}" 
+            },
             end = parseInstant(record["end"]),
             timezoneOffset = record["timezone_offset"] as? String,
             sportName = record["sport_name"] as? String,

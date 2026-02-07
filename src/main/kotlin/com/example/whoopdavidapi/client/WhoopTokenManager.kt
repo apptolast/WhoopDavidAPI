@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
+import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestClient
 import java.time.Instant
 
@@ -52,15 +53,17 @@ class WhoopTokenManager(
         val refreshToken = token.refreshToken
             ?: throw WhoopApiException("No hay refresh token disponible. Realiza el flujo de autorizacion de nuevo.")
 
+        // Usar LinkedMultiValueMap para codificación correcta de form-urlencoded
+        val formData = LinkedMultiValueMap<String, String>()
+        formData.add("grant_type", "refresh_token")
+        formData.add("refresh_token", refreshToken)
+        formData.add("client_id", clientId)
+        formData.add("client_secret", clientSecret)
+
         val response = refreshClient.post()
             .uri(tokenUri)
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .body(
-                "grant_type=refresh_token" +
-                "&refresh_token=$refreshToken" +
-                "&client_id=$clientId" +
-                "&client_secret=$clientSecret"
-            )
+            .body(formData)
             .retrieve()
             .body(Map::class.java)
             ?: throw WhoopApiException("Respuesta vacia al refrescar token")
