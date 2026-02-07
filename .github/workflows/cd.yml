@@ -2,7 +2,7 @@ name: CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
 
 permissions:
   contents: read
@@ -37,13 +37,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Determine Docker tags
+        id: tags
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "tags=apptolast/whoop-david-api:latest,apptolast/whoop-david-api:${{ github.sha }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_name }}" = "dev" ]; then
+            echo "tags=apptolast/whoop-david-api:develop,apptolast/whoop-david-api:dev-${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: |
-            apptolast/whoop-david-api:latest
-            apptolast/whoop-david-api:${{ github.sha }}
+          tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
