@@ -114,7 +114,7 @@ SPRING_PROFILES_ACTIVE=prod ./gradlew bootRun
 |----------|-------------|-------------|
 | `WHOOP_CLIENT_ID` | Si | Client ID de la app en Whoop Developer |
 | `WHOOP_CLIENT_SECRET` | Si | Client Secret de la app en Whoop Developer |
-| `ENCRYPTION_KEY` | Si | Clave AES-256 para cifrar tokens OAuth2 (32+ caracteres, ej: `openssl rand -base64 32`) |
+| `ENCRYPTION_KEY` | Si (prod), No (dev) | Clave AES-256-GCM para cifrar tokens OAuth2 - **Base64 de exactamente 32 bytes** (ej: `openssl rand -base64 32`). Perfil 'dev' usa clave predeterminada. |
 | `POWERBI_USERNAME` | No (default: `powerbi`) | Usuario para Basic Auth de Power BI |
 | `POWERBI_PASSWORD` | No (default: `changeme`) | Password para Basic Auth de Power BI |
 | `DATABASE_URL` | Si (prod) | URL JDBC de PostgreSQL |

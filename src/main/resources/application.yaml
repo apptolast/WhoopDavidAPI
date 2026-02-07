@@ -51,9 +51,10 @@ app:
     base-url: https://api.prod.whoop.com
     sync-cron: "0 */30 * * * *"
   security:
-    # REQUERIDO: Clave de cifrado AES-256 para tokens OAuth2 en BD
-    # Debe ser una cadena de al menos 32 bytes (256 bits)
-    # Ejemplo: openssl rand -base64 32
+    # REQUERIDO en producción: Clave de cifrado AES-256 para tokens OAuth2 en BD
+    # Debe ser Base64 de exactamente 32 bytes (256 bits)
+    # Ejemplo para generar: openssl rand -base64 32
+    # NOTA: En perfil 'dev' se usa una clave por defecto (ver application-dev.yaml)
     encryption-key: ${ENCRYPTION_KEY}
 
 # Logging

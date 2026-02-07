@@ -30,6 +30,13 @@ spring:
             client-id: ${WHOOP_CLIENT_ID:dev-client-id}
             client-secret: ${WHOOP_CLIENT_SECRET:dev-client-secret}
 
+# App-specific dev config
+app:
+  security:
+    # Clave de cifrado para desarrollo/testing (NO usar en producción)
+    # Valor: Base64 de 32 bytes aleatorios
+    encryption-key: ${ENCRYPTION_KEY:YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU=}
+
 logging:
   level:
     com.example.whoopdavidapi: DEBUG
