@@ -82,7 +82,7 @@ class WhoopApiClient(
                 .header("Authorization", "Bearer $token")
                 .retrieve()
                 .body(WhoopPageResponse::class.java)
-                ?: break
+                ?: throw WhoopApiException("Respuesta vacía de Whoop API al obtener registros de '$path' (nextToken=$nextToken)")
 
             allRecords.addAll(response.records)
             nextToken = response.next_token

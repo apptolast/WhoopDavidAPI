@@ -1,15 +1,18 @@
 package com.example.whoopdavidapi.repository
 
 import com.example.whoopdavidapi.model.entity.WhoopCycle
+import com.example.whoopdavidapi.util.TokenEncryptor
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
+import org.springframework.context.annotation.Import
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.ActiveProfiles
 import java.time.Instant
 
 @DataJpaTest
+@Import(TokenEncryptor::class)
 @ActiveProfiles("dev")
 class CycleRepositoryTest {
 

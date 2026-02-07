@@ -26,7 +26,18 @@ spec:
     spec:
       containers:
         - name: whoop-david-api
+          # IMPORTANTE: Keel actualiza automáticamente esta imagen cuando detecta nuevos tags
+          # 
+          # Estrategia actual:
+          # - Tag 'latest' con imagePullPolicy: Always permite despliegues automáticos vía Keel
+          # - Keel detecta nuevas imágenes cada minuto y fuerza pull/restart
+          # 
+          # Para producción inmutable (recomendado):
+          # - Usar tag basado en SHA o versión semántica (ej: v1.2.3 o sha-abc123)
+          # - Cambiar imagePullPolicy a IfNotPresent
+          # - Actualizar manifiesto en cada deploy (mejor trazabilidad/rollback)
           image: ocholoko888/whoop-david-api:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:

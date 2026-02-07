@@ -73,4 +73,16 @@ class SecurityConfig(
             }
         return http.build()
     }
+
+    // Cadena catch-all para el resto de requests (denegar por defecto)
+    @Bean
+    @Order(4)
+    fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http
+            .csrf { it.disable() }
+            .authorizeHttpRequests { auth ->
+                auth.anyRequest().denyAll()
+            }
+        return http.build()
+    }
 }
