@@ -1,16 +1,15 @@
 spring:
-  # H2 in-memory database
+  # PostgreSQL (whoop_david_dev)
   datasource:
-    url: jdbc:h2:mem:whoop_dev;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:30434/whoop_david_dev}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD}
 
-  # H2 Console
+  # H2 Console disabled
   h2:
     console:
-      enabled: true
-      path: /h2-console
+      enabled: false
 
   # JPA dev settings
   jpa:
@@ -33,7 +32,7 @@ spring:
 # App-specific dev config
 app:
   security:
-    # Clave de cifrado para desarrollo/testing (NO usar en producción)
+    # Clave de cifrado para desarrollo/testing (NO usar en produccion)
     # Valor: Base64 de 32 bytes aleatorios
     encryption-key: ${ENCRYPTION_KEY:YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU=}
 

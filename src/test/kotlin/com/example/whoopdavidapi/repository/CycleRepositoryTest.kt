@@ -13,7 +13,7 @@ import java.time.Instant
 
 @DataJpaTest
 @Import(TokenEncryptor::class)
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 class CycleRepositoryTest {
 
     @Autowired
