@@ -1,0 +1,937 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Whoop David API",
+    "description": "API REST intermediaria entre Whoop API v2 y Power BI.\n\n**Patron BFF (Backend For Frontend)** para un solo usuario.\n\n**Datos disponibles:**\n- Cycles (ciclos fisiologicos)\n- Recovery (puntuacion de recuperacion)\n- Sleep (datos de sueno)\n- Workouts (entrenamientos)\n- Profile (perfil del usuario)\n\n**Autenticacion:** HTTP Basic Auth (usuario/password de Power BI)",
+    "contact": {
+      "name": "AppToLast",
+      "url": "https://apptolast.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://david-whoop-dev.apptolast.com",
+      "description": "Servidor de desarrollo (DEV)"
+    },
+    {
+      "url": "https://david-whoop.apptolast.com",
+      "description": "Servidor de produccion (PROD)"
+    },
+    {
+      "url": "http://localhost:8080",
+      "description": "Servidor local (desarrollo)"
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "paths": {
+    "/mock/developer/v1/user/profile/basic": {
+      "get": {
+        "tags": [
+          "mock-whoop-api-controller"
+        ],
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mock/developer/v1/recovery": {
+      "get": {
+        "tags": [
+          "mock-whoop-api-controller"
+        ],
+        "operationId": "getRecoveries",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            }
+          },
+          {
+            "name": "nextToken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mock/developer/v1/cycle": {
+      "get": {
+        "tags": [
+          "mock-whoop-api-controller"
+        ],
+        "operationId": "getCycles",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            }
+          },
+          {
+            "name": "nextToken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mock/developer/v1/activity/workout": {
+      "get": {
+        "tags": [
+          "mock-whoop-api-controller"
+        ],
+        "operationId": "getWorkouts",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            }
+          },
+          {
+            "name": "nextToken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mock/developer/v1/activity/sleep": {
+      "get": {
+        "tags": [
+          "mock-whoop-api-controller"
+        ],
+        "operationId": "getSleeps",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            }
+          },
+          {
+            "name": "nextToken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workouts": {
+      "get": {
+        "tags": [
+          "workout-controller"
+        ],
+        "operationId": "getWorkouts_1",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponseWorkoutDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sleep": {
+      "get": {
+        "tags": [
+          "sleep-controller"
+        ],
+        "operationId": "getSleeps_1",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponseSleepDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recovery": {
+      "get": {
+        "tags": [
+          "recovery-controller"
+        ],
+        "operationId": "getRecoveries_1",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponseRecoveryDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile": {
+      "get": {
+        "tags": [
+          "profile-controller"
+        ],
+        "operationId": "getProfile_1",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cycles": {
+      "get": {
+        "tags": [
+          "cycle-controller"
+        ],
+        "operationId": "getCycles_1",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponseCycleDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PaginatedResponseWorkoutDTO": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkoutDTO"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationInfo"
+          }
+        }
+      },
+      "PaginationInfo": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        }
+      },
+      "WorkoutDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timezoneOffset": {
+            "type": "string"
+          },
+          "sportName": {
+            "type": "string"
+          },
+          "sportId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "scoreState": {
+            "type": "string"
+          },
+          "strain": {
+            "type": "number",
+            "format": "float"
+          },
+          "averageHeartRate": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxHeartRate": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "kilojoule": {
+            "type": "number",
+            "format": "float"
+          },
+          "percentRecorded": {
+            "type": "number",
+            "format": "float"
+          },
+          "distanceMeter": {
+            "type": "number",
+            "format": "float"
+          },
+          "altitudeGainMeter": {
+            "type": "number",
+            "format": "float"
+          },
+          "altitudeChangeMeter": {
+            "type": "number",
+            "format": "float"
+          },
+          "zoneZeroMilli": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "zoneOneMilli": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "zoneTwoMilli": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "zoneThreeMilli": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "zoneFourMilli": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "zoneFiveMilli": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "PaginatedResponseSleepDTO": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SleepDTO"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationInfo"
+          }
+        }
+      },
+      "SleepDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cycleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timezoneOffset": {
+            "type": "string"
+          },
+          "nap": {
+            "type": "boolean"
+          },
+          "scoreState": {
+            "type": "string"
+          },
+          "totalInBedTimeMilli": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalAwakeTimeMilli": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalNoDataTimeMilli": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalLightSleepTimeMilli": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalSlowWaveSleepTimeMilli": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalRemSleepTimeMilli": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sleepCycleCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "disturbanceCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "baselineMilli": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "needFromSleepDebtMilli": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "needFromRecentStrainMilli": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "needFromRecentNapMilli": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "respiratoryRate": {
+            "type": "number",
+            "format": "float"
+          },
+          "sleepPerformancePercentage": {
+            "type": "number",
+            "format": "float"
+          },
+          "sleepConsistencyPercentage": {
+            "type": "number",
+            "format": "float"
+          },
+          "sleepEfficiencyPercentage": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "PaginatedResponseRecoveryDTO": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecoveryDTO"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationInfo"
+          }
+        }
+      },
+      "RecoveryDTO": {
+        "type": "object",
+        "properties": {
+          "cycleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sleepId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scoreState": {
+            "type": "string"
+          },
+          "userCalibrating": {
+            "type": "boolean"
+          },
+          "recoveryScore": {
+            "type": "number",
+            "format": "float"
+          },
+          "restingHeartRate": {
+            "type": "number",
+            "format": "float"
+          },
+          "hrvRmssdMilli": {
+            "type": "number",
+            "format": "float"
+          },
+          "spo2Percentage": {
+            "type": "number",
+            "format": "float"
+          },
+          "skinTempCelsius": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "CycleDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timezoneOffset": {
+            "type": "string"
+          },
+          "scoreState": {
+            "type": "string"
+          },
+          "strain": {
+            "type": "number",
+            "format": "float"
+          },
+          "kilojoule": {
+            "type": "number",
+            "format": "float"
+          },
+          "averageHeartRate": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxHeartRate": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "PaginatedResponseCycleDTO": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CycleDTO"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationInfo"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "name": "basicAuth",
+        "scheme": "basic"
+      }
+    }
+  }
+}
