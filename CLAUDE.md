@@ -184,22 +184,29 @@ Pendiente de implementar:
 
 ## Server Infrastructure
 
-### Deployment Environment
-- Cloud provider: Hetzner Cloud
-- Container orchestration: Kubernetes (RKE2 via Rancher)
-- Networking: Calico
-- Ingress: Traefik
-- Load Balancer: MetalLB
-- Storage: Longhorn (persistent volumes)
-- SSL/TLS: cert-manager with Cloudflare
-- Auto-deploy: Keel (polls every 1m, force policy)
-- DNS: CoreDNS
+### Hetzner Cloud
+- Server: PabloServerPersonalAppToLast
+- Plan: CPX62 (x86)
+- Storage: 320 GB + 100 GB
+- Location: Nuremberg (eu-central)
+- IP: 138.199.157.58
+
+### Kubernetes (RKE2 via Rancher)
+- Managed by Rancher
+- Networking: Calico (calico-system namespace)
+- Ingress: Traefik (traefik namespace)
+- Load Balancer: MetalLB (metallb-system namespace)
+- Storage: Longhorn (longhorn-system namespace) - persistent volumes
+- SSL: cert-manager with ClusterIssuer `cloudflare-clusterissuer`
+- Auto-deploy: Keel (keel namespace) - polls every 1m, force policy
+- DNS: CoreDNS (kube-system)
 - Docker registry: Docker Hub (ocholoko888/*)
 
-### DNS Configuration
+### Cloudflare DNS
 - Domain: apptolast.com
-- DNS provider: Cloudflare
-- App subdomain: david-whoop.apptolast.com
+- Nameservers: clark.ns.cloudflare.com / rosemary.ns.cloudflare.com
+- Root domain (apptolast.com): A records point to GitHub Pages (185.199.108-111.153)
+- All subdomain A records point to 138.199.157.58 (DNS only, no proxy)
 
 ### Deployment Patterns
 

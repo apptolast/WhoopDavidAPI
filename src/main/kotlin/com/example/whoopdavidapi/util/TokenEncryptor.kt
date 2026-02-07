@@ -27,9 +27,15 @@ class TokenEncryptor(
             "app.security.encryption-key debe estar configurada. No se permite clave por defecto."
         }
         
-        // Asegurar que la clave tenga exactamente 32 bytes para AES-256
-        val keyBytes = encryptionKey.padEnd(32, '0').take(32).toByteArray(Charsets.UTF_8)
-        keySpec = SecretKeySpec(keyBytes, "AES")
+        // Validar que la clave tenga al menos 32 bytes
+        val keyBytes = encryptionKey.toByteArray(Charsets.UTF_8)
+        require(keyBytes.size >= 32) {
+            "app.security.encryption-key debe tener al menos 32 bytes (caracteres). Actual: ${keyBytes.size} bytes. " +
+            "Genera una clave segura con: openssl rand -base64 32"
+        }
+        
+        // Usar exactamente los primeros 32 bytes
+        keySpec = SecretKeySpec(keyBytes.copyOf(32), "AES")
     }
 
     fun encrypt(plainText: String?): String? {
@@ -50,7 +56,7 @@ class TokenEncryptor(
             val combined = iv + encryptedBytes
             Base64.getEncoder().encodeToString(combined)
         } catch (ex: Exception) {
-            throw IllegalStateException("Error cifrando token: ${ex.message}", ex)
+            throw IllegalStateException("Error procesando credenciales: ${ex.message}", ex)
         }
     }
 
@@ -70,7 +76,7 @@ class TokenEncryptor(
             val decryptedBytes = cipher.doFinal(ciphertext)
             String(decryptedBytes, Charsets.UTF_8)
         } catch (ex: Exception) {
-            throw IllegalStateException("Error descifrando token: ${ex.message}", ex)
+            throw IllegalStateException("Error procesando credenciales: ${ex.message}", ex)
         }
     }
 }

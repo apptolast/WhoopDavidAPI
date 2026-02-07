@@ -45,7 +45,7 @@ class WhoopSyncService(
                     cycleRepository.save(cycle)
                     saved++
                 } catch (ex: IllegalArgumentException) {
-                    log.warn("Saltando cycle con datos invalidos: {}", ex.message)
+                    log.warn("Saltando cycle con datos inválidos: {}", ex.message)
                     skipped++
                 }
             }
@@ -87,7 +87,7 @@ class WhoopSyncService(
                     sleepRepository.save(sleep)
                     saved++
                 } catch (ex: IllegalArgumentException) {
-                    log.warn("Saltando sleep con datos invalidos: {}", ex.message)
+                    log.warn("Saltando sleep con datos inválidos: {}", ex.message)
                     skipped++
                 }
             }
@@ -111,7 +111,7 @@ class WhoopSyncService(
                     workoutRepository.save(workout)
                     saved++
                 } catch (ex: IllegalArgumentException) {
-                    log.warn("Saltando workout con datos invalidos: {}", ex.message)
+                    log.warn("Saltando workout con datos inválidos: {}", ex.message)
                     skipped++
                 }
             }
