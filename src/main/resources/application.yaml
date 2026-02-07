@@ -45,6 +45,7 @@ springdoc:
     try-it-out-enabled: true
     display-request-duration: true
   show-actuator: false
+  writer-with-default-pretty-printer: true
 
 # Actuator
 management:
