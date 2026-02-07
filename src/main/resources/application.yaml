@@ -32,6 +32,20 @@ spring:
             user-info-uri: https://api.prod.whoop.com/developer/v1/user/profile/basic
             user-name-attribute: user_id
 
+# SpringDoc OpenAPI / Swagger UI
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    display-request-duration: true
+  show-actuator: false
+
 # Actuator
 management:
   endpoints:
