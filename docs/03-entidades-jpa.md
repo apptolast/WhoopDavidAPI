@@ -6,9 +6,9 @@
 
 ## 1. Que es JPA y Hibernate?
 
-**JPA (Jakarta Persistence API)** es una **especificacion** (un contrato, como una interfaz) que define como las aplicaciones Java/Kotlin deben interactuar con bases de datos relacionales usando objetos. JPA **no es una libreria** que ejecutas directamente: es un conjunto de anotaciones (`@Entity`, `@Table`, `@Column`...) y reglas que cualquier implementacion debe seguir.
+**JPA (Jakarta Persistence API)** es una **especificacion** (un contrato, como una interfaz) que define como las aplicaciones Java/Kotlin deben interactuar con bases de datos relacionales usando objetos. JPA **no es una libreria** que ejecutas directamente: es un conjunto de anotaciones ([`@Entity`](https://jakarta.ee/specifications/persistence/3.2/), [`@Table`](https://jakarta.ee/specifications/persistence/3.2/), [`@Column`](https://jakarta.ee/specifications/persistence/3.2/)...) y reglas que cualquier implementacion debe seguir.
 
-**Hibernate** es la **implementacion** mas popular de JPA. Cuando Spring Boot arranca con `spring-boot-starter-data-jpa`, automaticamente incluye Hibernate como motor ORM (Object-Relational Mapping). Es Hibernate quien realmente genera las sentencias SQL, gestiona el cache de entidades, y traduce objetos Kotlin a filas de base de datos.
+**[Hibernate](https://hibernate.org/orm/documentation/)** es la **implementacion** mas popular de JPA. Cuando Spring Boot arranca con `spring-boot-starter-data-jpa`, automaticamente incluye Hibernate como motor ORM (Object-Relational Mapping). Es Hibernate quien realmente genera las sentencias SQL, gestiona el cache de entidades, y traduce objetos Kotlin a filas de base de datos.
 
 ```
 Tu codigo Kotlin  --->  JPA (anotaciones)  --->  Hibernate (implementacion)  --->  SQL  --->  PostgreSQL
@@ -25,6 +25,7 @@ implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 ```
 
 Este starter incluye automaticamente:
+
 - **Hibernate 7** (la version compatible con Spring Boot 4.0.2)
 - **Spring Data JPA** (repositorios, etc.)
 - **Jakarta Persistence API** (las anotaciones `@Entity`, `@Column`, etc.)
@@ -135,10 +136,10 @@ class WhoopCycle(
 |---|---------------------|----------|
 | (1) | `@Entity` | Le dice a JPA: "esta clase representa una tabla en la BD". Sin esta anotacion, Hibernate la ignora completamente. |
 | (2) | `@Table(name = "whoop_cycles")` | Especifica el nombre exacto de la tabla. Sin ella, JPA usaria el nombre de la clase (`WhoopCycle` -> `whoop_cycle`). Lo ponemos explicitamente para claridad. |
-| (3) | `@Id` | Marca el campo como **clave primaria**. Toda entidad JPA **debe** tener exactamente un `@Id`. |
+| (3) | [`@Id`](https://jakarta.ee/specifications/persistence/3.2/) | Marca el campo como **clave primaria**. Toda entidad JPA **debe** tener exactamente un `@Id`. |
 | (4) | `@Column(name = "id")` | Mapea la propiedad Kotlin al nombre de columna en SQL. Cuando el nombre de la propiedad y la columna coinciden, es opcional, pero lo incluimos para ser explicitos. |
 | (5) | `nullable = false` | Genera `NOT NULL` en el DDL. Hibernate lanzara una excepcion si intentas guardar un `null` en ese campo. |
-| (6) | `Instant?` (nullable en Kotlin) | Los campos con `?` pueden ser `null`. Esto se alinea con la BD: `createdAt` puede no existir si el dato aun no ha sido procesado por Whoop. |
+| (6) | [`Instant`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/time/Instant.html)`?` (nullable en Kotlin) | Los campos con `?` pueden ser `null`. Esto se alinea con la BD: `createdAt` puede no existir si el dato aun no ha sido procesado por Whoop. |
 | (7) | Score fields (flattened) | Ver seccion 4c mas abajo. |
 
 ### 4b. Estrategia de IDs: por que difiere entre entidades
@@ -184,7 +185,7 @@ Nota que **WhoopSleep** y **WhoopWorkout** usan `String` como tipo de ID (son UU
 var id: Long? = null        // (A) Nullable porque aun no existe hasta el INSERT
 ```
 
-**`@GeneratedValue(strategy = GenerationType.IDENTITY)`**: Le dice a JPA que la base de datos se encarga de generar el ID. En PostgreSQL, esto usa una columna `BIGSERIAL` (auto-increment). En H2 (desarrollo), usa `IDENTITY`.
+**[`@GeneratedValue`](https://jakarta.ee/specifications/persistence/3.2/)`(strategy = GenerationType.IDENTITY)`**: Le dice a JPA que la base de datos se encarga de generar el ID. En PostgreSQL, esto usa una columna `BIGSERIAL` (auto-increment). En H2 (desarrollo), usa `IDENTITY`.
 
 **Por que `Long?` (nullable)?** Cuando creas un `OAuthTokenEntity` nuevo, aun no tiene ID:
 
@@ -252,7 +253,7 @@ Observa como esto se aplica en todas las entidades:
 
 ### 4d. `@Convert` y cifrado de tokens: `EncryptedStringConverter` y `TokenEncryptor`
 
-Los tokens OAuth2 son **datos sensibles**. Si alguien accede a la BD, no deberia poder leer el `accessToken` ni el `refreshToken` en texto plano. JPA ofrece `@Convert` para transformar datos automaticamente al leer y escribir.
+Los tokens OAuth2 son **datos sensibles**. Si alguien accede a la BD, no deberia poder leer el `accessToken` ni el `refreshToken` en texto plano. JPA ofrece [`@Convert`](https://jakarta.ee/specifications/persistence/3.2/) para transformar datos automaticamente al leer y escribir.
 
 En [`OAuthTokenEntity.kt`](../src/main/kotlin/com/example/whoopdavidapi/model/entity/OAuthTokenEntity.kt):
 
@@ -267,6 +268,7 @@ var refreshToken: String? = null,
 ```
 
 **`length = 4096`**: Los tokens cifrados ocupan mas espacio que los originales. El calculo es:
+
 - Token original: ~2KB max
 - IV (12 bytes) + ciphertext + GCM tag (16 bytes) = ~2.028KB
 - Base64 encoding agrega 33% overhead = ~2.7KB
@@ -316,7 +318,7 @@ BD almacena: "Rk3mX2p...base64...cifrado..."
 Tu codigo recibe: "eyJhbGci..."  (transparente)
 ```
 
-El cifrado real lo hace [`src/main/kotlin/.../util/TokenEncryptor.kt`](../src/main/kotlin/com/example/whoopdavidapi/util/TokenEncryptor.kt), que usa **AES-256-GCM**:
+El cifrado real lo hace [`src/main/kotlin/.../util/TokenEncryptor.kt`](../src/main/kotlin/com/example/whoopdavidapi/util/TokenEncryptor.kt), que usa **[AES-256-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode)**:
 
 ```kotlin
 @Component
@@ -387,7 +389,7 @@ class TokenEncryptor(
 
 En Kotlin, **todas las clases son `final` por defecto**. Esto significa que no se pueden heredar (no puedes hacer `class Hijo : WhoopCycle()`). Pero Hibernate necesita crear **proxies** de tus entidades, y los proxies son subclases.
 
-El plugin `kotlin("plugin.jpa")` (que incluye `allOpen`) resuelve esto. En [`build.gradle.kts`](../build.gradle.kts):
+El plugin `kotlin("plugin.jpa")` (que incluye [`allOpen`](https://kotlinlang.org/docs/all-open-plugin.html)) resuelve esto. En [`build.gradle.kts`](../build.gradle.kts):
 
 ```kotlin
 plugins {

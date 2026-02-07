@@ -1,0 +1,51 @@
+name: Check Documentation Links
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-links:
+    name: Verify External Links
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore lychee cache
+        uses: actions/cache@v4
+        with:
+          path: .lycheecache
+          key: cache-lychee-${{ github.sha }}
+          restore-keys: cache-lychee-
+
+      - name: Check links with lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --cache
+            --max-cache-age 3d
+            --no-progress
+            --exclude 'https?://localhost'
+            --exclude 'https://david-whoop.*\.apptolast\.com'
+            --exclude 'https://api\.prod\.whoop\.com'
+            './docs/**/*.md'
+            './README.md'
+          fail: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create issue on broken links
+        if: failure()
+        uses: peter-evans/create-issue-from-file@v6
+        with:
+          title: 'Links rotos detectados en documentacion'
+          content-filepath: ./lychee/out.md
+          labels: |
+            documentation
+            automated

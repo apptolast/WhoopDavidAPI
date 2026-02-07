@@ -18,7 +18,7 @@
 
 Spring Boot proporciona un framework de testing integrado que permite verificar el comportamiento de tu aplicacion a distintos niveles: desde funciones aisladas (tests unitarios) hasta la aplicacion completa funcionando con base de datos, seguridad y HTTP (tests de integracion).
 
-El framework se basa en **JUnit 5** como motor de ejecucion y ofrece anotaciones especializadas que levantan solo las partes del contexto de Spring que necesitas para cada tipo de test.
+El framework se basa en **[JUnit 5](https://junit.org/junit5/docs/current/user-guide/)** como motor de ejecucion y ofrece anotaciones especializadas que levantan solo las partes del contexto de Spring que necesitas para cada tipo de test.
 
 ---
 
@@ -43,7 +43,7 @@ El framework se basa en **JUnit 5** como motor de ejecucion y ofrece anotaciones
 |-------|-----------|-----------------|------------------------|
 | **Unitario** | Muy rapido | No | `CycleServiceTest` |
 | **Integracion (JPA)** | Medio | Solo capa JPA | `CycleRepositoryTest` |
-| **Integracion (Web)** | Medio-lento | Completo + MockMvc | `CycleControllerTest` |
+| **Integracion (Web)** | Medio-lento | Completo + [MockMvc](https://docs.spring.io/spring-framework/reference/testing/spring-mvc-test-framework.html) | `CycleControllerTest` |
 | **Contexto completo** | Lento | Todo | `WhoopDavidApiApplicationTests` |
 
 **Regla general**: cuanto mas abajo en la piramide, mas tests deberias tener. Los tests unitarios son rapidos y baratos; los de integracion son lentos pero verifican que las piezas encajan.
@@ -78,11 +78,11 @@ Se ejecutan con:
 
 | Decision | Razon |
 |----------|-------|
-| `@ActiveProfiles("dev")` en todos los tests | Usa H2 en memoria en lugar de PostgreSQL real |
-| `@ExtendWith(MockitoExtension::class)` para servicios | No necesitamos Spring para testear logica de negocio pura |
-| `@DataJpaTest` para repositorios | Levanta solo JPA + H2, mucho mas rapido que `@SpringBootTest` |
-| `@SpringBootTest + @AutoConfigureMockMvc` para controllers | Necesitamos seguridad (Basic Auth) y HTTP real para verificar endpoints |
-| `@MockitoBean` para inyectar mocks en tests de integracion | Aisla el controller de sus dependencias reales (servicio, repositorio) |
+| [`@ActiveProfiles("dev")`](https://docs.spring.io/spring-framework/reference/testing/annotations.html) en todos los tests | Usa H2 en memoria en lugar de PostgreSQL real |
+| [`@ExtendWith(MockitoExtension::class)`](https://junit.org/junit5/docs/current/user-guide/#extensions) para servicios | No necesitamos Spring para testear logica de negocio pura |
+| [`@DataJpaTest`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html#testing.spring-boot-applications.autoconfigured-spring-data-jpa) para repositorios | Levanta solo JPA + H2, mucho mas rapido que [`@SpringBootTest`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html) |
+| `@SpringBootTest` + [`@AutoConfigureMockMvc`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html) para controllers | Necesitamos seguridad (Basic Auth) y HTTP real para verificar endpoints |
+| [`@MockitoBean`](https://docs.spring.io/spring-framework/reference/testing/annotations.html) para inyectar mocks en tests de integracion | Aisla el controller de sus dependencias reales (servicio, repositorio) |
 | `@Import(TokenEncryptor::class)` en `@DataJpaTest` | `@DataJpaTest` no carga todos los beans, pero `OAuthTokenEntity` necesita `TokenEncryptor` como converter JPA |
 
 ---
@@ -125,7 +125,7 @@ class CycleRepositoryTest { ... }
 
 Ambas sirven para testear la capa web (controllers), pero de forma diferente:
 
-- **`@WebMvcTest(CycleController::class)`**: carga SOLO el controller indicado y sus dependencias web. No carga servicios, repositorios, etc. Hay que mockear todo.
+- **[`@WebMvcTest(CycleController::class)`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html#testing.spring-boot-applications.spring-mvc-tests)**: carga SOLO el controller indicado y sus dependencias web. No carga servicios, repositorios, etc. Hay que mockear todo.
 - **`@SpringBootTest + @AutoConfigureMockMvc`**: carga el contexto completo PERO te da un `MockMvc` para hacer peticiones HTTP sin levantar un servidor real.
 
 En nuestro proyecto usamos la segunda opcion:
@@ -143,7 +143,7 @@ class CycleControllerTest { ... }
 
 ### `@MockitoBean` (reemplaza a `@MockBean`)
 
-Inyecta un mock de Mockito **dentro del contexto de Spring**, reemplazando el bean real. Se usa en tests de integracion para aislar el componente bajo test.
+Inyecta un mock de [Mockito](https://site.mockito.org/) **dentro del contexto de Spring**, reemplazando el bean real. Se usa en tests de integracion para aislar el componente bajo test.
 
 ```kotlin
 import org.springframework.test.context.bean.override.mockito.MockitoBean  // Spring Boot 4
@@ -509,6 +509,7 @@ class CycleControllerTest {
 ```
 
 **Que verifica**:
+
 1. Que con Basic Auth (`powerbi`/`changeme`) se obtiene HTTP 200.
 2. Que la respuesta JSON tiene la estructura correcta (`$.data` es un array, `$.pagination` tiene los campos esperados).
 3. Que Jackson serializa correctamente los DTOs a JSON.
@@ -558,6 +559,7 @@ Spring Boot 4.0.2 introdujo cambios importantes en los paquetes de las anotacion
 En Spring Boot 3.x se usaba `@MockBean` del paquete `org.springframework.boot.test.mock.mockito`. En Spring Boot 4.x esta anotacion fue reemplazada por `@MockitoBean` del paquete `org.springframework.test.context.bean.override.mockito`.
 
 Antes (Spring Boot 3):
+
 ```kotlin
 import org.springframework.boot.test.mock.mockito.MockBean
 
@@ -566,6 +568,7 @@ lateinit var cycleService: CycleService
 ```
 
 Ahora (Spring Boot 4):
+
 ```kotlin
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 
@@ -621,7 +624,7 @@ dependencies {
 }
 ```
 
-- **`spring-boot-starter-*-test`**: incluye JUnit 5, Mockito, AssertJ, MockMvc, H2 y otras herramientas de test.
+- **`spring-boot-starter-*-test`**: incluye JUnit 5, Mockito, [AssertJ](https://assertj.github.io/doc/), MockMvc, H2 y otras herramientas de test.
 - **`spring-boot-starter-security-test`**: proporciona `SecurityMockMvcRequestPostProcessors.httpBasic()` para simular autenticacion en tests.
 - **`kotlin-test-junit5`**: integracion de Kotlin con JUnit 5.
 - **`junit-platform-launcher`**: necesario en runtime para que Gradle ejecute los tests con JUnit 5.

@@ -18,7 +18,7 @@
 
 **CI (Continuous Integration)**: cada vez que alguien hace push o abre un pull request, se ejecutan automaticamente los tests y la compilacion. Si algo falla, el equipo lo sabe de inmediato.
 
-**CD (Continuous Deployment)**: despues de que CI pasa, se construye la imagen Docker y se sube a Docker Hub. Luego, Keel detecta la nueva imagen y actualiza el cluster de Kubernetes automaticamente.
+**CD (Continuous Deployment)**: despues de que CI pasa, se construye la imagen Docker y se sube a [Docker Hub](https://hub.docker.com/). Luego, Keel detecta la nueva imagen y actualiza el cluster de Kubernetes automaticamente.
 
 **El objetivo**: que cada cambio en el codigo llegue a produccion (o al entorno de dev) sin intervencion manual, pero con la garantia de que ha pasado los tests.
 
@@ -26,7 +26,7 @@
 
 ## 2. Donde se usa en nuestro proyecto
 
-Los workflows estan en `.github/workflows/`:
+Los [workflows](https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions) estan en `.github/workflows/`:
 
 ```
 .github/workflows/
@@ -128,8 +128,8 @@ on:
     branches: [dev]
 ```
 
-- **`pull_request: branches: [main, dev]`**: se ejecuta cuando se crea o actualiza un PR hacia `main` o `dev`. Esto permite verificar el codigo ANTES de mergearlo.
-- **`push: branches: [dev]`**: se ejecuta cuando hay un push directo a `dev` (incluye merges de PRs).
+- **[`pull_request`](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#pull_request)**: `branches: [main, dev]` -- se ejecuta cuando se crea o actualiza un PR hacia `main` o `dev`. Esto permite verificar el codigo ANTES de mergearlo.
+- **[`push`](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#push)**: `branches: [dev]` -- se ejecuta cuando hay un push directo a `dev` (incluye merges de PRs).
 - **No hay `push: branches: [main]`**: los pushes a `main` solo se hacen via PR (que ya ejecuto CI en el PR). El CD si se ejecuta en pushes a `main`.
 
 #### Permisos
@@ -145,13 +145,16 @@ permissions:
 #### Steps
 
 **Step 1: Checkout**
+
 ```yaml
 - name: Checkout
   uses: actions/checkout@v4
 ```
+
 Descarga el codigo del repositorio en el runner. Sin esto, el runner esta vacio.
 
 **Step 2: Setup Java**
+
 ```yaml
 - name: Setup Java 24
   uses: actions/setup-java@v4
@@ -159,23 +162,29 @@ Descarga el codigo del repositorio en el runner. Sin esto, el runner esta vacio.
     distribution: temurin
     java-version: 24
 ```
-Instala Java 24 (Eclipse Temurin) en el runner. Los runners de GitHub Actions vienen con Java pero no necesariamente la version correcta.
+
+Instala Java 24 (Eclipse Temurin) en el runner. Los runners de [GitHub Actions](https://docs.github.com/en/actions) vienen con Java pero no necesariamente la version correcta.
 
 **Step 3: Setup Gradle**
+
 ```yaml
 - name: Setup Gradle
   uses: gradle/actions/setup-gradle@v4
 ```
+
 Configura Gradle con caching automatico. Las dependencias descargadas se cachean entre ejecuciones para acelerar los builds.
 
 **Step 4: Build and test**
+
 ```yaml
 - name: Build and test
   run: ./gradlew build
 ```
+
 `./gradlew build` hace todo: compila Kotlin, ejecuta kapt (MapStruct), compila tests, ejecuta tests, y genera reportes. Si cualquier test falla, el step falla y el workflow se marca como fallido.
 
 **Step 5: Upload test reports**
+
 ```yaml
 - name: Upload test reports
   if: always()
@@ -185,6 +194,7 @@ Configura Gradle con caching automatico. Las dependencias descargadas se cachean
     path: build/reports/tests/
     retention-days: 7
 ```
+
 - **`if: always()`**: se ejecuta SIEMPRE, incluso si el build fallo. Asi puedes ver los reportes de test para diagnosticar fallos.
 - **`actions/upload-artifact@v4`**: sube los reportes HTML de tests como un artefacto descargable desde la UI de GitHub Actions.
 - **`retention-days: 7`**: los artefactos se borran despues de 7 dias para no consumir almacenamiento.
@@ -287,7 +297,7 @@ Solo se ejecuta en pushes a `main` o `dev`. No se ejecuta en PRs (no queremos pu
     password: ${{ secrets.DOCKERHUB_TOKEN }}
 ```
 
-- **`${{ secrets.DOCKERHUB_USERNAME }}`** y **`${{ secrets.DOCKERHUB_TOKEN }}`**: secretos configurados en GitHub (Settings > Secrets and variables > Actions).
+- **`${{ secrets.DOCKERHUB_USERNAME }}`** y **`${{ secrets.DOCKERHUB_TOKEN }}`**: [secretos](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions) configurados en GitHub (Settings > Secrets and variables > Actions).
 - Se usa un Access Token de Docker Hub, no la contrasena directa.
 
 #### Docker Buildx
@@ -318,6 +328,7 @@ Buildx es una extension de Docker que permite builds avanzados: caching en GitHu
 | `dev` | `develop` + `dev-<sha-completo>` | `develop` | Dev (`apptolast-whoop-david-api-dev`) |
 
 **Por que 2 tags**:
+
 - El tag mutable (`latest` / `develop`) es el que Keel vigila para auto-deploy.
 - El tag con SHA (`abc123...` / `dev-abc123...`) es inmutable y permite hacer rollback a una version exacta.
 
@@ -339,7 +350,7 @@ Buildx es una extension de Docker que permite builds avanzados: caching en GitHu
 - **`context: .`**: usa el directorio raiz del repo como contexto de Docker (donde esta el `Dockerfile`).
 - **`push: true`**: sube la imagen a Docker Hub despues de construirla.
 - **`tags`**: los tags calculados en el step anterior.
-- **`cache-from: type=gha`** y **`cache-to: type=gha,mode=max`**: usa el cache de GitHub Actions para las capas de Docker. Esto acelera mucho los builds (las capas de dependencias no se reconstruyen si no cambiaron).
+- **`cache-from: type=gha`** y **`cache-to: type=gha,mode=max`**: usa el [cache de GitHub Actions para las capas de Docker](https://docs.docker.com/build/cache/). Esto acelera mucho los builds (las capas de dependencias no se reconstruyen si no cambiaron).
 
 **`mode=max`**: cachea todas las capas intermedias, no solo las del resultado final. Util para multi-stage builds porque cachea tambien las capas del builder.
 
@@ -390,7 +401,7 @@ on:
     branches: [main, dev]
 ```
 
-- **`workflow_run`**: se ejecuta DESPUES de que otro workflow termine.
+- **[`workflow_run`](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#workflow_run)**: se ejecuta DESPUES de que otro workflow termine.
 - **`workflows: ["CD"]`**: se dispara cuando el workflow llamado "CD" completa.
 - **`types: [completed]`**: se ejecuta tanto si CD tuvo exito como si fallo. La condicion `if` del job filtra solo los exitosos.
 - **`branches: [main, dev]`**: solo si el CD fue para estas ramas.
@@ -434,6 +445,7 @@ jobs:
 ### Steps explicados
 
 **Step 1: Checkout**
+
 ```yaml
 - name: Checkout repository
   uses: actions/checkout@v4
@@ -441,9 +453,11 @@ jobs:
     token: ${{ secrets.GITHUB_TOKEN }}
     ref: ${{ github.event.workflow_run.head_branch || github.ref }}
 ```
+
 - **`ref`**: hace checkout de la rama que disparo el workflow CD, no de la rama por defecto. Asi el commit se hace en la rama correcta.
 
 **Step 2-3: Setup Node.js + Install openapi2postmanv2**
+
 ```yaml
 - name: Setup Node.js
   uses: actions/setup-node@v4
@@ -453,9 +467,11 @@ jobs:
 - name: Install openapi-to-postmanv2
   run: npm install -g openapi-to-postmanv2
 ```
+
 La herramienta `openapi2postmanv2` convierte un spec OpenAPI a una coleccion Postman. Es una herramienta de Node.js.
 
 **Step 4: Determinar URL de la API**
+
 ```yaml
 - name: Determine API URL
   id: api-url
@@ -482,15 +498,18 @@ La herramienta `openapi2postmanv2` convierte un spec OpenAPI a una coleccion Pos
 | `dev` | `https://david-whoop-dev.apptolast.com` |
 
 **Step 5: Esperar al deploy**
+
 ```yaml
 - name: Wait for API deployment
   run: |
     echo "Esperando 60 segundos para que el deployment complete..."
     sleep 60
 ```
+
 Keel tarda ~1 minuto en detectar la imagen nueva y desplegar. Este sleep da tiempo a que el pod nuevo arranque.
 
 **Step 6: Descargar OpenAPI spec**
+
 ```yaml
 - name: Fetch OpenAPI spec
   id: fetch-spec
@@ -521,6 +540,7 @@ Keel tarda ~1 minuto en detectar la imagen nueva y desplegar. Este sleep da tiem
 - Formatea el JSON con `jq` para facilitar los diffs en Git.
 
 **Step 7: Generar coleccion Postman**
+
 ```yaml
 - name: Generate Postman Collection
   run: |
@@ -530,6 +550,7 @@ Keel tarda ~1 minuto en detectar la imagen nueva y desplegar. Este sleep da tiem
       -p \
       -O folderStrategy=Tags,includeAuthInfoInExample=true
 ```
+
 - `-s`: archivo fuente (OpenAPI spec).
 - `-o`: archivo de salida.
 - `-p`: pretty print.
@@ -537,6 +558,7 @@ Keel tarda ~1 minuto en detectar la imagen nueva y desplegar. Este sleep da tiem
 - `includeAuthInfoInExample=true`: incluye la autenticacion en los ejemplos.
 
 **Step 8: Detectar cambios**
+
 ```yaml
 - name: Check for changes
   id: changes
@@ -552,6 +574,7 @@ Keel tarda ~1 minuto en detectar la imagen nueva y desplegar. Este sleep da tiem
 **Por que `git add` + `git diff --staged` en vez de `git diff --quiet`**: `git diff --quiet` solo detecta cambios en archivos ya trackeados. Si `openapi.json` es un archivo nuevo (primera vez que se genera), `git diff --quiet` no lo detectaria. `git add` primero y `git diff --staged` despues detecta tanto archivos nuevos como modificados.
 
 **Step 9: Commit y push**
+
 ```yaml
 - name: Commit and push changes
   if: steps.changes.outputs.changed == 'true'
@@ -578,6 +601,7 @@ Keel tarda ~1 minuto en detectar la imagen nueva y desplegar. Este sleep da tiem
 - Hace commit y push directamente a la rama.
 
 **Step 10: Summary**
+
 ```yaml
 - name: Summary
   run: |
@@ -705,13 +729,13 @@ Las actions son bloques de funcionalidad reutilizables, publicadas por la comuni
 
 | Action | Version | Funcion |
 |--------|---------|---------|
-| `actions/checkout@v4` | v4 | Descarga el codigo del repo |
-| `actions/setup-java@v4` | v4 | Instala una version de Java |
+| [`actions/checkout@v4`](https://github.com/actions/checkout) | v4 | Descarga el codigo del repo |
+| [`actions/setup-java@v4`](https://github.com/actions/setup-java) | v4 | Instala una version de Java |
 | `gradle/actions/setup-gradle@v4` | v4 | Configura Gradle con cache |
 | `actions/upload-artifact@v4` | v4 | Sube archivos como artefactos |
 | `docker/login-action@v3` | v3 | Login en un registry de Docker |
 | `docker/setup-buildx-action@v3` | v3 | Configura Docker Buildx |
-| `docker/build-push-action@v6` | v6 | Build + push de imagen Docker |
+| [`docker/build-push-action@v6`](https://github.com/docker/build-push-action) | v6 | Build + push de imagen Docker |
 | `actions/setup-node@v4` | v4 | Instala Node.js |
 
 ### `secrets` (Secretos)
@@ -726,7 +750,7 @@ Secretos usados en nuestro proyecto:
 | `DOCKERHUB_TOKEN` | CD | Access Token de Docker Hub |
 | `GITHUB_TOKEN` | Update API Docs | Token automatico de GitHub para hacer push |
 
-**`GITHUB_TOKEN`** es especial: GitHub lo genera automaticamente para cada ejecucion del workflow. No necesitas configurarlo manualmente.
+**[`GITHUB_TOKEN`](https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication)** es especial: GitHub lo genera automaticamente para cada ejecucion del workflow. No necesitas configurarlo manualmente.
 
 ### `permissions`
 
@@ -802,6 +826,7 @@ on:
 ```
 
 Es la forma de ejecutar un workflow DESPUES de que otro termine. A diferencia de poner todo en un solo workflow, permite:
+
 - Que cada workflow tenga permisos diferentes (`read` vs `write`).
 - Que los workflows sean independientes y reutilizables.
 - Que el tercer workflow solo se ejecute si el segundo (CD) fue exitoso.

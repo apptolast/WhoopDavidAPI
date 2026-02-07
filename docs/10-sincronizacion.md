@@ -21,7 +21,7 @@
 
 ## Que es @Scheduled?
 
-`@Scheduled` es una anotacion de Spring que permite ejecutar un metodo **automaticamente** en intervalos regulares o en momentos especificos, sin necesidad de que ningun cliente haga una peticion HTTP. Es el equivalente a un **cron job** del sistema operativo, pero gestionado dentro de la aplicacion Spring.
+[`@Scheduled`](https://docs.spring.io/spring-framework/reference/integration/scheduling.html) es una anotacion de Spring que permite ejecutar un metodo **automaticamente** en intervalos regulares o en momentos especificos, sin necesidad de que ningun cliente haga una peticion HTTP. Es el equivalente a un **[cron](https://docs.spring.io/spring-framework/reference/integration/scheduling.html#scheduling-cron-expression) job** del sistema operativo, pero gestionado dentro de la aplicacion Spring.
 
 En este proyecto, la sincronizacion con la Whoop API se ejecuta automaticamente cada 30 minutos (configurable), descargando datos nuevos y guardandolos en base de datos.
 
@@ -29,7 +29,7 @@ En este proyecto, la sincronizacion con la Whoop API se ejecuta automaticamente 
 
 ## Habilitacion con @EnableScheduling
 
-Para que `@Scheduled` funcione, es obligatorio habilitar el scheduling en la clase principal de la aplicacion.
+Para que `@Scheduled` funcione, es obligatorio habilitar el scheduling con [`@EnableScheduling`](https://docs.spring.io/spring-framework/reference/integration/scheduling.html) en la clase principal de la aplicacion.
 
 **Archivo**: `src/main/kotlin/com/example/whoopdavidapi/WhoopDavidApiApplication.kt`
 
@@ -311,7 +311,7 @@ private fun parseInstant(value: Any?): Instant? {
 }
 ```
 
-Esta funcion utilitaria convierte un valor JSON (que puede ser `String`, `null`, u otro tipo) a un `Instant` de Java.
+Esta funcion utilitaria convierte un valor JSON (que puede ser `String`, `null`, u otro tipo) a un [`Instant`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/time/Instant.html) de Java.
 
 - **`when (value)`**: Expresion when de Kotlin (equivalente a switch en otros lenguajes).
 - **`is String`**: Verifica que el valor sea un String. Si no lo es, devuelve `null`.
@@ -326,7 +326,7 @@ start = requireNotNull(parseInstant(record["start"])) {
 },
 ```
 
-`requireNotNull()` es una funcion estandar de Kotlin que lanza `IllegalArgumentException` si el valor es `null`. Es la forma idiomatica de validar precondiciones en Kotlin.
+[`requireNotNull()`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/require-not-null.html) es una funcion estandar de Kotlin que lanza `IllegalArgumentException` si el valor es `null`. Es la forma idiomatica de validar precondiciones en Kotlin.
 
 - Si `parseInstant(record["start"])` devuelve `null` (el campo no existe o tiene formato invalido), se lanza `IllegalArgumentException` con el mensaje proporcionado.
 - Ese `IllegalArgumentException` es capturado por el `try-catch` en `syncCycles()`, que salta ese registro y continua con el siguiente.
@@ -368,11 +368,13 @@ Log: "Sincronizacion completa en 2345 ms"
 ```
 
 Primera ejecucion (base de datos vacia):
+
 - `findTopByOrderByUpdatedAtDesc()` devuelve `null`
 - `getAllCycles(start = null)` pide **todo** el historico
 - Puede haber multiples paginas (bucle do-while con `next_token`)
 
 Ejecuciones posteriores:
+
 - Se obtiene la fecha del ultimo registro guardado
 - Solo se piden datos mas recientes
 - Normalmente son pocos registros (0-2 por cada tipo en 30 minutos)

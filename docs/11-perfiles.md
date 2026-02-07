@@ -11,7 +11,7 @@
   - [Perfil prod (produccion)](#perfil-prod-produccion)
   - [Perfil demo (testing sin API keys reales)](#perfil-demo-testing-sin-api-keys-reales)
 - [Beans exclusivos del perfil demo](#beans-exclusivos-del-perfil-demo)
-  - [MockWhoopApiController](#mockwhoopapicntroller)
+  - [MockWhoopApiController](#mockwhoopapicontroller)
   - [MockWhoopDataGenerator](#mockwhoopdatagenerator)
   - [DemoTokenSeeder y CommandLineRunner](#demotokenseeder-y-commandlinerunner)
   - [DemoWhoopTokenManager y @Primary](#demowhooptokenmanager-y-primary)
@@ -22,7 +22,7 @@
 
 ## Que son los perfiles de Spring?
 
-Los perfiles de Spring permiten tener **diferentes configuraciones** para diferentes entornos (desarrollo, produccion, testing) dentro de la misma aplicacion. En vez de mantener multiples versiones del codigo o multiples archivos de configuracion sueltos, Spring permite activar/desactivar componentes y propiedades segun el perfil activo.
+Los [perfiles de Spring](https://docs.spring.io/spring-boot/reference/features/profiles.html) permiten tener **diferentes configuraciones** para diferentes entornos (desarrollo, produccion, testing) dentro de la misma aplicacion. En vez de mantener multiples versiones del codigo o multiples archivos de configuracion sueltos, Spring permite activar/desactivar componentes y propiedades segun el perfil activo.
 
 Un perfil afecta dos cosas:
 
@@ -44,7 +44,7 @@ Hay varias formas de activar un perfil. En orden de prioridad (de mayor a menor)
 
 En este proyecto:
 
-- **Desarrollo local**: Se ejecuta con `--spring.profiles.active=dev` o `SPRING_PROFILES_ACTIVE=dev`
+- **Desarrollo local**: Se ejecuta con [`--spring.profiles.active=dev`](https://docs.spring.io/spring-boot/reference/features/profiles.html) o `SPRING_PROFILES_ACTIVE=dev`
 - **Produccion (Kubernetes)**: La variable de entorno `SPRING_PROFILES_ACTIVE=prod` se define en el manifiesto de Kubernetes
 - **Demo**: Se ejecuta con `--spring.profiles.active=dev,demo` (demo se combina con dev para tener H2)
 
@@ -54,7 +54,7 @@ Se pueden activar **multiples perfiles** separandolos por coma: `dev,demo` activ
 
 ## Carga de configuracion: base + perfil
 
-Spring carga los archivos YAML en un orden especifico y los **fusiona** (merge):
+Spring carga los [archivos YAML](https://docs.spring.io/spring-boot/reference/features/external-config.html) en un orden especifico y los **fusiona** (merge):
 
 ```
 1. application.yaml           ← Se carga SIEMPRE (configuracion base)
@@ -66,6 +66,7 @@ Spring carga los archivos YAML en un orden especifico y los **fusiona** (merge):
 Ejemplo concreto con `app.whoop.sync-cron`:
 
 **`src/main/resources/application.yaml`** (base):
+
 ```yaml
 app:
   whoop:
@@ -73,6 +74,7 @@ app:
 ```
 
 **`src/main/resources/application-demo.yaml`** (perfil demo):
+
 ```yaml
 app:
   whoop:
@@ -96,7 +98,7 @@ Lo mismo ocurre con `app.whoop.base-url`:
 
 ## Anotaciones de perfil en beans
 
-La anotacion `@Profile` controla en que perfiles se registra un bean:
+La anotacion [`@Profile`](https://docs.spring.io/spring-framework/reference/core/beans/environment.html) controla en que perfiles se registra un bean:
 
 | Anotacion | Significado | Ejemplo |
 |---|---|---|
@@ -173,7 +175,8 @@ logging:
 
 Puntos clave del perfil dev:
 
-**Base de datos H2 in-memory**:
+**Base de datos [H2](https://www.h2database.com/) in-memory**:
+
 - `jdbc:h2:mem:whoop_dev` crea una base de datos **en memoria**. Se crea al arrancar y se destruye al parar. No necesita instalar nada.
 - `DB_CLOSE_DELAY=-1` evita que H2 cierre la base de datos cuando no hay conexiones activas.
 - `DB_CLOSE_ON_EXIT=FALSE` evita que H2 cierre la base de datos al salir de la JVM (necesario para tests).
@@ -183,12 +186,14 @@ Puntos clave del perfil dev:
 Hibernate **crea y modifica** las tablas automaticamente basandose en las entidades `@Entity`. Si se anade un campo a `WhoopCycle`, Hibernate anade la columna a la tabla. Ideal para desarrollo rapido, pero **peligroso en produccion** (podria hacer cambios no deseados).
 
 **Consola H2**:
+
 - `h2.console.enabled: true` habilita una interfaz web para consultar la base de datos H2.
 - Accesible en `http://localhost:8080/h2-console`.
 - Util para verificar que los datos se estan guardando correctamente durante desarrollo.
 
 **`show-sql: true` y `format_sql: true`**:
 Muestra las queries SQL que Hibernate genera en la consola, formateadas para legibilidad. Ejemplo de output:
+
 ```sql
 select
     wc.id,
@@ -252,6 +257,7 @@ logging:
 Puntos clave del perfil prod:
 
 **PostgreSQL con HikariCP**:
+
 - `${DATABASE_URL}`, `${DB_USERNAME}`, `${DB_PASSWORD}`: Sin valores por defecto. La aplicacion **no arranca** si estas variables no estan definidas. Esto es intencional: obliga a configurar las credenciales correctamente.
 - `driver-class-name: org.postgresql.Driver`: Driver JDBC para PostgreSQL.
 - **HikariCP** es el pool de conexiones de base de datos por defecto de Spring Boot. Reutiliza conexiones en vez de abrir/cerrar una nueva para cada query:
@@ -268,6 +274,7 @@ Puntos clave del perfil prod:
 A diferencia de `update` en dev, `validate` **no modifica** la base de datos. Solo verifica que las tablas existentes coincidan con las entidades JPA. Si no coinciden, la aplicacion **no arranca**. Esto protege contra cambios accidentales en produccion. Los cambios de esquema deben hacerse con herramientas de migracion (como Flyway o Liquibase).
 
 **Logging reducido**:
+
 - `com.example.whoopdavidapi: INFO` (en vez de DEBUG)
 - `org.hibernate.SQL: WARN` (no muestra queries SQL)
 - Menos logs = mejor rendimiento y menos almacenamiento en produccion.
@@ -479,7 +486,7 @@ class DemoTokenSeeder(
 }
 ```
 
-**`CommandLineRunner`** es una interfaz de Spring Boot que permite ejecutar codigo **justo despues de que la aplicacion arranca**. El metodo `run()` se invoca automaticamente una sola vez al inicio.
+**[`CommandLineRunner`](https://docs.spring.io/spring-boot/reference/features/spring-application.html)** es una interfaz de Spring Boot que permite ejecutar codigo **justo despues de que la aplicacion arranca**. El metodo `run()` se invoca automaticamente una sola vez al inicio.
 
 En este caso, inserta un token OAuth2 falso en la base de datos para que la aplicacion funcione sin haber pasado por el flujo real de autorizacion de Whoop. La condicion `if (tokenRepository.count() == 0L)` evita insertar duplicados si se reinicia la aplicacion sin limpiar la base de datos.
 
@@ -503,7 +510,7 @@ Dos anotaciones trabajan juntas aqui:
 
 **`@Profile("demo")`**: Este bean solo existe cuando el perfil `demo` esta activo.
 
-**`@Primary`**: Si Spring encuentra **mas de un bean** del mismo tipo (`TokenManager`), usa el marcado como `@Primary`. Es una medida de seguridad: aunque `@Profile("!demo")` en `WhoopTokenManager` deberia impedir que ambos coexistan, `@Primary` garantiza que en caso de conflicto, el mock gana.
+**[`@Primary`](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html)**: Si Spring encuentra **mas de un bean** del mismo tipo (`TokenManager`), usa el marcado como `@Primary`. Es una medida de seguridad: aunque `@Profile("!demo")` en `WhoopTokenManager` deberia impedir que ambos coexistan, `@Primary` garantiza que en caso de conflicto, el mock gana.
 
 La contraparte es `WhoopTokenManager`:
 

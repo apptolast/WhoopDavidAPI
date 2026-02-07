@@ -1,0 +1,34 @@
+name: Check Documentation Freshness
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'src/main/kotlin/**'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-freshness:
+    name: Verify Docs Match Source
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect source file changes
+        id: changed
+        uses: tj-actions/changed-files@v47
+        with:
+          files: 'src/main/kotlin/**'
+
+      - name: Check docs reference validity
+        if: steps.changed.outputs.any_changed == 'true'
+        run: ./scripts/check-docs-links.sh
+
+      - name: Check docs structure
+        if: steps.changed.outputs.any_changed == 'true'
+        run: ./scripts/check-docs-structure.sh

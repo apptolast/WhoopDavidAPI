@@ -2,11 +2,12 @@
 
 ## Que es Spring Security?
 
-Spring Security es el framework de seguridad de Spring. Se encarga de **autenticacion** (verificar quien eres) y **autorizacion** (verificar que puedes hacer). Funciona como una cadena de filtros que se ejecuta **antes** de que la peticion llegue al controlador.
+Spring Security es el framework de seguridad de Spring. Se encarga de **autenticacion** (verificar quien eres) y **autorizacion** (verificar que puedes hacer). Funciona como una [cadena de filtros](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-securityfilterchain) que se ejecuta **antes** de que la peticion llegue al controlador.
 
 En este proyecto, Spring Security protege la API con tres mecanismos distintos:
-1. **Basic Auth** para los endpoints de datos (`/api/**`): Power BI envia credenciales en cada peticion.
-2. **OAuth2** para el flujo de autorizacion (`/login/**`, `/oauth2/**`): se usa una vez para conectar con la Whoop API.
+
+1. **[Basic Auth](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/basic.html)** para los endpoints de datos (`/api/**`): Power BI envia credenciales en cada peticion.
+2. **[OAuth2](https://docs.spring.io/spring-security/reference/servlet/oauth2/login/index.html)** para el flujo de autorizacion (`/login/**`, `/oauth2/**`): se usa una vez para conectar con la Whoop API.
 3. **Acceso publico** para endpoints de monitorizacion y documentacion (`/actuator/**`, `/swagger-ui/**`, `/mock/**`).
 
 ---
@@ -16,7 +17,7 @@ En este proyecto, Spring Security protege la API con tres mecanismos distintos:
 | Archivo | Responsabilidad |
 |---|---|
 | `src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt` | 4 cadenas de seguridad + gestion de usuarios |
-| `src/main/kotlin/com/example/whoopdavidapi/util/TokenEncryptor.kt` | Cifrado AES-256-GCM de tokens OAuth2 en la BD |
+| `src/main/kotlin/com/example/whoopdavidapi/util/TokenEncryptor.kt` | Cifrado [AES-256-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) de tokens OAuth2 en la BD |
 | `src/main/kotlin/com/example/whoopdavidapi/util/EncryptedStringConverter.kt` | JPA converter que cifra/descifra automaticamente |
 | `src/main/kotlin/com/example/whoopdavidapi/model/entity/OAuthTokenEntity.kt` | Entidad JPA con tokens cifrados |
 
@@ -33,7 +34,7 @@ Este proyecto tiene **tres tipos de consumidores** con necesidades de seguridad 
 | **Monitorizacion/docs** | `/actuator/**`, `/swagger-ui/**` | Ninguna (publico) | Kubernetes health checks y documentacion interactiva deben ser accesibles sin credenciales. |
 | **Todo lo demas** | Cualquier otra ruta | Denegado | Principio de minimo privilegio: si una ruta no esta explicitamente permitida, se deniega. |
 
-La arquitectura de **multiples cadenas con `@Order`** permite aplicar reglas de seguridad distintas a cada grupo de endpoints, en lugar de una unica configuracion monolitica.
+La arquitectura de **multiples cadenas con [`@Order`](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config.html)** permite aplicar reglas de seguridad distintas a cada grupo de endpoints, en lugar de una unica configuracion monolitica.
 
 ---
 
@@ -52,7 +53,7 @@ class SecurityConfig(
 ) {
 ```
 
-- `@Configuration`: marca la clase como fuente de beans de Spring (metodos `@Bean` que Spring gestiona).
+- [`@Configuration`](https://docs.spring.io/spring-framework/reference/core/beans/java/configuration-annotation.html): marca la clase como fuente de beans de Spring (metodos [`@Bean`](https://docs.spring.io/spring-framework/reference/core/beans/java/bean-annotation.html) que Spring gestiona).
 - `@EnableWebSecurity`: activa la configuracion de seguridad web de Spring Security. Sin esta anotacion, Spring Boot aplica una configuracion de seguridad por defecto (que protege todo con un password generado aleatoriamente).
 - `@Value("\${app.powerbi.username}")`: inyecta valores desde `application.yaml`. Las credenciales de Power BI se configuran externamente, no estan hardcodeadas en el codigo.
 
@@ -63,13 +64,14 @@ class SecurityConfig(
 fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 ```
 
-`BCryptPasswordEncoder` implementa el algoritmo **bcrypt** para hashear passwords. Cuando se guarda un password, bcrypt:
+[`BCryptPasswordEncoder`](https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html) implementa el algoritmo **bcrypt** para hashear passwords. Cuando se guarda un password, bcrypt:
 
 1. Genera un **salt aleatorio** (22 caracteres).
 2. Aplica la funcion de hash con un **cost factor** (por defecto 10, lo que significa 2^10 = 1024 iteraciones).
 3. Produce un hash de ~60 caracteres que incluye el salt, el cost factor y el hash.
 
 Ejemplo de hash bcrypt:
+
 ```
 $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
   |  |  |                                                    |
@@ -79,6 +81,7 @@ $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
 ```
 
 Esto es importante porque:
+
 - El password en texto plano **nunca se almacena**. Solo el hash.
 - Incluso si alguien obtiene el hash, no puede revertirlo a texto plano (bcrypt es una funcion unidireccional).
 - El salt aleatorio evita ataques con rainbow tables.
@@ -98,7 +101,7 @@ fun userDetailsService(passwordEncoder: PasswordEncoder): UserDetailsService {
 }
 ```
 
-`UserDetailsService` es la interfaz que Spring Security usa para buscar usuarios. Cuando llega una peticion con Basic Auth, Spring:
+[`UserDetailsService`](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/user-details-service.html) es la interfaz que Spring Security usa para buscar usuarios. Cuando llega una peticion con Basic Auth, Spring:
 
 1. Extrae el `username` y `password` del header `Authorization`.
 2. Llama a `userDetailsService.loadUserByUsername(username)` para obtener el usuario almacenado.
@@ -114,7 +117,7 @@ fun userDetailsService(passwordEncoder: PasswordEncoder): UserDetailsService {
 
 ### 4. Arquitectura multi-cadena con `@Order`
 
-Spring Security permite definir **multiples `SecurityFilterChain`**, cada uno con sus propias reglas. Cada cadena tiene un `securityMatcher` que define a que URLs aplica. Las cadenas se evaluan en orden de `@Order` (menor numero = mayor prioridad).
+Spring Security permite definir **multiples [`SecurityFilterChain`](https://docs.spring.io/spring-security/reference/servlet/architecture.html)**, cada uno con sus propias reglas. Cada cadena tiene un `securityMatcher` que define a que URLs aplica. Las cadenas se evaluan en orden de `@Order` (menor numero = mayor prioridad).
 
 ```
 Peticion HTTP entrante
@@ -163,9 +166,10 @@ Desglose linea por linea:
 
 **`.securityMatcher("/api/**")`**: esta cadena solo aplica a URLs que empiecen con `/api/`. El `**` es un patron Ant que coincide con cualquier subruta (e.g., `/api/v1/cycles`, `/api/v1/profile`).
 
-**`.csrf { it.disable() }`**: desactiva la proteccion CSRF (Cross-Site Request Forgery). CSRF es relevante para formularios HTML con sesiones basadas en cookies, pero esta API es **stateless** y usa Basic Auth, no cookies. Desactivar CSRF es correcto y necesario para APIs REST.
+**`.csrf { it.disable() }`**: desactiva la proteccion [CSRF](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html) (Cross-Site Request Forgery). CSRF es relevante para formularios HTML con sesiones basadas en cookies, pero esta API es **stateless** y usa Basic Auth, no cookies. Desactivar CSRF es correcto y necesario para APIs REST.
 
-**`.sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }`**: indica que Spring **nunca** creara una sesion HTTP para estos endpoints. Cada peticion debe incluir las credenciales de Basic Auth. Esto es importante porque:
+**`.sessionManagement { it.sessionCreationPolicy(`[`SessionCreationPolicy`](https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html)`.STATELESS) }`**: indica que Spring **nunca** creara una sesion HTTP para estos endpoints. Cada peticion debe incluir las credenciales de Basic Auth. Esto es importante porque:
+
 - Power BI envia credenciales en cada peticion (no mantiene sesion).
 - No se desperdicia memoria del servidor almacenando sesiones.
 - Facilita el escalado horizontal (no hay estado compartido entre replicas).
@@ -173,6 +177,7 @@ Desglose linea por linea:
 **`.authorizeHttpRequests { auth -> auth.anyRequest().authenticated() }`**: toda peticion a `/api/**` requiere autenticacion. No hay endpoints publicos dentro de `/api/`.
 
 **`.httpBasic { }`**: activa la autenticacion HTTP Basic. El cliente debe enviar el header:
+
 ```
 Authorization: Basic base64(username:password)
 ```
@@ -195,6 +200,7 @@ fun oauth2SecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
 **`.securityMatcher("/login/**", "/oauth2/**")`**: aplica a las rutas del flujo OAuth2. `/login/oauth2/code/whoop` es donde la Whoop API redirige despues de que David autorice la aplicacion. `/oauth2/**` son las rutas internas de Spring para manejar el handshake.
 
 **`.oauth2Login { }`**: activa el flujo OAuth2 Authorization Code. Spring Security se encarga de:
+
 1. Redirigir al usuario a la pagina de autorizacion de Whoop.
 2. Recibir el callback con el codigo de autorizacion.
 3. Intercambiar el codigo por tokens de acceso y refresco.
@@ -281,11 +287,13 @@ class TokenEncryptor(
 ```
 
 **AES-256-GCM** (Advanced Encryption Standard con Galois/Counter Mode):
+
 - **AES-256**: cifrado simetrico con clave de 256 bits. Es el estandar de la industria, aprobado por el NIST y usado por gobiernos y entidades financieras.
 - **GCM** (Galois/Counter Mode): modo de operacion que proporciona **confidencialidad** (los datos son ilegibles sin la clave) y **autenticidad** (se detecta si los datos cifrados han sido modificados). GCM es un modo **AEAD** (Authenticated Encryption with Associated Data).
 - **NoPadding**: GCM no necesita padding porque opera como un stream cipher.
 
 **Parametros del cifrado**:
+
 - **IV (Initialization Vector)**: 12 bytes (96 bits) aleatorios, generados con `SecureRandom`. Un IV distinto para cada operacion de cifrado garantiza que el mismo texto plano produce ciphertexts diferentes cada vez. Esto es critico: reutilizar un IV con la misma clave rompe completamente la seguridad de GCM.
 - **Tag de autenticacion**: 128 bits. Es un "checksum criptografico" que detecta si el ciphertext ha sido modificado (tamper detection).
 - **Clave**: 32 bytes (256 bits) codificados en Base64. Se configura en `application.yaml` y se puede generar con `openssl rand -base64 32`.
@@ -452,7 +460,7 @@ class EncryptedStringConverter(
 }
 ```
 
-`AttributeConverter<String?, String?>` es una interfaz de JPA que permite transformar automaticamente un atributo de entidad antes de guardarlo y despues de leerlo de la base de datos:
+[`AttributeConverter`](https://jakarta.ee/specifications/persistence/3.2/)`<String?, String?>` es una interfaz de JPA que permite transformar automaticamente un atributo de entidad antes de guardarlo y despues de leerlo de la base de datos:
 
 - `convertToDatabaseColumn`: se llama cuando JPA va a hacer INSERT o UPDATE. Cifra el token antes de guardarlo.
 - `convertToEntityAttribute`: se llama cuando JPA lee de la BD. Descifra el token para que la aplicacion trabaje con texto plano.
@@ -482,6 +490,7 @@ class OAuthTokenEntity(
 ```
 
 La columna tiene `length = 4096` porque el cifrado agrega overhead:
+
 - IV: 12 bytes
 - Token original: hasta ~2KB
 - Tag de autenticacion GCM: 16 bytes

@@ -33,7 +33,7 @@
 
 ### Que es?
 
-`RestClient` es el cliente HTTP **sincrono** introducido en **Spring Framework 6.1** (y por tanto disponible desde Spring Boot 3.2 en adelante). Es el reemplazo moderno de `RestTemplate`.
+[`RestClient`](https://docs.spring.io/spring-framework/reference/integration/rest-clients.html) es el cliente HTTP **sincrono** introducido en **Spring Framework 6.1** (y por tanto disponible desde Spring Boot 3.2 en adelante). Es el reemplazo moderno de `RestTemplate`.
 
 Diferencias clave con `RestTemplate`:
 
@@ -133,6 +133,7 @@ Por que una lambda y no un String?
 - **Type-safe**: No hay riesgo de errores por concatenacion de strings.
 
 Ejemplo de URL resultante:
+
 ```
 https://api.prod.whoop.com/developer/v1/cycle?limit=25&start=2024-12-01T00:00:00Z&nextToken=abc123
 ```
@@ -160,6 +161,7 @@ Sin timeouts, una peticion HTTP a un servidor que no responde bloquearia el hilo
 3. El `@Scheduled` de sincronizacion tambien se bloquearia, impidiendo futuras sincronizaciones.
 
 Los valores se configuran en `application.yaml`:
+
 ```yaml
 app:
   whoop:
@@ -264,7 +266,7 @@ Cada metodo publico tiene las mismas tres anotaciones de Resilience4j. Las anota
 .header("Authorization", "Bearer $token")
 ```
 
-El patron de autenticacion con la Whoop API es **OAuth2 Bearer Token**: cada peticion incluye la cabecera `Authorization` con el prefijo `Bearer` seguido del access token. El token se obtiene de `TokenManager`, que es una interfaz (no una clase concreta). Esto es el **patron Strategy**.
+El patron de autenticacion con la Whoop API es **OAuth2 Bearer Token**: cada peticion incluye la cabecera `Authorization` con el prefijo `Bearer` seguido del access token. El token se obtiene de `TokenManager`, que es una interfaz (no una clase concreta). Esto es el **[patron Strategy](https://refactoring.guru/design-patterns/strategy)**.
 
 ---
 
@@ -316,11 +318,11 @@ class WhoopTokenManager(
 
 Puntos importantes:
 
-1. **`@Profile("!demo")`**: El `!` es una negacion. Esta clase esta activa en **todos** los perfiles **excepto** `demo`. Cuando se ejecuta con `--spring.profiles.active=dev` o `prod`, Spring crea este bean. Cuando se ejecuta con `demo`, no lo crea.
+1. **[`@Profile`](https://docs.spring.io/spring-boot/reference/features/profiles.html)`("!demo")`**: El `!` es una negacion. Esta clase esta activa en **todos** los perfiles **excepto** `demo`. Cuando se ejecuta con `--spring.profiles.active=dev` o `prod`, Spring crea este bean. Cuando se ejecuta con `demo`, no lo crea.
 
 2. **`tokenRepository.findTopByOrderByUpdatedAtDesc()`**: Busca en la tabla `oauth_tokens` el token mas reciente (ordenado por `updated_at` descendente). Es un **derived query** de Spring Data JPA.
 
-3. **Logica de refresco (5 minutos)**: `token.expiresAt.isBefore(Instant.now().plusSeconds(300))` verifica si el token expira dentro de los proximos 300 segundos (5 minutos). Si es asi, lo refresca proactivamente. Esto previene que expire justo en medio de una sincronizacion paginada.
+3. **Logica de [refresco de token](https://datatracker.ietf.org/doc/html/rfc6749#section-6) (5 minutos)**: `token.expiresAt.isBefore(Instant.now().plusSeconds(300))` verifica si el token expira dentro de los proximos 300 segundos (5 minutos). Si es asi, lo refresca proactivamente. Esto previene que expire justo en medio de una sincronizacion paginada.
 
 4. **Metodo `refreshToken()`**: Hace una peticion POST al endpoint de tokens de Whoop con `grant_type=refresh_token`:
 
@@ -394,7 +396,7 @@ Spring decide asi:
 | `demo` | `WhoopTokenManager` NO se crea. `DemoWhoopTokenManager` SI se crea | `DemoWhoopTokenManager` |
 | `dev,demo` | Ambos existen (dev activa `!demo` = false? No: `!demo` se evalua y demo esta activo, asi que `WhoopTokenManager` NO se crea). Solo `DemoWhoopTokenManager` | `DemoWhoopTokenManager` |
 
-La anotacion **`@Primary`** en `DemoWhoopTokenManager` es una precaucion adicional: si por alguna razon ambos beans existieran a la vez, Spring usaria el marcado como `@Primary`. Es un patron defensivo habitual.
+La anotacion **[`@Primary`](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html)** en `DemoWhoopTokenManager` es una precaucion adicional: si por alguna razon ambos beans existieran a la vez, Spring usaria el marcado como `@Primary`. Es un patron defensivo habitual.
 
 ---
 
@@ -442,7 +444,7 @@ El patron **Circuit Breaker** (interruptor de circuito) funciona como un interru
 | Estado | Comportamiento |
 |---|---|
 | **CLOSED** (cerrado) | Estado normal. Todas las peticiones pasan. Se monitorizan los fallos |
-| **OPEN** (abierto) | Las peticiones **no se ejecutan**. Se devuelve el fallback inmediatamente. Protege tanto a tu app como al servidor caido |
+| **OPEN** (abierto) | Las peticiones **no se ejecutan**. Se devuelve el [fallback](https://resilience4j.readme.io/docs/circuitbreaker#fallback-methods) inmediatamente. Protege tanto a tu app como al servidor caido |
 | **HALF_OPEN** (semi-abierto) | Se permiten unas pocas peticiones de prueba para ver si el servicio se recupero. Si tienen exito, vuelve a CLOSED. Si fallan, vuelve a OPEN |
 
 **Configuracion en `application.yaml`:**
@@ -463,7 +465,7 @@ resilience4j:
 | Propiedad | Valor | Significado |
 |---|---|---|
 | `register-health-indicator` | `true` | Registra el estado del circuit breaker en el endpoint `/actuator/health` |
-| `sliding-window-size` | `10` | Se analizan las **ultimas 10** llamadas para calcular la tasa de fallo |
+| [`sliding-window-size`](https://resilience4j.readme.io/docs/circuitbreaker#create-and-configure-a-circuitbreaker) | `10` | Se analizan las **ultimas 10** llamadas para calcular la tasa de fallo |
 | `minimum-number-of-calls` | `5` | No se abre el circuito hasta que se hayan hecho al menos 5 llamadas (evita abrir con poca evidencia) |
 | `failure-rate-threshold` | `50` | Si el 50% o mas de las ultimas 10 llamadas fallan, se abre el circuito |
 | `wait-duration-in-open-state` | `30s` | Tras abrir, espera 30 segundos antes de probar de nuevo (HALF_OPEN) |
@@ -494,6 +496,7 @@ resilience4j:
 | `exponential-backoff-multiplier` | `2` | Factor de multiplicacion exponencial |
 
 Con exponential backoff, las esperas son:
+
 - 1er intento: falla -> espera **2s**
 - 2do intento: falla -> espera **4s** (2s x 2)
 - 3er intento: falla -> se propaga la excepcion al circuit breaker
@@ -559,9 +562,10 @@ private fun fallbackGetProfile(ex: Throwable): Map<String, Any?> {
 
 ### Por que se necesita AOP
 
-Las anotaciones `@CircuitBreaker`, `@Retry` y `@RateLimiter` funcionan mediante **AOP (Aspect-Oriented Programming)**. Esto requiere la dependencia:
+Las anotaciones [`@CircuitBreaker`](https://resilience4j.readme.io/docs/circuitbreaker), [`@Retry`](https://resilience4j.readme.io/docs/retry) y [`@RateLimiter`](https://resilience4j.readme.io/docs/ratelimiter) funcionan mediante **[AOP (Aspect-Oriented Programming)](https://docs.spring.io/spring-framework/reference/core/aop.html)**. Esto requiere la dependencia:
 
 **En `build.gradle.kts`:**
+
 ```kotlin
 implementation("org.springframework.boot:spring-boot-starter-aspectj")
 ```

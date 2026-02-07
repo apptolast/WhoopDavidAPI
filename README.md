@@ -96,6 +96,7 @@ SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 ```
 
 La aplicacion arranca en `http://localhost:8080` con:
+
 - H2 Console: `http://localhost:8080/h2-console`
 - Health check: `http://localhost:8080/actuator/health`
 
@@ -125,6 +126,7 @@ SPRING_PROFILES_ACTIVE=prod ./gradlew bootRun
 ## Endpoints de la API
 
 Todos los endpoints `GET /api/v1/*` requieren **Basic Auth** y soportan:
+
 - **Paginacion**: `page` (default 1), `pageSize` (default 100)
 - **Filtros de fecha**: `from`, `to` (ISO 8601 UTC)
 
@@ -180,6 +182,7 @@ Todos los endpoints `GET /api/v1/*` requieren **Basic Auth** y soportan:
 ```
 
 Los tests incluyen:
+
 - **Context load**: verificacion de arranque del contexto Spring
 - **Repository**: tests con H2 (`@DataJpaTest`) para queries con rango de fechas
 - **Controller**: tests con MockMvc (`@WebMvcTest`) para endpoints y autenticacion
@@ -207,6 +210,7 @@ docker run -p 8080:8080 \
 ### Kubernetes
 
 La aplicacion se despliega en un cluster **RKE2/Rancher** con:
+
 - **Traefik** como ingress controller
 - **cert-manager** para TLS (Let's Encrypt via Cloudflare)
 - **Longhorn** para persistent volumes
@@ -242,12 +246,14 @@ La comunicacion con Whoop API v2 esta protegida por Resilience4j:
 ## Autenticacion
 
 ### Whoop API (OAuth2 Authorization Code)
+
 - Authorization URL: `https://api.prod.whoop.com/oauth/oauth2/auth`
 - Token URL: `https://api.prod.whoop.com/oauth/oauth2/token`
 - Scopes: `offline, read:profile, read:body_measurement, read:cycles, read:recovery, read:sleep, read:workout`
 - Access token expira en 1h, refresh automatico
 
 ### Power BI (Basic Auth)
+
 - Endpoints `/api/v1/**` protegidos con HTTP Basic Auth
 - Compatible con Power BI Desktop y Power BI Service (scheduled refresh)
 

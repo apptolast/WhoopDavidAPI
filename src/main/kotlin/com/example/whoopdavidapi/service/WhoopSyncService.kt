@@ -36,21 +36,22 @@ class WhoopSyncService(
             // Sincronizacion incremental: obtener solo datos nuevos
             val lastUpdated = cycleRepository.findTopByOrderByUpdatedAtDesc()?.updatedAt
             val records = whoopApiClient.getAllCycles(start = lastUpdated)
-            var saved = 0
+            val entities = mutableListOf<WhoopCycle>()
             var skipped = 0
 
             for (record in records) {
                 try {
-                    val cycle = mapToCycle(record)
-                    cycleRepository.save(cycle)
-                    saved++
+                    entities.add(mapToCycle(record))
                 } catch (ex: IllegalArgumentException) {
                     log.warn("Saltando cycle con datos inválidos: {}", ex.message)
                     skipped++
                 }
             }
 
-            log.info("Cycles sincronizados: {} nuevos/actualizados, {} saltados", saved, skipped)
+            if (entities.isNotEmpty()) {
+                cycleRepository.saveAll(entities)
+            }
+            log.info("Cycles sincronizados: {} nuevos/actualizados, {} saltados", entities.size, skipped)
         } catch (ex: Exception) {
             log.error("Error sincronizando cycles: {}", ex.message, ex)
         }
@@ -60,15 +61,12 @@ class WhoopSyncService(
         try {
             val lastUpdated = recoveryRepository.findTopByOrderByUpdatedAtDesc()?.updatedAt
             val records = whoopApiClient.getAllRecoveries(start = lastUpdated)
-            var saved = 0
+            val entities = records.map { mapToRecovery(it) }
 
-            for (record in records) {
-                val recovery = mapToRecovery(record)
-                recoveryRepository.save(recovery)
-                saved++
+            if (entities.isNotEmpty()) {
+                recoveryRepository.saveAll(entities)
             }
-
-            log.info("Recoveries sincronizados: {} nuevos/actualizados", saved)
+            log.info("Recoveries sincronizados: {} nuevos/actualizados", entities.size)
         } catch (ex: Exception) {
             log.error("Error sincronizando recoveries: {}", ex.message, ex)
         }
@@ -78,21 +76,22 @@ class WhoopSyncService(
         try {
             val lastUpdated = sleepRepository.findTopByOrderByUpdatedAtDesc()?.updatedAt
             val records = whoopApiClient.getAllSleeps(start = lastUpdated)
-            var saved = 0
+            val entities = mutableListOf<WhoopSleep>()
             var skipped = 0
 
             for (record in records) {
                 try {
-                    val sleep = mapToSleep(record)
-                    sleepRepository.save(sleep)
-                    saved++
+                    entities.add(mapToSleep(record))
                 } catch (ex: IllegalArgumentException) {
                     log.warn("Saltando sleep con datos inválidos: {}", ex.message)
                     skipped++
                 }
             }
 
-            log.info("Sleeps sincronizados: {} nuevos/actualizados, {} saltados", saved, skipped)
+            if (entities.isNotEmpty()) {
+                sleepRepository.saveAll(entities)
+            }
+            log.info("Sleeps sincronizados: {} nuevos/actualizados, {} saltados", entities.size, skipped)
         } catch (ex: Exception) {
             log.error("Error sincronizando sleeps: {}", ex.message, ex)
         }
@@ -102,21 +101,22 @@ class WhoopSyncService(
         try {
             val lastUpdated = workoutRepository.findTopByOrderByUpdatedAtDesc()?.updatedAt
             val records = whoopApiClient.getAllWorkouts(start = lastUpdated)
-            var saved = 0
+            val entities = mutableListOf<WhoopWorkout>()
             var skipped = 0
 
             for (record in records) {
                 try {
-                    val workout = mapToWorkout(record)
-                    workoutRepository.save(workout)
-                    saved++
+                    entities.add(mapToWorkout(record))
                 } catch (ex: IllegalArgumentException) {
                     log.warn("Saltando workout con datos inválidos: {}", ex.message)
                     skipped++
                 }
             }
 
-            log.info("Workouts sincronizados: {} nuevos/actualizados, {} saltados", saved, skipped)
+            if (entities.isNotEmpty()) {
+                workoutRepository.saveAll(entities)
+            }
+            log.info("Workouts sincronizados: {} nuevos/actualizados, {} saltados", entities.size, skipped)
         } catch (ex: Exception) {
             log.error("Error sincronizando workouts: {}", ex.message, ex)
         }

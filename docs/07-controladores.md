@@ -4,7 +4,7 @@
 
 Un controlador REST es la **puerta de entrada** a la aplicacion. Recibe peticiones HTTP del cliente (en este caso, Power BI), las valida, delega la logica al servicio correspondiente y devuelve la respuesta en formato JSON.
 
-En Spring, un controlador REST se crea con la anotacion `@RestController`, que es la combinacion de dos anotaciones:
+En Spring, un controlador REST se crea con la anotacion [`@RestController`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html), que es la combinacion de dos anotaciones:
 
 ```
 @RestController = @Controller + @ResponseBody
@@ -40,7 +40,7 @@ Ademas, el proyecto tiene un manejador global de excepciones:
 1. **Interfaz HTTP estandar**: Power BI consume datos via peticiones GET con parametros de query. Los controladores REST exponen exactamente eso.
 2. **Versionado de API**: el prefijo `/api/v1` permite crear nuevas versiones (`/api/v2`) en el futuro sin romper clientes existentes.
 3. **Separacion de responsabilidades**: el controlador solo se encarga de la capa HTTP (validar parametros, devolver codigos de estado). La logica de negocio vive en los servicios.
-4. **Manejo centralizado de errores**: `@RestControllerAdvice` permite capturar todas las excepciones en un unico lugar, devolviendo respuestas JSON consistentes.
+4. **Manejo centralizado de errores**: [`@RestControllerAdvice`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-advice.html) permite capturar todas las excepciones en un unico lugar, devolviendo respuestas JSON consistentes.
 
 ---
 
@@ -57,7 +57,7 @@ class CycleController(private val cycleService: CycleService) {
 ```
 
 - `@RestController`: marca la clase como controlador REST. Todos los metodos devuelven JSON automaticamente.
-- `@RequestMapping("/api/v1")`: establece el **path base** para todos los endpoints de esta clase. Cada `@GetMapping` dentro de la clase aniade su ruta a este prefijo.
+- [`@RequestMapping("/api/v1")`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html): establece el **path base** para todos los endpoints de esta clase. Cada `@GetMapping` dentro de la clase aniade su ruta a este prefijo.
 - Constructor injection: `CycleService` se inyecta automaticamente (igual que en los servicios, no necesita `@Autowired`).
 
 ### 2. `@GetMapping` y `@RequestParam`
@@ -72,9 +72,9 @@ fun getCycles(
 ): ResponseEntity<PaginatedResponse<CycleDTO>> {
 ```
 
-La ruta final de este endpoint es `/api/v1/cycles` (la suma de `@RequestMapping("/api/v1")` + `@GetMapping("/cycles")`).
+La ruta final de este endpoint es `/api/v1/cycles` (la suma de `@RequestMapping("/api/v1")` + [`@GetMapping("/cycles")`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html)).
 
-`@RequestParam` mapea parametros de la URL (query string) a parametros del metodo:
+[`@RequestParam`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestparam.html) mapea parametros de la URL (query string) a parametros del metodo:
 
 | Parametro | Configuracion | Ejemplo en URL | Comportamiento |
 |---|---|---|---|
@@ -102,6 +102,7 @@ require(pageSize in 1..1000) { "pageSize debe estar entre 1 y 1000" }
 | `error()` | `IllegalStateException` | Fallar incondicionalmente con mensaje |
 
 En este caso:
+
 - `page >= 1`: la pagina debe ser al menos 1 (Spring Data usa base 0 internamente, pero el usuario envia base 1).
 - `pageSize in 1..1000`: el tamano de pagina debe estar entre 1 y 1000. Esto previene peticiones que podrian devolver demasiados resultados y sobrecargar el servidor o la base de datos.
 
@@ -113,7 +114,7 @@ La `IllegalArgumentException` lanzada por `require()` es capturada por el `Globa
 return ResponseEntity.ok(cycleService.getCycles(from, to, page, pageSize))
 ```
 
-`ResponseEntity<T>` es un wrapper de Spring que permite controlar la respuesta HTTP completa: el **cuerpo** (body), el **codigo de estado** (status code) y los **headers**.
+[`ResponseEntity<T>`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responseentity.html) es un wrapper de Spring que permite controlar la respuesta HTTP completa: el **cuerpo** (body), el **[codigo de estado](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)** (status code) y los **headers**.
 
 `ResponseEntity.ok(body)` es un atajo para `ResponseEntity.status(200).body(body)`. Metodos estaticos comunes:
 
@@ -224,9 +225,10 @@ fun handleWhoopApiException(ex: WhoopApiException): ResponseEntity<ErrorResponse
 }
 ```
 
-`@ExceptionHandler(WhoopApiException::class)` indica: "cuando cualquier controlador lance una `WhoopApiException`, ejecuta este metodo".
+[`@ExceptionHandler(WhoopApiException::class)`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html) indica: "cuando cualquier controlador lance una `WhoopApiException`, ejecuta este metodo".
 
 La logica de mapeo de codigos de estado es:
+
 - **429 de Whoop** se devuelve como **429 al cliente**: el rate limiting de la API externa se propaga al cliente. Asi Power BI sabe que debe esperar antes de reintentar.
 - **401/403 de Whoop** se devuelve como **502 Bad Gateway**: un error de autenticacion con la API externa es un problema del servidor (este BFF), no del cliente. El 502 indica que el servidor recibio una respuesta invalida de un upstream.
 - **Cualquier otro error** tambien se mapea a **502**: cualquier fallo de comunicacion con la Whoop API se trata como un error del gateway.
@@ -287,6 +289,7 @@ class WhoopApiException(
 `WhoopApiException` extiende `RuntimeException` (excepcion no checked). Es una **excepcion de dominio** que representa cualquier fallo de comunicacion con la Whoop API.
 
 Propiedades:
+
 - `message`: descripcion del error (heredada de `RuntimeException`).
 - `statusCode`: el codigo HTTP que devolvio la Whoop API (429, 401, 500...). Es nullable porque algunos errores (timeout, fallo de red) no tienen codigo HTTP.
 - `cause`: la excepcion original que causo el error (para encadenar excepciones).
