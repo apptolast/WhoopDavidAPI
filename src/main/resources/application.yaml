@@ -50,6 +50,11 @@ app:
   whoop:
     base-url: https://api.prod.whoop.com
     sync-cron: "0 */30 * * * *"
+  security:
+    # REQUERIDO: Clave de cifrado AES-256 para tokens OAuth2 en BD
+    # Debe ser una cadena de 32 caracteres o más (se trunca/padea a 32 bytes)
+    # Ejemplo: openssl rand -base64 32
+    encryption-key: ${ENCRYPTION_KEY}
 
 # Logging
 logging:

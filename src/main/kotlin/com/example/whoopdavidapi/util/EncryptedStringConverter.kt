@@ -1,9 +1,7 @@
 package com.example.whoopdavidapi.util
 
-import com.example.whoopdavidapi.util.TokenEncryptor
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 /**
@@ -12,10 +10,9 @@ import org.springframework.stereotype.Component
  */
 @Converter
 @Component
-class EncryptedStringConverter : AttributeConverter<String?, String?> {
-
-    @Autowired
-    private lateinit var encryptor: TokenEncryptor
+class EncryptedStringConverter(
+    private val encryptor: TokenEncryptor
+) : AttributeConverter<String?, String?> {
 
     override fun convertToDatabaseColumn(attribute: String?): String? {
         return encryptor.encrypt(attribute)

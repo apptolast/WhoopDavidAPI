@@ -131,7 +131,7 @@ class WhoopSyncService(
             createdAt = parseInstant(record["created_at"]),
             updatedAt = parseInstant(record["updated_at"]),
             start = requireNotNull(parseInstant(record["start"])) { 
-                "Campo 'start' requerido en cycle id=${record["id"]}" 
+                "Campo 'start' requerido en cycle (id=${record["id"] ?: "desconocido"})" 
             },
             end = parseInstant(record["end"]),
             timezoneOffset = record["timezone_offset"] as? String,
@@ -175,7 +175,7 @@ class WhoopSyncService(
             createdAt = parseInstant(record["created_at"]),
             updatedAt = parseInstant(record["updated_at"]),
             start = requireNotNull(parseInstant(record["start"])) { 
-                "Campo 'start' requerido en sleep id=${record["id"]}" 
+                "Campo 'start' requerido en sleep (id=${record["id"] ?: "desconocido"})" 
             },
             end = parseInstant(record["end"]),
             timezoneOffset = record["timezone_offset"] as? String,
@@ -212,7 +212,7 @@ class WhoopSyncService(
             createdAt = parseInstant(record["created_at"]),
             updatedAt = parseInstant(record["updated_at"]),
             start = requireNotNull(parseInstant(record["start"])) { 
-                "Campo 'start' requerido en workout id=${record["id"]}" 
+                "Campo 'start' requerido en workout (id=${record["id"] ?: "desconocido"})" 
             },
             end = parseInstant(record["end"]),
             timezoneOffset = record["timezone_offset"] as? String,
