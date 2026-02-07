@@ -1,11 +1,11 @@
 # Stage 1: Build
-FROM gradle:9.3-jdk24 AS builder
+FROM eclipse-temurin:24-jdk-noble AS builder
 WORKDIR /app
-COPY build.gradle.kts settings.gradle.kts ./
+COPY build.gradle.kts settings.gradle.kts gradlew ./
 COPY gradle ./gradle
-RUN gradle dependencies --no-daemon || true
+RUN ./gradlew dependencies --no-daemon || true
 COPY src ./src
-RUN gradle bootJar --no-daemon -x test
+RUN ./gradlew bootJar --no-daemon -x test
 
 # Stage 2: Runtime
 FROM eclipse-temurin:24-jre-alpine
