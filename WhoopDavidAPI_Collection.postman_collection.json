@@ -1,0 +1,758 @@
+{
+  "item": [
+    {
+      "name": "workout-controller",
+      "description": "",
+      "item": [
+        {
+          "id": "b7b6e646-ea3e-444a-80c3-d71279469fb2",
+          "name": "get Workouts",
+          "request": {
+            "name": "get Workouts",
+            "description": {},
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "workouts"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "from",
+                  "value": "<dateTime>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "to",
+                  "value": "<dateTime>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "pageSize",
+                  "value": "100"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "08a6f5cb-ac62-448d-8fa7-db1d56942738",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "workouts"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "from",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "to",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "pageSize",
+                      "value": "100"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: basic",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Basic <credentials>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"<string>\",\n      \"userId\": \"<long>\",\n      \"createdAt\": \"<dateTime>\",\n      \"updatedAt\": \"<dateTime>\",\n      \"start\": \"<dateTime>\",\n      \"end\": \"<dateTime>\",\n      \"timezoneOffset\": \"<string>\",\n      \"sportName\": \"<string>\",\n      \"sportId\": \"<integer>\",\n      \"scoreState\": \"<string>\",\n      \"strain\": \"<float>\",\n      \"averageHeartRate\": \"<integer>\",\n      \"maxHeartRate\": \"<integer>\",\n      \"kilojoule\": \"<float>\",\n      \"percentRecorded\": \"<float>\",\n      \"distanceMeter\": \"<float>\",\n      \"altitudeGainMeter\": \"<float>\",\n      \"altitudeChangeMeter\": \"<float>\",\n      \"zoneZeroMilli\": \"<long>\",\n      \"zoneOneMilli\": \"<long>\",\n      \"zoneTwoMilli\": \"<long>\",\n      \"zoneThreeMilli\": \"<long>\",\n      \"zoneFourMilli\": \"<long>\",\n      \"zoneFiveMilli\": \"<long>\"\n    },\n    {\n      \"id\": \"<string>\",\n      \"userId\": \"<long>\",\n      \"createdAt\": \"<dateTime>\",\n      \"updatedAt\": \"<dateTime>\",\n      \"start\": \"<dateTime>\",\n      \"end\": \"<dateTime>\",\n      \"timezoneOffset\": \"<string>\",\n      \"sportName\": \"<string>\",\n      \"sportId\": \"<integer>\",\n      \"scoreState\": \"<string>\",\n      \"strain\": \"<float>\",\n      \"averageHeartRate\": \"<integer>\",\n      \"maxHeartRate\": \"<integer>\",\n      \"kilojoule\": \"<float>\",\n      \"percentRecorded\": \"<float>\",\n      \"distanceMeter\": \"<float>\",\n      \"altitudeGainMeter\": \"<float>\",\n      \"altitudeChangeMeter\": \"<float>\",\n      \"zoneZeroMilli\": \"<long>\",\n      \"zoneOneMilli\": \"<long>\",\n      \"zoneTwoMilli\": \"<long>\",\n      \"zoneThreeMilli\": \"<long>\",\n      \"zoneFourMilli\": \"<long>\",\n      \"zoneFiveMilli\": \"<long>\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": \"<integer>\",\n    \"pageSize\": \"<integer>\",\n    \"totalCount\": \"<long>\",\n    \"hasMore\": \"<boolean>\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "sleep-controller",
+      "description": "",
+      "item": [
+        {
+          "id": "0e745cda-9244-4050-a9c9-0a523487f8c5",
+          "name": "get Sleeps",
+          "request": {
+            "name": "get Sleeps",
+            "description": {},
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "sleep"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "from",
+                  "value": "<dateTime>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "to",
+                  "value": "<dateTime>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "pageSize",
+                  "value": "100"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "38350f46-43a5-451d-b486-ae980cf44b3c",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "sleep"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "from",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "to",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "pageSize",
+                      "value": "100"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: basic",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Basic <credentials>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"<string>\",\n      \"cycleId\": \"<long>\",\n      \"userId\": \"<long>\",\n      \"createdAt\": \"<dateTime>\",\n      \"updatedAt\": \"<dateTime>\",\n      \"start\": \"<dateTime>\",\n      \"end\": \"<dateTime>\",\n      \"timezoneOffset\": \"<string>\",\n      \"nap\": \"<boolean>\",\n      \"scoreState\": \"<string>\",\n      \"totalInBedTimeMilli\": \"<integer>\",\n      \"totalAwakeTimeMilli\": \"<integer>\",\n      \"totalNoDataTimeMilli\": \"<integer>\",\n      \"totalLightSleepTimeMilli\": \"<integer>\",\n      \"totalSlowWaveSleepTimeMilli\": \"<integer>\",\n      \"totalRemSleepTimeMilli\": \"<integer>\",\n      \"sleepCycleCount\": \"<integer>\",\n      \"disturbanceCount\": \"<integer>\",\n      \"baselineMilli\": \"<long>\",\n      \"needFromSleepDebtMilli\": \"<long>\",\n      \"needFromRecentStrainMilli\": \"<long>\",\n      \"needFromRecentNapMilli\": \"<long>\",\n      \"respiratoryRate\": \"<float>\",\n      \"sleepPerformancePercentage\": \"<float>\",\n      \"sleepConsistencyPercentage\": \"<float>\",\n      \"sleepEfficiencyPercentage\": \"<float>\"\n    },\n    {\n      \"id\": \"<string>\",\n      \"cycleId\": \"<long>\",\n      \"userId\": \"<long>\",\n      \"createdAt\": \"<dateTime>\",\n      \"updatedAt\": \"<dateTime>\",\n      \"start\": \"<dateTime>\",\n      \"end\": \"<dateTime>\",\n      \"timezoneOffset\": \"<string>\",\n      \"nap\": \"<boolean>\",\n      \"scoreState\": \"<string>\",\n      \"totalInBedTimeMilli\": \"<integer>\",\n      \"totalAwakeTimeMilli\": \"<integer>\",\n      \"totalNoDataTimeMilli\": \"<integer>\",\n      \"totalLightSleepTimeMilli\": \"<integer>\",\n      \"totalSlowWaveSleepTimeMilli\": \"<integer>\",\n      \"totalRemSleepTimeMilli\": \"<integer>\",\n      \"sleepCycleCount\": \"<integer>\",\n      \"disturbanceCount\": \"<integer>\",\n      \"baselineMilli\": \"<long>\",\n      \"needFromSleepDebtMilli\": \"<long>\",\n      \"needFromRecentStrainMilli\": \"<long>\",\n      \"needFromRecentNapMilli\": \"<long>\",\n      \"respiratoryRate\": \"<float>\",\n      \"sleepPerformancePercentage\": \"<float>\",\n      \"sleepConsistencyPercentage\": \"<float>\",\n      \"sleepEfficiencyPercentage\": \"<float>\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": \"<integer>\",\n    \"pageSize\": \"<integer>\",\n    \"totalCount\": \"<long>\",\n    \"hasMore\": \"<boolean>\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "recovery-controller",
+      "description": "",
+      "item": [
+        {
+          "id": "f51bb281-b89b-44a8-958f-74a08def0fa8",
+          "name": "get Recoveries",
+          "request": {
+            "name": "get Recoveries",
+            "description": {},
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "recovery"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "from",
+                  "value": "<dateTime>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "to",
+                  "value": "<dateTime>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "pageSize",
+                  "value": "100"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "a3c9d7b3-d478-415a-bb2e-bca11ec7ff01",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "recovery"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "from",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "to",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "pageSize",
+                      "value": "100"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: basic",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Basic <credentials>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"cycleId\": \"<long>\",\n      \"sleepId\": \"<string>\",\n      \"userId\": \"<long>\",\n      \"createdAt\": \"<dateTime>\",\n      \"updatedAt\": \"<dateTime>\",\n      \"scoreState\": \"<string>\",\n      \"userCalibrating\": \"<boolean>\",\n      \"recoveryScore\": \"<float>\",\n      \"restingHeartRate\": \"<float>\",\n      \"hrvRmssdMilli\": \"<float>\",\n      \"spo2Percentage\": \"<float>\",\n      \"skinTempCelsius\": \"<float>\"\n    },\n    {\n      \"cycleId\": \"<long>\",\n      \"sleepId\": \"<string>\",\n      \"userId\": \"<long>\",\n      \"createdAt\": \"<dateTime>\",\n      \"updatedAt\": \"<dateTime>\",\n      \"scoreState\": \"<string>\",\n      \"userCalibrating\": \"<boolean>\",\n      \"recoveryScore\": \"<float>\",\n      \"restingHeartRate\": \"<float>\",\n      \"hrvRmssdMilli\": \"<float>\",\n      \"spo2Percentage\": \"<float>\",\n      \"skinTempCelsius\": \"<float>\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": \"<integer>\",\n    \"pageSize\": \"<integer>\",\n    \"totalCount\": \"<long>\",\n    \"hasMore\": \"<boolean>\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "profile-controller",
+      "description": "",
+      "item": [
+        {
+          "id": "abda579e-0d91-47f7-852b-7c4db53ee1c3",
+          "name": "get Profile",
+          "request": {
+            "name": "get Profile",
+            "description": {},
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "7cc7ffbc-6ac9-4f1c-bdc4-781b79c9b721",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "profile"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: basic",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Basic <credentials>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "body": "{\n  \"key_0\": \"string\",\n  \"key_1\": 602.1760052887481\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "cycle-controller",
+      "description": "",
+      "item": [
+        {
+          "id": "843dbdcf-ef3c-4d34-85bd-7751a667d6eb",
+          "name": "get Cycles",
+          "request": {
+            "name": "get Cycles",
+            "description": {},
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "cycles"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "from",
+                  "value": "<dateTime>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "to",
+                  "value": "<dateTime>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "pageSize",
+                  "value": "100"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "6ccc1551-f459-4ab8-a912-ceddac6ea2ab",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cycles"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "from",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "to",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "pageSize",
+                      "value": "100"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: basic",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Basic <credentials>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"<long>\",\n      \"userId\": \"<long>\",\n      \"createdAt\": \"<dateTime>\",\n      \"updatedAt\": \"<dateTime>\",\n      \"start\": \"<dateTime>\",\n      \"end\": \"<dateTime>\",\n      \"timezoneOffset\": \"<string>\",\n      \"scoreState\": \"<string>\",\n      \"strain\": \"<float>\",\n      \"kilojoule\": \"<float>\",\n      \"averageHeartRate\": \"<integer>\",\n      \"maxHeartRate\": \"<integer>\"\n    },\n    {\n      \"id\": \"<long>\",\n      \"userId\": \"<long>\",\n      \"createdAt\": \"<dateTime>\",\n      \"updatedAt\": \"<dateTime>\",\n      \"start\": \"<dateTime>\",\n      \"end\": \"<dateTime>\",\n      \"timezoneOffset\": \"<string>\",\n      \"scoreState\": \"<string>\",\n      \"strain\": \"<float>\",\n      \"kilojoule\": \"<float>\",\n      \"averageHeartRate\": \"<integer>\",\n      \"maxHeartRate\": \"<integer>\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": \"<integer>\",\n    \"pageSize\": \"<integer>\",\n    \"totalCount\": \"<long>\",\n    \"hasMore\": \"<boolean>\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "type": "any",
+        "value": "{{basicAuthUsername}}",
+        "key": "username"
+      },
+      {
+        "type": "any",
+        "value": "{{basicAuthPassword}}",
+        "key": "password"
+      }
+    ]
+  },
+  "event": [],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://david-whoop-dev.apptolast.com"
+    }
+  ],
+  "info": {
+    "_postman_id": "4b212aba-d85a-4fb5-acf8-a1a9c90ed034",
+    "name": "Whoop David API - Auto-generated",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Coleccion generada automaticamente desde OpenAPI spec.\n\nFecha: 2026-02-07 15:11 UTC\nRama: main\nEntorno: prod\n\nGenerado por GitHub Actions workflow."
+  }
+}
