@@ -33,6 +33,7 @@ class WhoopTokenManager(
         }
 
         return token.accessToken
+            ?: throw WhoopApiException("Token OAuth2 guardado pero access_token es null. Realiza el flujo de autorizacion de nuevo.")
     }
 
     fun saveToken(accessToken: String, refreshToken: String?, expiresInSeconds: Long, scope: String?) {
