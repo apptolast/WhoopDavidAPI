@@ -65,7 +65,7 @@ class SecurityConfig(
     @Order(3)
     fun publicSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .securityMatcher("/actuator/**", "/h2-console/**")
+            .securityMatcher("/actuator/**", "/h2-console/**", "/mock/**")
             .csrf { it.disable() }
             .headers { headers -> headers.frameOptions { it.sameOrigin() } }
             .authorizeHttpRequests { auth ->

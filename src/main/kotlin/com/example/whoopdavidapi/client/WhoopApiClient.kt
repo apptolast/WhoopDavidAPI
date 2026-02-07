@@ -12,7 +12,7 @@ import java.time.Instant
 @Component
 class WhoopApiClient(
     private val whoopRestClient: RestClient,
-    private val tokenManager: WhoopTokenManager
+    private val tokenManager: TokenManager
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
