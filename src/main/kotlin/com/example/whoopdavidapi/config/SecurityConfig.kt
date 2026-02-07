@@ -65,7 +65,10 @@ class SecurityConfig(
     @Order(3)
     fun publicSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .securityMatcher("/actuator/**", "/h2-console/**", "/mock/**")
+            .securityMatcher(
+                "/actuator/**", "/h2-console/**", "/mock/**",
+                "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
+            )
             .csrf { it.disable() }
             .headers { headers -> headers.frameOptions { it.sameOrigin() } }
             .authorizeHttpRequests { auth ->

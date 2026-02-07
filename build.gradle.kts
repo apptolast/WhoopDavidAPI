@@ -43,6 +43,9 @@ dependencies {
     implementation("io.github.resilience4j:resilience4j-spring-boot3:2.3.0")
     implementation("org.springframework.boot:spring-boot-starter-aspectj")
 
+    // OpenAPI / Swagger UI (v3.x para Spring Boot 4)
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+
     // Database drivers
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
