@@ -191,7 +191,7 @@ Los tests incluyen:
 
 ```bash
 # Build
-docker build -t ocholoko888/whoop-david-api:latest .
+docker build -t apptolast/whoop-david-api:latest .
 
 # Run
 docker run -p 8080:8080 \
@@ -201,7 +201,7 @@ docker run -p 8080:8080 \
   -e DB_PASSWORD=password \
   -e WHOOP_CLIENT_ID=your-client-id \
   -e WHOOP_CLIENT_SECRET=your-client-secret \
-  ocholoko888/whoop-david-api:latest
+  apptolast/whoop-david-api:latest
 ```
 
 ### Kubernetes

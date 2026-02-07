@@ -43,7 +43,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ocholoko888/whoop-david-api:latest
-            ocholoko888/whoop-david-api:${{ github.sha }}
+            apptolast/whoop-david-api:latest
+            apptolast/whoop-david-api:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

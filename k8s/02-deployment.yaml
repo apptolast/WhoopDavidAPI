@@ -36,7 +36,7 @@ spec:
           # - Usar tag basado en SHA o versión semántica (ej: v1.2.3 o sha-abc123)
           # - Cambiar imagePullPolicy a IfNotPresent
           # - Actualizar manifiesto en cada deploy (mejor trazabilidad/rollback)
-          image: ocholoko888/whoop-david-api:latest
+          image: apptolast/whoop-david-api:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
