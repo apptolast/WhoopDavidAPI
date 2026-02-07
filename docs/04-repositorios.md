@@ -13,7 +13,7 @@ Controller  -->  Service  -->  Repository  -->  Base de datos
                   (logica)      (abstraccion)    (SQL real)
 ```
 
-**Spring Data JPA** lleva este patron al extremo: tu solo defines una **interfaz** con firmas de metodos, y Spring **genera la implementacion completa** en tiempo de ejecucion. No escribes SQL, no escribes clases de implementacion, no escribes nada mas que la interfaz.
+**[Spring Data JPA](https://docs.spring.io/spring-data/jpa/reference/)** lleva este patron al extremo: tu solo defines una **interfaz** con firmas de metodos, y Spring **genera la implementacion completa** en tiempo de ejecucion. No escribes SQL, no escribes clases de implementacion, no escribes nada mas que la interfaz.
 
 ```kotlin
 // Tu solo escribes esto:
@@ -57,7 +57,7 @@ Los repositorios se consumen en dos capas:
 
 1. **Cero boilerplate**: No necesitas `EntityManager`, `CriteriaBuilder`, ni SQL strings. Defines una interfaz y Spring hace el resto.
 2. **Seguridad de tipos**: Si cambias el nombre de un campo en la entidad (ej: `start` a `startTime`), el metodo `findByStartBetween` ya no compilaria. Spring valida los nombres de metodo contra los campos de la entidad al arrancar la aplicacion.
-3. **Paginacion integrada**: El parametro `Pageable` y el retorno `Page<T>` te dan paginacion completa (total de elementos, total de paginas, tiene siguiente pagina) sin esfuerzo.
+3. **Paginacion integrada**: El parametro [`Pageable`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) y el retorno [`Page<T>`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) te dan paginacion completa (total de elementos, total de paginas, tiene siguiente pagina) sin esfuerzo.
 4. **Queries de este proyecto son simples**: Filtros por fecha y paginacion. No hay joins complejos ni subqueries que justifiquen SQL manual.
 
 ### Por que `JpaRepository` y no `CrudRepository`?
@@ -71,7 +71,7 @@ Repository                        (vacio, marcador)
             └── JpaRepository     (+ flush, saveAllAndFlush, paginacion con findAll(Pageable))
 ```
 
-Usamos `JpaRepository` porque necesitamos **paginacion** (`findAll(Pageable)`) y los metodos batch (`saveAll`), que `CrudRepository` no ofrece directamente.
+Usamos [`JpaRepository`](https://docs.spring.io/spring-data/jpa/reference/jpa/getting-started.html) porque necesitamos **paginacion** (`findAll(Pageable)`) y los metodos batch (`saveAll`), que [`CrudRepository`](https://docs.spring.io/spring-data/commons/reference/repositories/core-concepts.html) no ofrece directamente.
 
 ---
 
@@ -93,6 +93,7 @@ Al extender `JpaRepository<WhoopCycle, Long>`, obtienes **sin escribir nada** es
 | `existsById(id)` | `SELECT COUNT(*) > 0 FROM ... WHERE id = ?` | - |
 
 **Nota sobre `save()`**: Este metodo es inteligente. Si la entidad tiene un `@Id` con valor (no null/0), Hibernate verifica si ya existe en la BD:
+
 - Si **existe**: ejecuta `UPDATE` (merge).
 - Si **no existe**: ejecuta `INSERT` (persist).
 
@@ -280,6 +281,7 @@ result.size            // Int - tamano de pagina solicitado
 ```
 
 Spring ejecuta **dos queries** automaticamente para construir el `Page`:
+
 1. `SELECT * FROM whoop_cycles WHERE ... ORDER BY ... LIMIT ? OFFSET ?` (los datos)
 2. `SELECT COUNT(*) FROM whoop_cycles WHERE ...` (el total, para saber cuantas paginas hay)
 

@@ -4,7 +4,7 @@
 
 La capa de servicios es la **capa intermedia** entre los controladores REST (que reciben peticiones HTTP) y los repositorios (que acceden a la base de datos). Su responsabilidad es contener la **logica de negocio**: transformar datos, aplicar reglas, coordinar operaciones entre distintos repositorios, etc.
 
-En Spring, se marca una clase como servicio con la anotacion `@Service`. Esto le dice a Spring: "esta clase es un componente que contiene logica de negocio, registrala en el contenedor de inyeccion de dependencias".
+En Spring, se marca una clase como servicio con la anotacion [`@Service`](https://docs.spring.io/spring-framework/reference/core/beans/classpath-scanning.html). Esto le dice a Spring: "esta clase es un componente que contiene logica de negocio, registrala en el contenedor de [inyeccion de dependencias](https://docs.spring.io/spring-framework/reference/core/beans/introduction.html)".
 
 ```
 Peticion HTTP
@@ -61,7 +61,7 @@ class CycleService(
 }
 ```
 
-`@Service` es una **especializacion** de `@Component`. Tecnicamente, ambas hacen lo mismo: registrar la clase como un bean en el contenedor de Spring. La diferencia es **semantica**: `@Service` indica que la clase contiene logica de negocio.
+`@Service` es una **especializacion** de `@Component`. Tecnicamente, ambas hacen lo mismo: registrar la clase como un [bean](https://docs.spring.io/spring-framework/reference/core/beans/definition.html) en el contenedor de Spring. La diferencia es **semantica**: `@Service` indica que la clase contiene logica de negocio.
 
 Cuando la aplicacion arranca, Spring Boot ejecuta el **component scanning**: escanea todos los paquetes bajo la clase marcada con `@SpringBootApplication` (en este caso, `com.example.whoopdavidapi`) y busca clases anotadas con `@Component`, `@Service`, `@Repository`, `@Controller`, etc. Cada una se registra como un bean singleton que puede ser inyectado en otras clases.
 
@@ -84,11 +84,12 @@ class CycleService(
 ) {
 ```
 
-En Kotlin, el **constructor primario** se declara directamente en la firma de la clase. Spring detecta automaticamente que `CycleService` necesita un `CycleRepository` y un `CycleMapper`, busca beans de esos tipos en su contenedor, y los inyecta al crear la instancia.
+En Kotlin, el **[constructor primario](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html)** se declara directamente en la firma de la clase. Spring detecta automaticamente que `CycleService` necesita un `CycleRepository` y un `CycleMapper`, busca beans de esos tipos en su contenedor, y los inyecta al crear la instancia.
 
 **No se necesita `@Autowired`**. Desde Spring 4.3, si una clase tiene un unico constructor, Spring lo usa automaticamente para inyeccion. Como en Kotlin el constructor primario es el unico constructor (a menos que declares constructores secundarios con `constructor`), la inyeccion funciona sin ninguna anotacion adicional.
 
 Las propiedades son `private val` por dos razones:
+
 - `private`: encapsulacion, ninguna otra clase puede acceder a estas dependencias directamente.
 - `val`: inmutabilidad, una vez asignada la dependencia no puede cambiar.
 
@@ -104,9 +105,10 @@ fun getCycles(
     val pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "start"))
 ```
 
-`PageRequest.of()` crea un objeto `Pageable` que Spring Data JPA usa para construir automaticamente las clausulas `LIMIT`, `OFFSET` y `ORDER BY` en la consulta SQL.
+[`PageRequest.of()`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) crea un objeto `Pageable` que Spring Data JPA usa para construir automaticamente las clausulas `LIMIT`, `OFFSET` y `ORDER BY` en la consulta SQL.
 
 La conversion `page - 1` es critica:
+
 - El **usuario** envia paginas **basadas en 1** (pagina 1, 2, 3...) porque es mas natural para un humano.
 - Spring Data JPA usa paginas **basadas en 0** internamente (pagina 0, 1, 2...).
 - `page - 1` convierte entre ambos sistemas. Si el usuario pide `page=1`, Spring recibe `0` y devuelve los primeros resultados.
@@ -124,7 +126,7 @@ val result = when {
 }
 ```
 
-`when` es la version Kotlin de un `switch` en Java, pero mucho mas potente. Aqui se usa como **expresion** (devuelve un valor que se asigna a `result`), no como sentencia.
+[`when`](https://kotlinlang.org/docs/control-flow.html#when-expression) es la version Kotlin de un `switch` en Java, pero mucho mas potente. Aqui se usa como **expresion** (devuelve un valor que se asigna a `result`), no como sentencia.
 
 Se evaluan las condiciones de arriba a abajo:
 
@@ -136,6 +138,7 @@ Se evaluan las condiciones de arriba a abajo:
 | Ninguno presente | `findAll(pageable)` | Sin filtro (todos los registros) |
 
 Los parametros `from` y `to` son `Instant?` (nullable). Esto permite al usuario hacer peticiones como:
+
 - `/api/v1/cycles` -- sin filtro, devuelve todo paginado.
 - `/api/v1/cycles?from=2024-01-01T00:00:00Z` -- desde esa fecha en adelante.
 - `/api/v1/cycles?from=2024-01-01T00:00:00Z&to=2024-06-01T00:00:00Z` -- rango especifico.
@@ -210,6 +213,7 @@ El JSON que recibe el cliente (Power BI) tiene esta estructura:
 ### 6. Principio DRY: los 4 servicios de consulta son identicos
 
 Los servicios `CycleService`, `RecoveryService`, `SleepService` y `WorkoutService` siguen **exactamente el mismo patron**. La unica diferencia es:
+
 - El **repositorio** que usan (`CycleRepository`, `RecoveryRepository`, etc.).
 - El **mapper** que usan (`CycleMapper`, `RecoveryMapper`, etc.).
 - El **campo de ordenacion** (`"start"` para Cycle/Sleep/Workout, `"createdAt"` para Recovery).

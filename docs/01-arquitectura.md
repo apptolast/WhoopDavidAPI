@@ -4,7 +4,7 @@
 
 La **arquitectura** de una aplicacion define como se organizan sus componentes y como fluyen los datos entre ellos. En este proyecto usamos dos conceptos clave:
 
-1. **Patron BFF (Backend For Frontend)**: Un servidor intermedio que adapta una API externa al formato que necesita un cliente especifico
+1. **Patron [BFF (Backend For Frontend)](https://learn.microsoft.com/en-us/azure/architecture/patterns/backends-for-frontends)**: Un servidor intermedio que adapta una API externa al formato que necesita un cliente especifico
 2. **Arquitectura por capas**: Separacion de responsabilidades en Controller, Service, Repository y Database
 
 ### Que es el patron BFF?
@@ -16,6 +16,7 @@ BFF significa **Backend For Frontend**. Es un patron donde creas un servidor bac
 - **BFF**: WhoopDavidAPI (este proyecto)
 
 Sin un BFF, Power BI tendria que:
+
 - Autenticarse directamente contra Whoop API (OAuth2 complejo)
 - Manejar paginacion de Whoop (tokens de siguiente pagina)
 - Depender de que Whoop este online en cada refresco del dashboard
@@ -47,7 +48,7 @@ fun main(args: Array<String>) {
 |---|---|---|
 | **Controller** | [`controller/CycleController.kt`](../src/main/kotlin/com/example/whoopdavidapi/controller/CycleController.kt), etc. | Recibir peticiones HTTP, validar parametros, devolver respuestas |
 | **Service** | [`service/CycleService.kt`](../src/main/kotlin/com/example/whoopdavidapi/service/CycleService.kt), etc. | Logica de negocio, transformacion de datos |
-| **Repository** | [`repository/CycleRepository.kt`](../src/main/kotlin/com/example/whoopdavidapi/repository/CycleRepository.kt), etc. | Acceso a base de datos (queries JPA) |
+| **Repository** | [`repository/CycleRepository.kt`](../src/main/kotlin/com/example/whoopdavidapi/repository/CycleRepository.kt), etc. | Acceso a base de datos (queries [JPA](https://docs.spring.io/spring-data/jpa/reference/)) |
 | **Entity** | [`model/entity/WhoopCycle.kt`](../src/main/kotlin/com/example/whoopdavidapi/model/entity/WhoopCycle.kt), etc. | Representacion de tablas de BD |
 | **DTO** | [`model/dto/CycleDTO.kt`](../src/main/kotlin/com/example/whoopdavidapi/model/dto/CycleDTO.kt), etc. | Objetos de transferencia para respuestas API |
 | **Mapper** | [`mapper/CycleMapper.kt`](../src/main/kotlin/com/example/whoopdavidapi/mapper/CycleMapper.kt), etc. | Conversion automatica Entity <-> DTO |
@@ -92,7 +93,7 @@ fun main(args: Array<String>) {
 
 1. `WhoopDataSyncScheduler` dispara `syncAll()` cada 30 minutos (configurable via cron)
 2. `WhoopSyncService` pide los datos a `WhoopApiClient` con sincronizacion incremental (solo datos nuevos desde el ultimo `updatedAt`)
-3. `WhoopApiClient` usa `RestClient` para llamar a Whoop API v2 con token Bearer OAuth2
+3. `WhoopApiClient` usa [`RestClient`](https://docs.spring.io/spring-framework/reference/integration/rest-clients.html) para llamar a Whoop API v2 con token Bearer OAuth2
 4. `WhoopTokenManager` se asegura de que el token sea valido; si expira en menos de 5 minutos, lo refresca automaticamente
 5. `WhoopSyncService` mapea las respuestas JSON a entidades JPA y las guarda en la BD
 
@@ -113,7 +114,7 @@ fun main(args: Array<String>) {
 
 Spring ofrece dos modelos de programacion web:
 
-| Caracteristica | WebMVC (elegido) | WebFlux |
+| Caracteristica | [WebMVC](https://docs.spring.io/spring-framework/reference/web/webmvc.html) (elegido) | [WebFlux](https://docs.spring.io/spring-framework/reference/web/webflux.html) |
 |---|---|---|
 | Modelo | Bloqueante (un hilo por request) | No bloqueante (reactivo) |
 | JPA/Hibernate | Compatible directamente | Requiere R2DBC (diferente ORM) |
@@ -176,12 +177,12 @@ fun main(args: Array<String>) {   // (4)
 }
 ```
 
-1. **`@SpringBootApplication`**: Meta-anotacion que combina tres anotaciones:
+1. **[`@SpringBootApplication`](https://docs.spring.io/spring-boot/reference/using/using-the-springbootapplication-annotation.html)**: Meta-anotacion que combina tres anotaciones:
    - `@Configuration`: Esta clase puede declarar beans (`@Bean`)
    - `@EnableAutoConfiguration`: Spring Boot configura automaticamente beans basandose en las dependencias del classpath (si detecta JPA, configura Hibernate; si detecta H2, configura un DataSource in-memory, etc.)
    - `@ComponentScan`: Escanea todos los paquetes bajo `com.example.whoopdavidapi` buscando clases anotadas con `@Component`, `@Service`, `@Controller`, `@Repository`, `@Configuration`
 
-2. **`@EnableScheduling`**: Activa el soporte para `@Scheduled`. Sin esta anotacion, `WhoopDataSyncScheduler` no ejecutaria su tarea cron
+2. **[`@EnableScheduling`](https://docs.spring.io/spring-framework/reference/integration/scheduling.html)**: Activa el soporte para `@Scheduled`. Sin esta anotacion, `WhoopDataSyncScheduler` no ejecutaria su tarea cron
 
 3. **La clase esta vacia**: En Kotlin, la clase solo sirve como ancla para las anotaciones. Spring Boot no necesita que tenga metodos
 
@@ -193,7 +194,7 @@ fun main(args: Array<String>) {   // (4)
 
 **Archivo**: [`src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt`](../src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt)
 
-Spring Security permite definir multiples `SecurityFilterChain`, cada una con su propio patron de URLs y reglas. El `@Order` determina la prioridad:
+Spring Security permite definir multiples [`SecurityFilterChain`](https://docs.spring.io/spring-security/reference/servlet/architecture.html), cada una con su propio patron de URLs y reglas. El `@Order` determina la prioridad:
 
 ```kotlin
 @Bean @Order(1)  // API: Basic Auth, stateless
@@ -290,7 +291,7 @@ interface TokenManager {
 }
 ```
 
-En el perfil `demo`, `DemoWhoopTokenManager` reemplaza a `WhoopTokenManager` devolviendo un token falso. Esto es posible gracias a `@Profile("demo")` y `@Primary` (ver [documento 11 - Perfiles](11-perfiles.md)).
+En el perfil `demo`, `DemoWhoopTokenManager` reemplaza a `WhoopTokenManager` devolviendo un token falso. Esto es posible gracias a [`@Profile("demo")`](https://docs.spring.io/spring-boot/reference/features/profiles.html) y `@Primary` (ver [documento 11 - Perfiles](11-perfiles.md)).
 
 ---
 

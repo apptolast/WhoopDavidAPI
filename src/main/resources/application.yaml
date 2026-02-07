@@ -8,6 +8,10 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
 
   # Jackson 3 defaults: ISO-8601 dates, no timestamps
   jackson:

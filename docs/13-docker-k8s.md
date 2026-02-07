@@ -22,8 +22,8 @@ Docker es una herramienta que empaqueta tu aplicacion junto con todo lo que nece
 |----------|-------------|
 | **Imagen** | Un paquete inmutable con tu app + dependencias. Se crea a partir de un `Dockerfile`. |
 | **Contenedor** | Una instancia en ejecucion de una imagen. Es como un proceso aislado. |
-| **Dockerfile** | Un archivo de instrucciones para construir una imagen. |
-| **Multi-stage build** | Tecnica que usa multiples `FROM` para separar la fase de compilacion de la de ejecucion, reduciendo el tamano de la imagen final. |
+| **[Dockerfile](https://docs.docker.com/reference/dockerfile/)** | Un archivo de instrucciones para construir una imagen. |
+| **[Multi-stage build](https://docs.docker.com/build/building/multi-stage/)** | Tecnica que usa multiples `FROM` para separar la fase de compilacion de la de ejecucion, reduciendo el tamano de la imagen final. |
 | **Layer caching** | Docker cachea cada instruccion (`RUN`, `COPY`, etc.) como una capa. Si una capa no cambia, no se re-ejecuta. |
 | **Fat JAR (bootJar)** | Spring Boot empaqueta toda la aplicacion + dependencias en un unico archivo `.jar` ejecutable. |
 
@@ -63,6 +63,7 @@ ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 ```dockerfile
 FROM eclipse-temurin:24-jdk-noble AS builder
 ```
+
 - Usa la imagen base **Eclipse Temurin JDK 24** sobre Ubuntu Noble (24.04).
 - `JDK` (no JRE) porque necesitamos el compilador Java para construir el proyecto.
 - `AS builder` le da un nombre a esta etapa para poder referenciarla despues.
@@ -70,6 +71,7 @@ FROM eclipse-temurin:24-jdk-noble AS builder
 ```dockerfile
 WORKDIR /app
 ```
+
 - Establece `/app` como directorio de trabajo dentro del contenedor. Todos los comandos posteriores se ejecutan desde aqui.
 
 ```dockerfile
@@ -77,6 +79,7 @@ COPY build.gradle.kts settings.gradle.kts gradlew ./
 COPY gradle ./gradle
 RUN ./gradlew dependencies --no-daemon || true
 ```
+
 - **Truco de cache de capas**: primero se copian SOLO los archivos de configuracion de Gradle y se descargan las dependencias.
 - Como las dependencias cambian poco, Docker cachea esta capa. Si solo cambias codigo fuente (no `build.gradle.kts`), esta capa se reutiliza y no se vuelven a descargar las dependencias.
 - `--no-daemon` evita que el daemon de Gradle quede corriendo en el contenedor (no tiene sentido en builds de CI/Docker).
@@ -86,6 +89,7 @@ RUN ./gradlew dependencies --no-daemon || true
 COPY src ./src
 RUN ./gradlew bootJar --no-daemon -x test
 ```
+
 - Ahora si se copia el codigo fuente.
 - `bootJar` es la tarea de Spring Boot que genera el fat JAR (un unico `.jar` con toda la aplicacion + dependencias embebidas).
 - `-x test` salta los tests (ya se ejecutaron en el workflow de CI).
@@ -95,6 +99,7 @@ RUN ./gradlew bootJar --no-daemon -x test
 ```dockerfile
 FROM eclipse-temurin:24-jre-alpine
 ```
+
 - **Segunda imagen base**: esta vez solo **JRE** (Java Runtime Environment), no JDK.
 - Usa **Alpine Linux**, que es mucho mas pequena que Ubuntu (~5 MB vs ~80 MB).
 - **Resultado**: la imagen final NO contiene el compilador Java, ni el codigo fuente, ni Gradle, ni las dependencias de compilacion. Solo el JAR y el JRE.
@@ -102,12 +107,14 @@ FROM eclipse-temurin:24-jre-alpine
 ```dockerfile
 RUN addgroup -S spring && adduser -S spring -G spring
 ```
+
 - Crea un usuario `spring` sin privilegios de root. **Seguridad**: si alguien compromete la aplicacion, no tiene acceso root al contenedor.
 - `-S` = system user/group (sin home directory, sin password).
 
 ```dockerfile
 RUN apk add --no-cache curl
 ```
+
 - Instala `curl` para el `HEALTHCHECK`. Alpine no lo incluye por defecto.
 - `--no-cache` evita almacenar el indice de paquetes, reduciendo el tamano de la imagen.
 
@@ -115,6 +122,7 @@ RUN apk add --no-cache curl
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
 ```
+
 - **`--from=builder`**: copia el JAR desde la etapa 1 (builder) a la etapa 2 (runtime).
 - Solo se copia el artefacto final. Todo el tooling de compilacion queda descartado.
 
@@ -122,17 +130,20 @@ COPY --from=builder /app/build/libs/*.jar app.jar
 RUN chown spring:spring app.jar
 USER spring:spring
 ```
+
 - Cambia el propietario del JAR al usuario `spring`.
 - **`USER spring:spring`**: a partir de aqui, todos los comandos se ejecutan como el usuario `spring`, no como root.
 
 ```dockerfile
 EXPOSE 8080
 ```
+
 - Documenta que el contenedor escucha en el puerto 8080. Es informativo, no abre el puerto realmente (eso lo hace Kubernetes con el `containerPort` o Docker con `-p`).
 
 ```dockerfile
 ENV JAVA_OPTS="-Xms256m -Xmx512m"
 ```
+
 - Define opciones de JVM por defecto: 256 MB de heap minimo, 512 MB maximo.
 - Se puede sobrescribir desde Kubernetes con una variable de entorno `JAVA_OPTS`.
 
@@ -140,6 +151,7 @@ ENV JAVA_OPTS="-Xms256m -Xmx512m"
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:8080/actuator/health || exit 1
 ```
+
 - Docker comprueba la salud del contenedor cada 30 segundos.
 - `--start-period=60s`: da 60 segundos al arranque de Spring Boot antes de empezar a comprobar.
 - `--retries=3`: despues de 3 fallos consecutivos, marca el contenedor como `unhealthy`.
@@ -148,6 +160,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
 ```dockerfile
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 ```
+
 - Arranca la aplicacion. Usa `sh -c` para que la variable `$JAVA_OPTS` se interprete.
 - Si usara `["java", "$JAVA_OPTS", "-jar", "app.jar"]` (exec form directa), `$JAVA_OPTS` no se expandiria.
 
@@ -174,10 +187,10 @@ Nuestro cluster usa **RKE2** (distribucion de Kubernetes de Rancher) en el servi
 
 | Componente | Funcion |
 |------------|---------|
-| **Traefik** | Ingress controller / reverse proxy. Enruta trafico externo a los pods. |
-| **Longhorn** | Almacenamiento persistente distribuido. Proporciona PersistentVolumes. |
-| **cert-manager** | Genera y renueva certificados TLS automaticamente (via Cloudflare DNS). |
-| **Keel** | Detecta nuevas imagenes Docker y actualiza los deployments automaticamente. |
+| **[Traefik](https://doc.traefik.io/traefik/)** | Ingress controller / reverse proxy. Enruta trafico externo a los pods. |
+| **[Longhorn](https://longhorn.io/docs/)** | Almacenamiento persistente distribuido. Proporciona PersistentVolumes. |
+| **[cert-manager](https://cert-manager.io/docs/)** | Genera y renueva certificados TLS automaticamente (via Cloudflare DNS). |
+| **[Keel](https://keel.sh/docs/)** | Detecta nuevas imagenes Docker y actualiza los deployments automaticamente. |
 
 ---
 
@@ -212,6 +225,7 @@ k8s/
 ```
 
 **Tres entornos separados por namespaces**:
+
 - `apptolast-whoop-david-api` -- contiene solo PostgreSQL (compartido)
 - `apptolast-whoop-david-api-dev` -- API en modo demo (imagen `:develop`)
 - `apptolast-whoop-david-api-prod` -- API en modo produccion (imagen `:latest`)
@@ -234,9 +248,10 @@ metadata:
     app: whoop-david-api
 ```
 
-**Que es**: un Namespace es como una carpeta en Kubernetes. Aisla recursos para que no se mezclen. Los pods, servicios y secretos de un namespace no son visibles desde otro (a menos que se use el nombre DNS completo).
+**Que es**: un [Namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/) es como una carpeta en Kubernetes. Aisla recursos para que no se mezclen. Los pods, servicios y secretos de un namespace no son visibles desde otro (a menos que se use el nombre DNS completo).
 
 **Por que 3 namespaces**: separar PostgreSQL, dev y prod permite:
+
 - Limitar permisos por namespace (RBAC).
 - Evitar que un error en dev afecte a prod.
 - Tener secretos diferentes por entorno.
@@ -310,7 +325,7 @@ spec:
           name: postgresql-init-scripts
 ```
 
-**Por que StatefulSet y no Deployment**:
+**Por que [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) y no [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)**:
 
 | Caracteristica | Deployment | StatefulSet |
 |---------------|------------|-------------|
@@ -319,9 +334,9 @@ spec:
 | Orden de arranque | Todos a la vez | Uno a uno, en orden |
 | Caso de uso | Apps stateless (API) | Apps stateful (BD, caches) |
 
-PostgreSQL necesita que los datos sobrevivan a los reinicios, por eso usa StatefulSet + PersistentVolumeClaim.
+PostgreSQL necesita que los datos sobrevivan a los reinicios, por eso usa StatefulSet + [PersistentVolumeClaim](https://kubernetes.io/docs/concepts/storage/persistent-volumes/).
 
-**Las credenciales vienen de un Secret** (`secretKeyRef`), no estan hardcodeadas en el manifiesto.
+**Las credenciales vienen de un [Secret](https://kubernetes.io/docs/concepts/configuration/secret/)** (`secretKeyRef`), no estan hardcodeadas en el manifiesto.
 
 **`securityContext.fsGroup: 999`**: el grupo 999 es el grupo `postgres` dentro del contenedor. Esto asegura que los archivos del volumen persistente tengan los permisos correctos.
 
@@ -406,8 +421,9 @@ data:
 - `${DB_USERNAME}` y `${DB_PASSWORD}` se resuelven desde las variables de entorno del pod (que vienen del Secret).
 
 **Diferencia Secret vs ConfigMap**:
+
 - **Secret**: datos sensibles (passwords, tokens, claves). Se almacenan cifrados en etcd.
-- **ConfigMap**: datos no sensibles (configuracion, URLs, flags). Se almacenan en texto plano.
+- **[ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/)**: datos no sensibles (configuracion, URLs, flags). Se almacenan en texto plano.
 
 ### 5.6 Deployment: la API
 
@@ -679,14 +695,14 @@ spec:
     environment: development
 ```
 
-**Que es un Service**: un Service da una IP estable y un nombre DNS a un conjunto de pods. Los pods pueden morir y renacer con IPs distintas; el Service siempre los encuentra via `selector`.
+**Que es un [Service](https://kubernetes.io/docs/concepts/services-networking/service/)**: un Service da una IP estable y un nombre DNS a un conjunto de pods. Los pods pueden morir y renacer con IPs distintas; el Service siempre los encuentra via `selector`.
 
 **Tipos de Service en nuestro proyecto**:
 
 | Tipo | Acceso | Ejemplo |
 |------|--------|---------|
-| **ClusterIP** | Solo dentro del cluster | `whoop-david-api` (API) y `postgresql` (BD interna) |
-| **NodePort** | Desde fuera del cluster via IP:puerto | `postgresql-external` (puerto 30434 para DBeaver/pgAdmin) |
+| **[ClusterIP](https://kubernetes.io/docs/concepts/services-networking/service/#type-clusterip)** | Solo dentro del cluster | `whoop-david-api` (API) y `postgresql` (BD interna) |
+| **[NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)** | Desde fuera del cluster via IP:puerto | `postgresql-external` (puerto 30434 para DBeaver/pgAdmin) |
 
 **ClusterIP para la API**: el acceso externo lo gestiona Traefik (IngressRoute), no el Service directamente.
 
@@ -724,12 +740,13 @@ spec:
   renewBefore: 720h    # Renueva 30 dias antes de expirar
 ```
 
-- **cert-manager** es un operador de Kubernetes que gestiona certificados TLS automaticamente.
+- **cert-manager** es un operador de Kubernetes que gestiona [certificados TLS](https://cert-manager.io/docs/usage/certificate/) automaticamente.
 - **`cloudflare-clusterissuer`**: usa el DNS challenge de Cloudflare para validar el dominio y obtener un certificado de Let's Encrypt.
 - El certificado se almacena como un Secret de Kubernetes llamado `whoop-david-api-tls`.
 - Se renueva automaticamente 30 dias antes de expirar.
 
 **Dominios**:
+
 - Dev: `david-whoop-dev.apptolast.com`
 - Prod: `david-whoop.apptolast.com`
 
@@ -758,7 +775,7 @@ spec:
     secretName: whoop-david-api-tls
 ```
 
-- **IngressRoute** es un CRD (Custom Resource Definition) de Traefik. Funciona como un Ingress pero con mas funcionalidad.
+- **IngressRoute** es un CRD (Custom Resource Definition) de Traefik. Funciona como un [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) pero con mas funcionalidad.
 - **`entryPoints: websecure`**: solo acepta HTTPS (puerto 443).
 - **`match: Host(...)`**: enruta peticiones para `david-whoop-dev.apptolast.com` al servicio `whoop-david-api:8080`.
 - **`tls.secretName`**: usa el certificado generado por cert-manager.

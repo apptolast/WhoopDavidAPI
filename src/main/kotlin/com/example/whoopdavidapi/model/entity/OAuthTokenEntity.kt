@@ -5,7 +5,12 @@ import jakarta.persistence.*
 import java.time.Instant
 
 @Entity
-@Table(name = "oauth_tokens")
+@Table(
+    name = "oauth_tokens",
+    indexes = [
+        Index(name = "idx_oauth_tokens_updated_at", columnList = "updated_at DESC")
+    ]
+)
 class OAuthTokenEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -2,13 +2,13 @@
 
 ## Bienvenido
 
-Esta documentacion esta disenada para ensenar cada concepto de Spring Boot utilizado en este proyecto. No es una referencia rapida, sino una **guia de aprendizaje** donde cada decision tecnica esta explicada con el "por que" detras.
+Esta documentacion esta disenada para ensenar cada concepto de [Spring Boot](https://spring.io/projects/spring-boot) utilizado en este proyecto. No es una referencia rapida, sino una **guia de aprendizaje** donde cada decision tecnica esta explicada con el "por que" detras.
 
 **WhoopDavidAPI** es una API REST intermediaria que sigue el patron **BFF (Backend For Frontend)**. Su proposito es:
 
 1. **Conectarse** a la Whoop API v2 (la API oficial de la pulsera Whoop)
-2. **Sincronizar** los datos de salud y fitness en una base de datos PostgreSQL local
-3. **Exponer** esos datos a traves de una API REST propia, consumida por Power BI para visualizacion
+2. **Sincronizar** los datos de salud y fitness en una base de datos [PostgreSQL](https://www.postgresql.org/) local
+3. **Exponer** esos datos a traves de una API REST propia, consumida por [Power BI](https://powerbi.microsoft.com/) para visualizacion
 
 Es un proyecto de un **unico usuario** (David), lo que simplifica muchas decisiones arquitectonicas.
 
@@ -35,17 +35,17 @@ El BFF actua como intermediario: no expone directamente la API de Whoop, sino qu
 
 | Tecnologia | Version | Proposito |
 |---|---|---|
-| **Kotlin** | 2.2.21 | Lenguaje principal |
+| **[Kotlin](https://kotlinlang.org/)** | 2.2.21 | Lenguaje principal |
 | **Spring Boot** | 4.0.2 | Framework backend |
 | **Java** | 24 | JVM runtime |
 | **PostgreSQL** | - | Base de datos en produccion |
 | **H2** | - | Base de datos en desarrollo (in-memory) |
-| **MapStruct** | 1.6.3 | Mapeo Entity <-> DTO |
-| **Resilience4j** | 2.3.0 | Circuit breaker, retry, rate limiter |
-| **springdoc-openapi** | 3.0.1 | Documentacion Swagger UI |
+| **[MapStruct](https://mapstruct.org/)** | 1.6.3 | Mapeo Entity <-> DTO |
+| **[Resilience4j](https://resilience4j.readme.io/)** | 2.3.0 | Circuit breaker, retry, rate limiter |
+| **[springdoc-openapi](https://springdoc.org/)** | 3.0.1 | Documentacion Swagger UI |
 | **Gradle** | - | Build system (Kotlin DSL) |
-| **Docker** | - | Contenedorizacion |
-| **Kubernetes** | RKE2 | Orquestacion en produccion |
+| **[Docker](https://www.docker.com/)** | - | Contenedorizacion |
+| **[Kubernetes](https://kubernetes.io/)** | RKE2 | Orquestacion en produccion |
 
 ---
 

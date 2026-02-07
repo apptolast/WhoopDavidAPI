@@ -1,12 +1,12 @@
 # 05 - DTOs y MapStruct
 
-> Como separar lo que expones en el API de lo que almacenas en la BD, y como MapStruct genera el codigo de conversion automaticamente en tiempo de compilacion.
+> Como separar lo que expones en el API de lo que almacenas en la BD, y como [MapStruct](https://mapstruct.org/documentation/stable/reference/html/) genera el codigo de conversion automaticamente en tiempo de compilacion.
 
 ---
 
 ## 1. Que son los DTOs?
 
-**DTO (Data Transfer Object)** es un objeto cuyo unico proposito es transportar datos entre capas de la aplicacion. En nuestro caso, los DTOs son lo que el API REST devuelve al cliente (Power BI u otro consumidor).
+**[DTO (Data Transfer Object)](https://martinfowler.com/eaaCatalog/dataTransferObject.html)** es un objeto cuyo unico proposito es transportar datos entre capas de la aplicacion. En nuestro caso, los DTOs son lo que el API REST devuelve al cliente (Power BI u otro consumidor).
 
 ```
 Base de datos  -->  Entidad JPA  -->  Mapper  -->  DTO  -->  JSON  -->  Cliente
@@ -69,7 +69,7 @@ class CycleService(
 
 ### 3a. Por que `data class` para DTOs?
 
-En Kotlin, `data class` es el tipo ideal para DTOs porque el compilador genera automaticamente:
+En Kotlin, [`data class`](https://kotlinlang.org/docs/data-classes.html) es el tipo ideal para DTOs porque el compilador genera automaticamente:
 
 | Metodo generado | Para que sirve |
 |----------------|----------------|
@@ -108,6 +108,7 @@ fun WhoopCycle.toDto() = CycleDTO(
 ```
 
 Problemas del mapeo manual:
+
 - **Tedioso**: `SleepDTO` tiene 26 campos. Escribir el mapeo a mano son 52+ lineas de codigo repetitivo.
 - **Fragil**: Si anades un campo a la entidad y olvidas anadirlo al mapeo manual, no hay error de compilacion. El campo simplemente se pierde silenciosamente.
 
@@ -123,6 +124,7 @@ interface CycleMapper {
 ```
 
 Ventajas de MapStruct:
+
 - **Seguridad en compilacion**: Si la entidad tiene un campo `strain` pero el DTO no, MapStruct lanza un **error de compilacion** (no un error en runtime).
 - **Cero reflexion**: El codigo generado es Kotlin/Java puro con getters y setters. No usa reflexion, asi que es tan rapido como el mapeo manual.
 - **Mantenible**: Si anades un campo, MapStruct te avisa si falta el mapeo.
@@ -143,6 +145,7 @@ data class PaginatedResponse<T>(
 ```
 
 Razones:
+
 1. **Control del formato JSON**: `Page<T>` de Spring serializa con muchos campos internos (`pageable`, `sort`, `first`, `last`, `numberOfElements`...). Nuestro wrapper es mas limpio y predecible.
 2. **Consistencia**: Todos los endpoints de la API devuelven el mismo formato, independientemente de la entidad.
 3. **Power BI**: Un formato simple y consistente es mas facil de consumir en Power BI.
@@ -273,7 +276,7 @@ interface CycleMapper {               // (2) Solo una interfaz, sin implementaci
 
 | # | Concepto | Explicacion |
 |---|---------|-------------|
-| (1) | `componentModel = "spring"` | La clase generada por MapStruct tendra `@Component`, lo que permite inyectarla con `@Autowired` o inyeccion por constructor en Spring. |
+| (1) | [`componentModel = "spring"`](https://mapstruct.org/documentation/stable/reference/html/#configuration-options) | La clase generada por MapStruct tendra `@Component`, lo que permite inyectarla con `@Autowired` o inyeccion por constructor en Spring. |
 | (2) | `interface` | Tu solo declaras QUE quieres mapear. MapStruct genera la implementacion en tiempo de compilacion. |
 | (3) | `toDto` | Convierte una entidad JPA (mutable, con `var`) a un DTO (inmutable, con `val`). Mapea por convencion de nombres: `entity.id` -> `dto.id`, `entity.strain` -> `dto.strain`, etc. |
 | (4) | `toEntity` | Conversion inversa. Se usa cuando necesitas crear una entidad a partir de datos del API (aunque en este proyecto la sincronizacion usa mapeo manual desde JSON). |
@@ -351,7 +354,7 @@ interface WorkoutMapper {
 
 **kapt (Kotlin Annotation Processing Tool)** es el puente entre el procesador de anotaciones de Java (que MapStruct usa) y el compilador de Kotlin. Cuando compilas el proyecto:
 
-1. **kapt** analiza tus interfaces Kotlin anotadas con `@Mapper`
+1. **[kapt](https://kotlinlang.org/docs/kapt.html)** analiza tus interfaces Kotlin anotadas con [`@Mapper`](https://mapstruct.org/documentation/stable/reference/html/#defining-mapper)
 2. Genera stubs Java a partir de ellas (para que el procesador de anotaciones de Java las entienda)
 3. **MapStruct** procesa esos stubs y genera implementaciones Java
 4. El compilador de Kotlin compila todo junto

@@ -44,3 +44,6 @@ CLAUDE.md
 
 ### K8s manifests (contain secrets - applied directly on server) ###
 k8s/
+
+### Lychee link checker cache ###
+.lycheecache

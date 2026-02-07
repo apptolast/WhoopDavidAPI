@@ -4,7 +4,13 @@ import jakarta.persistence.*
 import java.time.Instant
 
 @Entity
-@Table(name = "whoop_cycles")
+@Table(
+    name = "whoop_cycles",
+    indexes = [
+        Index(name = "idx_whoop_cycles_start_time", columnList = "start_time"),
+        Index(name = "idx_whoop_cycles_updated_at", columnList = "updated_at DESC")
+    ]
+)
 class WhoopCycle(
     @Id
     @Column(name = "id")
