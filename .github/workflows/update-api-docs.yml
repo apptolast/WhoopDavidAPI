@@ -129,15 +129,14 @@ jobs:
       - name: Check for changes
         id: changes
         run: |
-          git diff --quiet openapi.json WhoopDavidAPI_Collection.postman_collection.json 2>/dev/null || echo "changed=true" >> $GITHUB_OUTPUT
+          git add openapi.json WhoopDavidAPI_Collection.postman_collection.json
+          git diff --staged --quiet || echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: Commit and push changes
         if: steps.changes.outputs.changed == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-
-          git add openapi.json WhoopDavidAPI_Collection.postman_collection.json
 
           BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
           ENV="${{ steps.api-url.outputs.env }}"
