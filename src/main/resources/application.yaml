@@ -52,7 +52,7 @@ app:
     sync-cron: "0 */30 * * * *"
   security:
     # REQUERIDO: Clave de cifrado AES-256 para tokens OAuth2 en BD
-    # Debe ser una cadena de exactamente 32 bytes o más (256 bits)
+    # Debe ser una cadena de al menos 32 bytes (256 bits)
     # Ejemplo: openssl rand -base64 32
     encryption-key: ${ENCRYPTION_KEY}
 

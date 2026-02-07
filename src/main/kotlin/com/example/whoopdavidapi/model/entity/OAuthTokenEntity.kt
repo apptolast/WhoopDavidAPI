@@ -14,9 +14,9 @@ class OAuthTokenEntity(
     @Column(name = "access_token", nullable = false, length = 4096)
     @Convert(converter = EncryptedStringConverter::class)
     // Length 4096: Los tokens cifrados con AES-256-CBC requieren espacio adicional:
-    // - IV (16 bytes) + token original (~2KB max) + padding -> ~2.3KB
-    // - Base64 encoding agrega ~33% overhead -> ~3KB total
-    // - Margen de seguridad de ~1KB para tokens más largos o cambios futuros
+    // - IV (16 bytes) + token original (~2KB max) + padding (~16 bytes) = ~2.032KB
+    // - Base64 encoding agrega 33.33% overhead (ratio 4/3) = ~2.7KB
+    // - Margen de seguridad de ~1.3KB para tokens más largos o cambios futuros
     var accessToken: String = "",
 
     @Column(name = "refresh_token", length = 4096)

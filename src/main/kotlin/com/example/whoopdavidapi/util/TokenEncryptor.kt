@@ -56,7 +56,7 @@ class TokenEncryptor(
             val combined = iv + encryptedBytes
             Base64.getEncoder().encodeToString(combined)
         } catch (ex: Exception) {
-            throw IllegalStateException("Error procesando credenciales: ${ex.message}", ex)
+            throw IllegalStateException("Error procesando credenciales")
         }
     }
 
@@ -76,7 +76,7 @@ class TokenEncryptor(
             val decryptedBytes = cipher.doFinal(ciphertext)
             String(decryptedBytes, Charsets.UTF_8)
         } catch (ex: Exception) {
-            throw IllegalStateException("Error procesando credenciales: ${ex.message}", ex)
+            throw IllegalStateException("Error procesando credenciales")
         }
     }
 }
