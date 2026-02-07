@@ -1,0 +1,169 @@
+name: Update API Documentation
+
+on:
+  workflow_run:
+    workflows: ["CD"]
+    types:
+      - completed
+    branches:
+      - main
+      - dev
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Entorno desde el cual obtener la spec'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+
+permissions:
+  contents: write
+
+env:
+  API_URL_DEV: https://david-whoop-dev.apptolast.com
+  API_URL_PROD: https://david-whoop.apptolast.com
+
+jobs:
+  update-docs:
+    name: Update OpenAPI & Postman Collection
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install openapi-to-postmanv2
+        run: npm install -g openapi-to-postmanv2
+
+      - name: Determine API URL
+        id: api-url
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ENV="${{ github.event.inputs.environment }}"
+          elif [ "${{ github.event.workflow_run.head_branch }}" = "main" ]; then
+            ENV="prod"
+          else
+            ENV="dev"
+          fi
+
+          if [ "$ENV" = "prod" ]; then
+            echo "url=${{ env.API_URL_PROD }}" >> $GITHUB_OUTPUT
+          else
+            echo "url=${{ env.API_URL_DEV }}" >> $GITHUB_OUTPUT
+          fi
+          echo "env=$ENV" >> $GITHUB_OUTPUT
+
+      - name: Wait for API deployment
+        run: |
+          echo "Esperando 60 segundos para que el deployment complete..."
+          sleep 60
+
+      - name: Fetch OpenAPI spec
+        id: fetch-spec
+        run: |
+          API_URL="${{ steps.api-url.outputs.url }}"
+          echo "Obteniendo OpenAPI spec desde: $API_URL/v3/api-docs"
+
+          for i in 1 2 3; do
+            HTTP_CODE=$(curl -s -w "%{http_code}" -o openapi.json "$API_URL/v3/api-docs")
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "OpenAPI spec obtenido exitosamente"
+              cat openapi.json | jq '.' > openapi_formatted.json
+              mv openapi_formatted.json openapi.json
+              break
+            fi
+            echo "Intento $i fallido (HTTP $HTTP_CODE), esperando 30 segundos..."
+            sleep 30
+          done
+
+          if [ ! -s openapi.json ]; then
+            echo "Error: No se pudo obtener el OpenAPI spec"
+            exit 1
+          fi
+
+          echo "Tamano del spec: $(wc -c < openapi.json) bytes"
+
+      - name: Generate Postman Collection
+        run: |
+          echo "Generando Postman Collection desde OpenAPI spec..."
+
+          openapi2postmanv2 \
+            -s openapi.json \
+            -o WhoopDavidAPI_Collection_NEW.postman_collection.json \
+            -p \
+            -O folderStrategy=Tags,includeAuthInfoInExample=true
+
+          if [ ! -s WhoopDavidAPI_Collection_NEW.postman_collection.json ]; then
+            echo "Error: No se pudo generar la coleccion Postman"
+            exit 1
+          fi
+
+          echo "Coleccion Postman generada exitosamente"
+
+      - name: Update collection metadata
+        run: |
+          BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
+          ENV="${{ steps.api-url.outputs.env }}"
+
+          jq --arg date "$DATE" --arg branch "$BRANCH" --arg env "$ENV" '
+            .info.name = "Whoop David API - Auto-generated" |
+            .info.description = "Coleccion generada automaticamente desde OpenAPI spec.\n\nFecha: \($date)\nRama: \($branch)\nEntorno: \($env)\n\nGenerado por GitHub Actions workflow."
+          ' WhoopDavidAPI_Collection_NEW.postman_collection.json > temp.json
+          mv temp.json WhoopDavidAPI_Collection.postman_collection.json
+          rm -f WhoopDavidAPI_Collection_NEW.postman_collection.json
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet openapi.json WhoopDavidAPI_Collection.postman_collection.json 2>/dev/null || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add openapi.json WhoopDavidAPI_Collection.postman_collection.json
+
+          BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          ENV="${{ steps.api-url.outputs.env }}"
+
+          git commit -m "docs: auto-update OpenAPI spec and Postman collection
+
+          - Updated from $ENV environment API
+          - Branch: $BRANCH
+          - Generated by GitHub Actions
+
+          Co-Authored-By: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+
+          git push
+
+      - name: Summary
+        run: |
+          echo "## API Documentation Update" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Item | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ steps.api-url.outputs.env }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| API URL | ${{ steps.api-url.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| OpenAPI Spec | Updated |" >> $GITHUB_STEP_SUMMARY
+          echo "| Postman Collection | Updated |" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.changes.outputs.changed }}" = "true" ]; then
+            echo "| Commit | Pushed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Commit | No changes |" >> $GITHUB_STEP_SUMMARY
+          fi
