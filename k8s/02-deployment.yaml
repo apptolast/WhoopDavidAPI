@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoop-david-api
+  namespace: apptolast-whoop-david-api
+  labels:
+    app: whoop-david-api
+  annotations:
+    keel.sh/policy: force
+    keel.sh/pollSchedule: "@every 1m"
+    keel.sh/trigger: poll
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: whoop-david-api
+  template:
+    metadata:
+      labels:
+        app: whoop-david-api
+    spec:
+      containers:
+        - name: whoop-david-api
+          image: ocholoko888/whoop-david-api:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx512m"
+          envFrom:
+            - secretRef:
+                name: whoop-david-api-secrets
+          resources:
+            requests:
+              cpu: 200m
+              memory: 384Mi
+            limits:
+              cpu: 1000m
+              memory: 768Mi
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            failureThreshold: 30
