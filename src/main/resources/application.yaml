@@ -1,3 +1,86 @@
 spring:
   application:
     name: whoop-david-api
+
+  # JPA base config
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  # Jackson 3 defaults: ISO-8601 dates, no timestamps
+  jackson:
+    time-zone: UTC
+
+  # OAuth2 Client (Whoop)
+  security:
+    oauth2:
+      client:
+        registration:
+          whoop:
+            client-id: ${WHOOP_CLIENT_ID}
+            client-secret: ${WHOOP_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: offline,read:profile,read:body_measurement,read:cycles,read:recovery,read:sleep,read:workout
+            client-name: Whoop
+        provider:
+          whoop:
+            authorization-uri: https://api.prod.whoop.com/oauth/oauth2/auth
+            token-uri: https://api.prod.whoop.com/oauth/oauth2/token
+            user-info-uri: https://api.prod.whoop.com/developer/v1/user/profile/basic
+            user-name-attribute: user_id
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# App-specific config
+app:
+  powerbi:
+    username: ${POWERBI_USERNAME:powerbi}
+    password: ${POWERBI_PASSWORD:changeme}
+  whoop:
+    base-url: https://api.prod.whoop.com
+    sync-cron: "0 */30 * * * *"
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.example.whoopdavidapi: DEBUG
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%15.15t] %-40.40logger{39} : %m%n"
+
+# Resilience4j
+resilience4j:
+  circuitbreaker:
+    instances:
+      whoopApi:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+  retry:
+    instances:
+      whoopApi:
+        max-attempts: 3
+        wait-duration: 2s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+  ratelimiter:
+    instances:
+      whoopApi:
+        limit-for-period: 90
+        limit-refresh-period: 60s
+        timeout-duration: 10s
