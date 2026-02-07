@@ -38,3 +38,6 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Agent instructions (contains sensitive infrastructure details) ###
+CLAUDE.md
