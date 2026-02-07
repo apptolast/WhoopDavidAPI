@@ -19,7 +19,7 @@ import java.time.Instant
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 class CycleControllerTest {
 
     @Autowired
