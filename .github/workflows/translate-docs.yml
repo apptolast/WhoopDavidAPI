@@ -16,6 +16,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: translate-docs-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   translate:
     name: Translate Docs ES → EN
@@ -92,7 +96,7 @@ jobs:
 
           Co-Authored-By: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
 
-          git pull --rebase
+          git pull --rebase -X theirs
           git push
 
       - name: Summary
