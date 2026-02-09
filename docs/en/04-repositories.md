@@ -1,19 +1,19 @@
 # 04 - Spring Data JPA Repositories
 
-> How Spring generates SQL automatically from Kotlin interfaces, without writing a single query.
+> How Spring automatically generates SQL from Kotlin interfaces, without writing a single query.
 
 ---
 
 ## 1. What is the Repository pattern?
 
-The **Repository pattern** is an abstraction that separates business logic from data access. Instead of your service writing SQL directly, it asks the repository "give me the cycles between these dates" and the repository takes care of the how.
+The **Repository pattern** is an abstraction that separates business logic from data access. Instead of your service writing SQL directly, it asks the repository "give me the cycles between these dates," and the repository takes care of the how.
 
 ```
 Controller  -->  Service  -->  Repository  -->  Base de datos
                   (logica)      (abstraccion)    (SQL real)
 ```
 
-**[Spring Data JPA](https://docs.spring.io/spring-data/jpa/reference/)** takes this pattern to the extreme: you just define an **interface** with method signatures, and Spring **generates the entire implementation** at runtime. You don't write SQL, you don't write implementation classes, you don't write anything but the interface.
+**[Spring Data JPA](https://docs.spring.io/spring-data/jpa/reference/)** takes this pattern to the extreme: you only define an **interface** with method signatures, and Spring **generates the complete implementation** at runtime. You don’t write SQL, you don’t write implementation classes, you don’t write anything other than the interface.
 
 ```kotlin
 // Tu solo escribes esto:
@@ -34,9 +34,9 @@ class CycleRepositoryImpl : CycleRepository {
 
 ## 2. Where is it used in this project?
 
-The repositories are in package `repository`:
+The repositories are in the `repository` package:
 
-| Archive | Entity | ID Type |
+| File | Entity | ID Type |
 |---------|---------|------------|
 | [`src/main/kotlin/.../repository/CycleRepository.kt`](../../src/main/kotlin/com/example/whoopdavidapi/repository/CycleRepository.kt) | `WhoopCycle` | `Long` |
 | [`src/main/kotlin/.../repository/RecoveryRepository.kt`](../../src/main/kotlin/com/example/whoopdavidapi/repository/RecoveryRepository.kt) | `WhoopRecovery` | `Long` |
@@ -46,8 +46,8 @@ The repositories are in package `repository`:
 
 Repositories are consumed in two layers:
 
-- **Reading services** (ex: [`CycleService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/CycleService.kt)): They use filtering and pagination methods to serve data to the REST API.
-- **Sync Service** ([`WhoopSyncService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/WhoopSyncService.kt)): Use `findTopByOrderByUpdatedAtDesc()` for incremental synchronization and `save()` to persist data.
+- **Reading services** (e.g.: [`CycleService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/CycleService.kt)): They use filtering and pagination methods to serve data to the REST API.
+- **Synchronization service** ([`WhoopSyncService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/WhoopSyncService.kt)): Uses `findTopByOrderByUpdatedAtDesc()` for incremental synchronization and `save()` to persist data.
 
 ---
 
@@ -55,10 +55,10 @@ Repositories are consumed in two layers:
 
 ### Why Spring Data JPA and not write manual queries?
 
-1. **Zero boilerplate**: You do not need `EntityManager`, `CriteriaBuilder`, or SQL strings. You define an interface and Spring does the rest.
-2. **Type Safety**: If you change the name of a field in the entity (e.g.: `start` to `startTime`), method `findByStartBetween` would no longer compile. Spring validates method names against entity fields when starting the application.
-3. **Integrated pagination**: The parameter [`Pageable`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) and the return [`Page<T>`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) give you complete pagination (total elements, total pages, has next page) effortlessly.
-4. **Queries for this project are simple**: Filters by date and pagination. There are no complex joins or subqueries to justify manual SQL.
+1. **Zero boilerplate**: You don’t need `EntityManager`, `CriteriaBuilder`, or SQL strings. You define an interface and Spring does the rest.
+2. **Type safety**: If you change the name of a field in the entity (e.g., `start` to `startTime`), the `findByStartBetween` method would no longer compile. Spring validates method names against the entity’s fields when the application starts up.
+3. **Integrated pagination**: The parameter [`Pageable`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) and the return value [`Page<T>`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) give you complete pagination (total elements, total pages, has next page) effortlessly.
+4. **Queries in this project are simple**: Date filters and pagination. There are no complex joins or subqueries that would justify manual SQL.
 
 ### Why `JpaRepository` and not `CrudRepository`?
 
@@ -75,15 +75,15 @@ We use [`JpaRepository`](https://docs.spring.io/spring-data/jpa/reference/jpa/ge
 
 ---
 
-## 4. Code explained
+## 4. Explained code
 
-### 4a. `JpaRepository<Entity, IdType>`: what does it give you for free
+### 4a. `JpaRepository<Entity, IdType>`: that it gives you for free
 
-By extending `JpaRepository<WhoopCycle, Long>`, you get **without typing anything** these methods (among others):
+By extending `JpaRepository<WhoopCycle, Long>`, you get **without writing anything** these methods (among others):
 
 | Method | Generated SQL (simplified) | Use in the project |
 |--------|-------|-----|
-| `save(entity)` | `INSERT INTO ... / UPDATE ...` (decides automatically) | `WhoopSyncService.syncCycles()` |
+| `save(entity)` | `INSERT INTO ... / UPDATE ...` (decide automatically) | `WhoopSyncService.syncCycles()` |
 | `saveAll(entities)` | Batch of `INSERT`/`UPDATE` | Tests |
 | `findById(id)` | `SELECT * FROM whoop_cycles WHERE id = ?` | Tests |
 | `findAll()` | `SELECT * FROM whoop_cycles` | - |
@@ -92,16 +92,16 @@ By extending `JpaRepository<WhoopCycle, Long>`, you get **without typing anythin
 | `deleteById(id)` | `DELETE FROM whoop_cycles WHERE id = ?` | - |
 | `existsById(id)` | `SELECT COUNT(*) > 0 FROM ... WHERE id = ?` | - |
 
-**Note on `save()`**: This method is smart. If the entity has a value `@Id` (not null/0), Hibernate checks if it already exists in the DB:
+**Note about `save()`**: This method is smart. If the entity has an `@Id` with a value (not null/0), Hibernate checks whether it already exists in the DB:
 
 - If **exists**: execute `UPDATE` (merge).
 - If **does not exist**: execute `INSERT` (persist).
 
-This is fundamental to Whoop's incremental synchronization: when you re-sync data, existing records are updated instead of duplicated.
+This is fundamental for Whoop’s incremental synchronization: when re-synchronizing data, existing records are updated instead of being duplicated.
 
 ### 4b. `CycleRepository`: complete anatomy of a repository
 
-Let's analyze [`CycleRepository.kt`](../../src/main/kotlin/com/example/whoopdavidapi/repository/CycleRepository.kt):
+Let’s analyze [`CycleRepository.kt`](../../src/main/kotlin/com/example/whoopdavidapi/repository/CycleRepository.kt):
 
 ```kotlin
 package com.example.whoopdavidapi.repository
@@ -130,19 +130,19 @@ interface CycleRepository : JpaRepository<WhoopCycle, Long> {
 }
 ```
 
-**Breakdown of name `findByStartBetween`**:
+**Name breakdown `findByStartBetween`**:
 
 | Part | Meaning |
 |-------|-------------|
 | (a) `find` | Search operation (`SELECT`) |
-| (b) `By` | Separator: What follows is the filter criteria (`WHERE`) |
+| (b) `By` | Separator: what follows is the filter criterion (`WHERE`) |
 | (c) `StartBetween` | Field `start` with operator `BETWEEN` |
-| (d) `pageable: Pageable` | Special parameter: Spring applies `ORDER BY`, `LIMIT` and `OFFSET` automatically |
-| (e) `Page<WhoopCycle>` | Special return: includes data + pagination metadata |
+| (d) `pageable: Pageable` | Special parameter: Spring applies `ORDER BY`, `LIMIT`, and `OFFSET` automatically |
+| (e) `Page<WhoopCycle>` | Special return: includes the data + pagination metadata |
 
 ### 4c. Derived Query Methods: how Spring generates SQL from names
 
-Spring Data JPA parses the method name and "parses" it into an SQL query. Here are the exact translations for our project:
+Spring Data JPA analyzes the method name and "parses" it into an SQL query. Here are the exact translations for our project:
 
 #### `findByStartBetween(from, to, pageable)`
 
@@ -154,7 +154,7 @@ LIMIT ...       -- segun el Pageable
 OFFSET ...      -- segun el Pageable
 ```
 
-In native SQL (which actually runs Hibernate against PostgreSQL):
+In native SQL (what Hibernate actually executes against PostgreSQL):
 
 ```sql
 SELECT * FROM whoop_cycles
@@ -197,7 +197,7 @@ LIMIT 1
 | `Between` | `BETWEEN ? AND ?` | `findByStartBetween(from, to)` |
 | `GreaterThanEqual` | `>= ?` | `findByStartGreaterThanEqual(from)` |
 | `LessThan` | `< ?` | `findByStartLessThan(to)` |
-| `Top` (no number) | `LIMIT 1` | `findTopByOrderBy...` |
+| `Top` (without number) | `LIMIT 1` | `findTopByOrderBy...` |
 | `OrderBy` | `ORDER BY` | `findTopByOrderByUpdatedAtDesc` |
 | `Desc` | `DESC` | `OrderByUpdatedAtDesc` |
 
@@ -217,7 +217,7 @@ interface RecoveryRepository : JpaRepository<WhoopRecovery, Long> {
 }
 ```
 
-Note: `WhoopRecovery` does not have a `start` field, so date filters use `createdAt`.
+Note: `WhoopRecovery` does not have a `start` field, so the date filters use `createdAt`.
 
 **[`SleepRepository.kt`](../../src/main/kotlin/com/example/whoopdavidapi/repository/SleepRepository.kt)**:
 
@@ -251,9 +251,9 @@ interface OAuthTokenRepository : JpaRepository<OAuthTokenEntity, Long> {
 }
 ```
 
-It only has one custom method: obtain the most recent token. You do not need filters by date or pagination because there is only one user and few historical tokens.
+It only has one custom method: get the most recent token. It doesn’t need date filters or pagination because there’s only one user and few historical tokens.
 
-### 4e. `Page<T>` and `Pageable`: full pagination
+### 4e. `Page<T>` and `Pageable`: complete pagination
 
 **`Pageable`** is an object that encapsulates three things: page number, page size, and sorting.
 
@@ -280,12 +280,12 @@ result.number          // Int - numero de pagina actual (base-0)
 result.size            // Int - tamano de pagina solicitado
 ```
 
-Spring executes **two queries** automatically to build `Page`:
+Spring automatically executes **two queries** to build the `Page`:
 
 1. `SELECT * FROM whoop_cycles WHERE ... ORDER BY ... LIMIT ? OFFSET ?` (the data)
 2. `SELECT COUNT(*) FROM whoop_cycles WHERE ...` (the total, to know how many pages there are)
 
-This metadata is transformed into the API response within the service:
+These metadata are transformed into the API response within the service:
 
 ```kotlin
 // En CycleService.kt
@@ -302,9 +302,9 @@ return PaginatedResponse(
 
 ### 4f. `findTopByOrderByUpdatedAtDesc()`: the key to incremental synchronization
 
-This method appears in **all** repositories and is essential for the synchronization strategy.
+This method appears in **all** repositories and is fundamental to the synchronization strategy.
 
-At [`WhoopSyncService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/WhoopSyncService.kt):
+In [`WhoopSyncService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/WhoopSyncService.kt):
 
 ```kotlin
 private fun syncCycles() {
@@ -334,10 +334,10 @@ private fun syncCycles() {
 
 **Why is it important?**
 
-Without incremental synchronization, each scheduler run would download **all** of Whoop's historical data (potentially years of data). With `findTopByOrderByUpdatedAtDesc()`:
+Without incremental synchronization, each scheduler run would download **all** of Whoop’s historical data (potentially years of data). With `findTopByOrderByUpdatedAtDesc()`:
 
-1. **First execution**: There is no data in BD -> `lastUpdated = null` -> download the entire history.
-2. **Next executions**: There is data -> `lastUpdated = 2024-06-15T10:30:00Z` -> only downloads updated data after that date.
+1. **First run**: There is no data in the DB -> `lastUpdated = null` -> downloads the entire history.
+2. **Subsequent runs**: There is data -> `lastUpdated = 2024-06-15T10:30:00Z` -> only downloads updated data after that date.
 
 The return is `WhoopCycle?` (nullable) to handle the case of the first execution when the table is empty.
 
@@ -346,7 +346,7 @@ The return is `WhoopCycle?` (nullable) to handle the case of the first execution
 ## 5. Official documentation
 
 - [Spring Data JPA Reference - Query Methods](https://docs.spring.io/spring-data/jpa/reference/jpa/query-methods.html)
-- [Spring Data JPA - Derived Query Methods (complete keyword table)](https://docs.spring.io/spring-data/jpa/reference/repositories/query-keywords-reference.html)
+- [Spring Data JPA - Derived Query Methods (complete table of keywords)](https://docs.spring.io/spring-data/jpa/reference/repositories/query-keywords-reference.html)
 - [Spring Data JPA - Paging and Sorting](https://docs.spring.io/spring-data/jpa/reference/repositories/query-methods-details.html#repositories.special-parameters)
 - [JpaRepository JavaDoc](https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/JpaRepository.html)
 - [Page Interface JavaDoc](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/Page.html)

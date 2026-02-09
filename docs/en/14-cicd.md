@@ -4,29 +4,29 @@
 
 1. [What is CI/CD](#1-what-is-cicd)
 2. [Where it is used in our project](#2-where-is-it-used-in-our-project)
-3. [The 3 workflows and how they are linked](#3-the-3-workflows-and-how-they-are-linked)
+3. [The 3 workflows and how they are chained](#3-the-3-workflows-and-how-they-are-chained-together)
 4. [Workflow 1: CI (Continuous Integration)](#4-workflow-1-ci-continuous-integration)
 5. [Workflow 2: CD (Continuous Deployment)](#5-workflow-2-cd-continuous-deployment)
 6. [Workflow 3: Update API Documentation](#6-workflow-3-update-api-documentation)
-7. [Full pipeline flow](#7-complete-pipeline-flow)
+7. [Complete pipeline flow](#7-complete-pipeline-flow)
 8. [GitHub Actions concepts explained](#8-github-actions-concepts-explained)
 9. [Official documentation](#9-official-documentation)
 
 ---
 
-## 1. What is CI/CD
+## 1. What is CI/CD?
 
-**CI (Continuous Integration)**: every time someone pushes or opens a pull request, the tests and compilation are automatically executed. If something goes wrong, the team knows immediately.
+**CI (Continuous Integration)**: every time someone pushes or opens a pull request, the tests and the build run automatically. If something fails, the team knows immediately.
 
-**CD (Continuous Deployment)**: After CI passes, the Docker image is built and uploaded to [Docker Hub](https://hub.docker.com/). Keel then detects the new image and updates the Kubernetes cluster automatically.
+**CD (Continuous Deployment)**: after CI passes, the Docker image is built and pushed to [Docker Hub](https://hub.docker.com/). Then, Keel detects the new image and automatically updates the Kubernetes cluster.
 
-**The objective**: that each change in the code reaches production (or the dev environment) without manual intervention, but with the guarantee that it has passed the tests.
+**The goal**: that every change in the code reaches production (or the dev environment) without manual intervention, but with the guarantee that it has passed the tests.
 
 ---
 
-## 2. Where is it used in our project
+## 2. Where is it used in our project?
 
-The [workflows](https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions) are in `.github/workflows/`:
+The [workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax) are in `.github/workflows/`:
 
 ```
 .github/workflows/
@@ -37,7 +37,7 @@ The [workflows](https://docs.github.com/en/actions/writing-workflows/workflow-sy
 
 ---
 
-## 3. The 3 workflows and how they are linked
+## 3. The 3 workflows and how they are chained together
 
 ```
                     PR creado/actualizado
@@ -66,7 +66,7 @@ The [workflows](https://docs.github.com/en/actions/writing-workflows/workflow-sy
                                 +-------------+  Commit al repositorio
 ```
 
-**Important**: CI and CD run **in parallel** when there is a push to `dev` or `main`. They do not depend on each other. Update API Docs runs **after** after CD completes successfully.
+**Important**: CI and CD run **in parallel** when there is a push to `dev` or `main`. They do not depend on each other. Update API Docs runs **after** CD completes successfully.
 
 ---
 
@@ -116,7 +116,7 @@ jobs:
           retention-days: 7
 ```
 
-### Line by line explanation
+### Line-by-line explanation
 
 #### Triggers (`on`)
 
@@ -128,9 +128,9 @@ on:
     branches: [dev]
 ```
 
-- **[`pull_request`](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#pull_request)**: `branches: [main, dev]` -- executed when a PR is created or updated to `main` or `dev`. This allows you to verify the code BEFORE merging it.
-- **[`push`](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#push)**: `branches: [dev]` -- executed when there is a direct push to `dev` (includes PR merges).
-- **There is no `push: branches: [main]`**: pushes to `main` are only done via PR (which I already execute CI in the PR). The CD if executed in pushes to `main`.
+- **[`pull_request`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)**: `branches: [main, dev]` -- runs when a PR is created or updated toward `main` or `dev`. This allows verifying the code BEFORE merging it.
+- **[`push`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#push)**: `branches: [dev]` -- runs when there is a direct push to `dev` (includes PR merges).
+- **There is no `push: branches: [main]`**: pushes to `main` are only done via PR (which already runs CI in the PR). CD does run on pushes to `main`.
 
 #### Permissions
 
@@ -139,10 +139,10 @@ permissions:
   contents: read
 ```
 
-- The workflow only needs to **read** the repository (code checkout). You don't need to write.
-- **Principle of least privilege**: If the workflow is committed, it cannot modify the repository.
+- The workflow only needs to **read** the repository (code checkout). It doesn’t need to write.
+- **Principle of least privilege**: if the workflow is compromised, it cannot modify the repository.
 
-#### steps
+#### Steps
 
 **Step 1: Checkout**
 
@@ -151,7 +151,7 @@ permissions:
   uses: actions/checkout@v4
 ```
 
-Download the code from the repository in the runner. Without this, the runner is empty.
+Download the code from the repository onto the runner. Without this, the runner is empty.
 
 **Step 2: Setup Java**
 
@@ -163,7 +163,7 @@ Download the code from the repository in the runner. Without this, the runner is
     java-version: 24
 ```
 
-Install Java 24 (Eclipse Temurin) in the runner. The [GitHub Actions](https://docs.github.com/en/actions) runners come with Java but not necessarily the correct version.
+Install Java 24 (Eclipse Temurin) on the runner. The [GitHub Actions](https://docs.github.com/en/actions) runners come with Java but not necessarily the correct version.
 
 **Step 3: Setup Gradle**
 
@@ -195,9 +195,9 @@ Configure Gradle with automatic caching. Downloaded dependencies are cached betw
     retention-days: 7
 ```
 
-- **`if: always()`**: ALWAYS runs, even if the build fails. So you can see the test reports to diagnose faults.
-- **`actions/upload-artifact@v4`**: Upload HTML test reports as a downloadable artifact from the GitHub Actions UI.
-- **`retention-days: 7`**: Artifacts are deleted after 7 days to avoid consuming storage.
+- **`if: always()`**: it ALWAYS runs, even if the build failed. This way you can see the test reports to diagnose failures.
+- **`actions/upload-artifact@v4`**: uploads the HTML test reports as an artifact downloadable from the GitHub Actions UI.
+- **`retention-days: 7`**: artifacts are deleted after 7 days to avoid consuming storage.
 
 ---
 
@@ -264,7 +264,7 @@ jobs:
           cache-to: type=gha,mode=max
 ```
 
-### Line by line explanation
+### Line-by-line explanation
 
 #### Trigger
 
@@ -274,7 +274,7 @@ on:
     branches: [main, dev]
 ```
 
-It is only executed on pushes to `main` or `dev`. It does not run in PRs (we do not want to publish Docker images of non-merged code).
+It only runs on pushes to `main` or `dev`. It does not run on PRs (we don’t want to publish Docker images from unmerged code).
 
 #### JAR build (without tests)
 
@@ -284,10 +284,10 @@ It is only executed on pushes to `main` or `dev`. It does not run in PRs (we do 
 ```
 
 - `bootJar` generates the Spring Boot fat JAR.
-- `-x test` skips the tests. They have already been executed in the CI workflow (which runs in parallel).
-- **Why not reuse the CI JAR**: each workflow is executed in a different runner. They do not share files.
+- `-x test` skips the tests. They were already run in the CI workflow (which runs in parallel).
+- **Why not reuse the CI JAR**: each workflow runs on a different runner. They do not share files.
 
-#### Login to Docker Hub
+#### Docker Hub login
 
 ```yaml
 - name: Login to Docker Hub
@@ -297,7 +297,7 @@ It is only executed on pushes to `main` or `dev`. It does not run in PRs (we do 
     password: ${{ secrets.DOCKERHUB_TOKEN }}
 ```
 
-- **`${{ secrets.DOCKERHUB_USERNAME }}`** and **`${{ secrets.DOCKERHUB_TOKEN }}`**: [secrets](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions) configured in GitHub (Settings > Secrets and variables > Actions).
+- **`${{ secrets.DOCKERHUB_USERNAME }}`** and **`${{ secrets.DOCKERHUB_TOKEN }}`**: [secrets](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets) configured in GitHub (Settings > Secrets and variables > Actions).
 - A Docker Hub Access Token is used, not the direct password.
 
 #### Docker Buildx
@@ -307,7 +307,7 @@ It is only executed on pushes to `main` or `dev`. It does not run in PRs (we do 
   uses: docker/setup-buildx-action@v3
 ```
 
-Buildx is a Docker extension that allows advanced builds: caching in GitHub Actions, cross-platform builds, etc.
+Buildx is a Docker extension that enables advanced builds: caching in GitHub Actions, multi-platform builds, etc.
 
 #### Tag strategy
 
@@ -329,12 +329,12 @@ Buildx is a Docker extension that allows advanced builds: caching in GitHub Acti
 
 **Why 2 tags**:
 
-- The mutable tag (`latest` / `develop`) is the one that Keel watches for auto-deploy.
-- The SHA tag (`abc123...` / `dev-abc123...`) is immutable and allows you to rollback to an exact version.
+- The mutable tag (`latest` / `develop`) is the one Keel monitors for auto-deploy.
+- The tag with SHA (`abc123...` / `dev-abc123...`) is immutable and allows rolling back to an exact version.
 
-**`$GITHUB_OUTPUT`**: This is the way to pass values ​​between steps in GitHub Actions. Step `tags` writes the value; the step `Build and push` reads it with `${{ steps.tags.outputs.tags }}`.
+**`$GITHUB_OUTPUT`**: it is the way to pass values between steps in GitHub Actions. Step `tags` writes the value; step `Build and push` reads it with `${{ steps.tags.outputs.tags }}`.
 
-#### Build and push the Docker image
+#### Build and push of the Docker image
 
 ```yaml
 - name: Build and push
@@ -347,10 +347,10 @@ Buildx is a Docker extension that allows advanced builds: caching in GitHub Acti
     cache-to: type=gha,mode=max
 ```
 
-- **`context: .`**: uses the root directory of the repo as the Docker context (where the `Dockerfile` is).
-- **`push: true`**: Upload the image to Docker Hub after building it.
+- **`context: .`**: use the repo root directory as the Docker context (where `Dockerfile` is).
+- **`push: true`**: upload the image to Docker Hub after building it.
 - **`tags`**: the tags calculated in the previous step.
-- **`cache-from: type=gha`** and **`cache-to: type=gha,mode=max`**: Use the [GitHub Actions cache for Docker layers](https://docs.docker.com/build/cache/). This greatly speeds up builds (dependency layers are not rebuilt if they have not changed).
+- **`cache-from: type=gha`** and **`cache-to: type=gha,mode=max`**: use the GitHub Actions [cache for Docker layers](https://docs.docker.com/build/cache/). This greatly speeds up builds (dependency layers are not rebuilt if they haven’t changed).
 
 **`mode=max`**: caches all intermediate layers, not just those of the final result. Useful for multi-stage builds because it also caches the builder layers.
 
@@ -401,9 +401,9 @@ on:
     branches: [main, dev]
 ```
 
-- **[`workflow_run`](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#workflow_run)**: Executes AFTER another workflow finishes.
-- **`workflows: ["CD"]`**: Triggered when the workflow named "CD" completes.
-- **`types: [completed]`**: executed whether CD succeeded or failed. The condition `if` of the job filters only the successful ones.
+- **[`workflow_run`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run)**: it runs AFTER another workflow finishes.
+- **`workflows: ["CD"]`**: triggers when the workflow named "CD" completes.
+- **`types: [completed]`**: it runs both if CD succeeded and if it failed. The job condition `if` filters only the successful ones.
 - **`branches: [main, dev]`**: only if the CD was for these branches.
 
 ```yaml
@@ -417,8 +417,8 @@ on:
         options: [dev, prod]
 ```
 
-- **`workflow_dispatch`**: Allows you to run the workflow manually from the GitHub Actions UI.
-- Defines an input `environment` with an option selector.
+- **`workflow_dispatch`**: allows you to run the workflow manually from the GitHub Actions UI.
+- Define an `environment` input with an options selector.
 
 ### Write permissions
 
@@ -427,7 +427,7 @@ permissions:
   contents: write
 ```
 
-This workflow needs to **write** to the repository because it commits the generated files (OpenAPI spec and Postman collection).
+This workflow needs **write** access in the repository because it commits the generated files (OpenAPI spec and Postman collection).
 
 ### Job: update-docs
 
@@ -439,10 +439,10 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 ```
 
-- **`if: ... conclusion == 'success'`**: only executed if the CD workflow was successful. If CD failed, there is no point in trying to update the documentation.
-- **`|| github.event_name == 'workflow_dispatch'`**: also executed if launched manually.
+- **`if: ... conclusion == 'success'`**: only runs if the CD workflow was successful. If CD failed, it makes no sense to try to update the documentation.
+- **`|| github.event_name == 'workflow_dispatch'`**: it also runs if it was launched manually.
 
-### Steps explained
+### Explained steps
 
 **Step 1: Checkout**
 
@@ -454,9 +454,9 @@ jobs:
     ref: ${{ github.event.workflow_run.head_branch || github.ref }}
 ```
 
-- **`ref`**: checks out the branch that triggered the CD workflow, not the default branch. This way the commit is made to the correct branch.
+- **`ref`**: checks out the branch that triggered the CD workflow, not the default branch. That way the commit is made on the correct branch.
 
-**Step 2-3: Setup Node.js + Install openapi2postmanv2**
+**Step 2-3: Set up Node.js + Install openapi2postmanv2**
 
 ```yaml
 - name: Setup Node.js
@@ -468,7 +468,7 @@ jobs:
   run: npm install -g openapi-to-postmanv2
 ```
 
-The `openapi2postmanv2` tool converts an OpenAPI spec to a Postman collection. It is a Node.js tool.
+The `openapi2postmanv2` tool converts an OpenAPI spec into a Postman collection. It is a Node.js tool.
 
 **Step 4: Determine API URL**
 
@@ -497,7 +497,7 @@ The `openapi2postmanv2` tool converts an OpenAPI spec to a Postman collection. I
 | `main` | `https://david-whoop.apptolast.com` |
 | `dev` | `https://david-whoop-dev.apptolast.com` |
 
-**Step 5: Wait for deployment**
+**Step 5: Wait for the deploy**
 
 ```yaml
 - name: Wait for API deployment
@@ -506,7 +506,7 @@ The `openapi2postmanv2` tool converts an OpenAPI spec to a Postman collection. I
     sleep 60
 ```
 
-Keel takes ~1 minute to detect the new image and deploy. This sleep gives time for the new pod to start.
+Keel takes ~1 minute to detect the new image and deploy. This sleep gives time for the new pod to start up.
 
 **Step 6: Download OpenAPI spec**
 
@@ -536,8 +536,8 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives time f
 ```
 
 - Makes up to 3 attempts to download `/v3/api-docs` (springdoc-openapi endpoint).
-- If the first attempt fails (the API may not be ready), wait 30 seconds and try again.
-- Format the JSON with `jq` to facilitate diffs in Git.
+- If the first attempt fails (the API may not be ready), wait 30 seconds and retry.
+- Format the JSON with `jq` to make diffs in Git easier.
 
 **Step 7: Generate Postman collection**
 
@@ -554,8 +554,8 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives time f
 - `-s`: source file (OpenAPI spec).
 - `-o`: output file.
 - `-p`: pretty print.
-- `-O folderStrategy=Tags`: organizes requests by tags (instead of paths).
-- `includeAuthInfoInExample=true`: includes authentication in the examples.
+- `-O folderStrategy=Tags`: organizes requests by tags (instead of by paths).
+- `includeAuthInfoInExample=true`: include authentication in the examples.
 
 **Step 8: Detect changes**
 
@@ -571,7 +571,7 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives time f
 - **`git diff --staged --quiet`**: returns exit code 0 if there are no changes, 1 if there are changes.
 - **`|| echo "changed=true"`**: if there are changes, set the variable `changed` for the next step.
 
-**Why `git add` + `git diff --staged` instead of `git diff --quiet`**: `git diff --quiet` only detects changes in files already tracked. If `openapi.json` is a new file (first time generated), `git diff --quiet` would not detect it. `git add` first and `git diff --staged` later detects both new and modified files.
+**Why `git add` + `git diff --staged` instead of `git diff --quiet`**: `git diff --quiet` only detects changes in files that are already tracked. If `openapi.json` is a new file (the first time it is generated), `git diff --quiet` would not detect it. `git add` first and `git diff --staged` afterwards detects both new and modified files.
 
 **Step 9: Commit and push**
 
@@ -596,9 +596,9 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives time f
     git push
 ```
 
-- It is only executed if there were changes (`if: steps.changes.outputs.changed == 'true'`).
-- Set the Git user to `github-actions[bot]` so that commits appear as automatic.
-- Commits and pushes directly to the branch.
+- It only runs if there were changes (`if: steps.changes.outputs.changed == 'true'`).
+- Configure the Git user as `github-actions[bot]` so that commits appear as automatic.
+- Commit and push directly to the branch.
 
 **Step 10: Summary**
 
@@ -611,13 +611,13 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives time f
     ...
 ```
 
-- **`$GITHUB_STEP_SUMMARY`**: generates a summary visible on the workflow page on GitHub. It is a markdown table with the result of the execution.
+- **`$GITHUB_STEP_SUMMARY`**: generates a visible summary on the workflow page in GitHub. It is a markdown table with the execution result.
 
 ---
 
 ## 7. Complete pipeline flow
 
-### When a PR is created towards `dev` or `main`
+### When a PR is created toward `dev` or `main`
 
 ```
 1. Developer crea/actualiza PR
@@ -629,7 +629,7 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives time f
 4. Si es verde, el PR se puede mergear
 ```
 
-### When merging a PR to `dev`
+### When a PR is merged into `dev`
 
 ```
 1. Push a dev (merge del PR)
@@ -656,7 +656,7 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives time f
                               4. Commit + push al repo
 ```
 
-### When merging a PR to `main`
+### When a PR is merged into `main`
 
 ```
 1. Push a main (merge del PR)
@@ -707,7 +707,7 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives time f
 
 ---
 
-## 8. GitHub Actions concepts explained
+## 8. GitHub Actions Concepts Explained
 
 ### Workflows, Jobs and Steps
 
@@ -719,42 +719,42 @@ Workflow (.yml file)
        └── Step 3
 ```
 
-- **Workflow**: A YAML file at `.github/workflows/`. Defines when and what is executed.
-- **Job**: a group of steps that are executed in the same runner (virtual machine). Different jobs can run in parallel.
-- **Step**: a single action (execute a command, use an action).
+- **Workflow**: a YAML file in `.github/workflows/`. Defines when and what runs.
+- **Job**: a group of steps that run on the same runner (virtual machine). Different jobs can run in parallel.
+- **Step**: an individual action (run a command, use an action).
 
-### `actions/...` (Reusable Actions)
+### `actions/...` (Reusable actions)
 
-Actions are reusable blocks of functionality, published by the community or GitHub:
+Actions are reusable blocks of functionality, published by the community or by GitHub:
 
-| action | Version | Function |
+| Action | Version | Function |
 |--------|---------|---------|
-| [`actions/checkout@v4`](https://github.com/actions/checkout) | v4 | Download the repo code |
+| [`actions/checkout@v4`](https://github.com/actions/checkout) | v4 | Download the code from the repo |
 | [`actions/setup-java@v4`](https://github.com/actions/setup-java) | v4 | Install a version of Java |
 | `gradle/actions/setup-gradle@v4` | v4 | Configure Gradle with cache |
 | `actions/upload-artifact@v4` | v4 | Upload files as artifacts |
-| `docker/login-action@v3` | v3 | Login to a Docker registry |
-| `docker/setup-buildx-action@v3` | v3 | Configure Docker Buildx |
-| [`docker/build-push-action@v6`](https://github.com/docker/build-push-action) | v6 | Build + Docker image push |
+| `docker/login-action@v3` | v3 | Log in to a Docker registry |
+| `docker/setup-buildx-action@v3` | v3 | Set up Docker Buildx |
+| [`docker/build-push-action@v6`](https://github.com/docker/build-push-action) | v6 | Build + push of a Docker image |
 | `actions/setup-node@v4` | v4 | Install Node.js |
 
 ### `secrets` (Secrets)
 
-Secrets are configured in GitHub (Settings > Secrets and variables > Actions) and referenced as `${{ secrets.NOMBRE }}`.
+Secrets are configured in GitHub (Settings > Secrets and variables > Actions) and are referenced as `${{ secrets.NOMBRE }}`.
 
 Secrets used in our project:
 
 | Secret | Used in | Purpose |
 |---------|----------|-----------|
-| `DOCKERHUB_USERNAME` | CD | Docker Hub User |
+| `DOCKERHUB_USERNAME` | CD | Docker Hub user |
 | `DOCKERHUB_TOKEN` | CD | Docker Hub Access Token |
 | `GITHUB_TOKEN` | Update API Docs | GitHub automatic token to push |
 
-**[`GITHUB_TOKEN`](https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication)** is special: GitHub generates it automatically for each execution of the workflow. You don't need to configure it manually.
+**[`GITHUB_TOKEN`](https://docs.github.com/en/actions/tutorials/authenticate-with-github_token)** is special: GitHub generates it automatically for each workflow run. You don’t need to configure it manually.
 
 ### `permissions`
 
-Controls what the workflow can do with the permissions of `GITHUB_TOKEN`:
+Check what the workflow can do with the permissions of `GITHUB_TOKEN`:
 
 ```yaml
 permissions:
@@ -776,7 +776,7 @@ echo "tags=apptolast/whoop-david-api:latest" >> $GITHUB_OUTPUT
 tags: ${{ steps.tags.outputs.tags }}
 ```
 
-`$GITHUB_OUTPUT` is a special file where a step can write key=value pairs. Other steps of the same job can read those values ​​with `${{ steps.<id>.outputs.<clave> }}`.
+`$GITHUB_OUTPUT` is a special file where a step can write key=value pairs. Other steps in the same job can read those values with `${{ steps.<id>.outputs.<clave> }}`.
 
 ### `$GITHUB_STEP_SUMMARY`
 
@@ -785,7 +785,7 @@ echo "## Titulo" >> $GITHUB_STEP_SUMMARY
 echo "| Col1 | Col2 |" >> $GITHUB_STEP_SUMMARY
 ```
 
-Generate a summary in markdown visible on the workflow page on GitHub. Useful to display summary information about the result.
+Generate a summary in markdown visible on the workflow page in GitHub. Useful for showing summarized information about the result.
 
 ### `if: always()` and `if: steps.X.outputs.Y == 'true'`
 
@@ -808,12 +808,12 @@ cache-from: type=gha
 cache-to: type=gha,mode=max
 ```
 
-- **`type=gha`**: Use the GitHub Actions cache (not Docker Hub or an external registry).
-- **`cache-from`**: When building, check for cached layers on GitHub.
+- **`type=gha`**: use the GitHub Actions cache (not Docker Hub or an external registry).
+- **`cache-from`**: when building, it looks for cached layers on GitHub.
 - **`cache-to`**: after building, upload the new layers to the cache.
-- **`mode=max`**: caches ALL intermediate layers (including those of the builder stage in a multi-stage build).
+- **`mode=max`**: caches ALL intermediate layers (including those from the builder stage in a multi-stage build).
 
-**Result**: If I only change the source code (not the dependencies), Docker reuses the `./gradlew dependencies` layer of the cache, saving several minutes.
+**Result**: if I only change the source code (not the dependencies), Docker reuses the `./gradlew dependencies` layer from the cache, saving several minutes.
 
 ### `workflow_run` (chain workflows)
 
@@ -825,23 +825,23 @@ on:
     branches: [main, dev]
 ```
 
-It is the way to execute a workflow AFTER another one finishes. Unlike putting everything in a single workflow, it allows:
+It’s the way to run a workflow AFTER another one finishes. Unlike putting everything in a single workflow, it allows:
 
-- Let each workflow have different permissions (`read` vs `write`).
-- That the workflows are independent and reusable.
-- That the third workflow is only executed if the second (CD) was successful.
+- That each workflow has different permissions (`read` vs `write`).
+- Workflows should be independent and reusable.
+- Have the third workflow run only if the second (CD) was successful.
 
-**Attention**: `types: [completed]` is executed whether it was successful or failed. That's why the job has `if: github.event.workflow_run.conclusion == 'success'`.
+**Attention**: `types: [completed]` runs both if it was successful and if it failed. That’s why the job has `if: github.event.workflow_run.conclusion == 'success'`.
 
 ---
 
 ## 9. Official documentation
 
 - [GitHub Actions - Documentation](https://docs.github.com/en/actions)
-- [GitHub Actions - Workflow syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
-- [GitHub Actions - Events that trigger workflows](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows)
-- [GitHub Actions - Encrypted secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets)
-- [GitHub Actions - workflow_run event](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run)
+- [GitHub Actions - Workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)
+- [GitHub Actions - Events that trigger workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)
+- [GitHub Actions - Use secrets](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets)
+- [GitHub Actions - workflow_run event](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run)
 - [GitHub Actions - GITHUB_OUTPUT](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter)
 - [docker/build-push-action](https://github.com/docker/build-push-action)
 - [docker/login-action](https://github.com/docker/login-action)

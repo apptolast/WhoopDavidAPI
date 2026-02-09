@@ -1,12 +1,12 @@
 # 05 - DTOs and MapStruct
 
-> How to separate what you expose in the API from what you store in the DB, and how [MapStruct](https://mapstruct.org/documentation/stable/reference/html/) generates the conversion code automatically at compile time.
+> How to separate what you expose in the API from what you store in the DB, and how [MapStruct](https://mapstruct.org/documentation/stable/reference/html/) automatically generates the conversion code at compile time.
 
 ---
 
 ## 1. What are DTOs?
 
-**[DTO (Data Transfer Object)](https://martinfowler.com/eaaCatalog/dataTransferObject.html)** is an object whose sole purpose is to transport data between layers of the application. In our case, DTOs are what the REST API returns to the client (Power BI or another consumer).
+**[DTO (Data Transfer Object)](https://martinfowler.com/eaaCatalog/dataTransferObject.html)** is an object whose sole purpose is to transport data between the layers of the application. In our case, DTOs are what the REST API returns to the client (Power BI or another consumer).
 
 ```
 Base de datos  -->  Entidad JPA  -->  Mapper  -->  DTO  -->  JSON  -->  Cliente
@@ -15,10 +15,10 @@ Base de datos  -->  Entidad JPA  -->  Mapper  -->  DTO  -->  JSON  -->  Cliente
 
 **Why not return the entity directly?**
 
-1. **Security**: Entity `OAuthTokenEntity` has fields `accessToken` and `refreshToken`. If you return it as JSON, you expose OAuth2 tokens. With a DTO, you only expose the fields you decide.
-2. **Decoupling**: If you change the structure of the DB (rename column, add internal field), you do not break the API contract. The DTO remains the same.
-3. **API format vs. DB format**: The DB may have internal fields (`scoreState = "PENDING_SCORE"`) that you want to represent differently in the API, or fields that you do not need to expose.
-4. **Immutability**: JPA entities use `var` (mutable, required by Hibernate). DTOs use `val` (immutable), which is more secure for transporting data.
+1. **Security**: The `OAuthTokenEntity` entity has `accessToken` and `refreshToken` fields. If you return it as JSON, you expose OAuth2 tokens. With a DTO, you only expose the fields you choose.
+2. **Decoupling**: If you change the DB structure (rename a column, add an internal field), you don’t break the API contract. The DTO stays the same.
+3. **API format vs DB format**: The DB may have internal fields (`scoreState = "PENDING_SCORE"`) that you want to represent differently in the API, or fields that you don’t need to expose.
+4. **Immutability**: JPA entities use `var` (mutable, required by Hibernate). DTOs use `val` (immutable), which is safer for transporting data.
 
 ---
 
@@ -26,26 +26,26 @@ Base de datos  -->  Entidad JPA  -->  Mapper  -->  DTO  -->  JSON  -->  Cliente
 
 ### DTOs
 
-| Archive | Origin entity | Fields |
+| File | Source entity | Fields |
 |---------|---------------|--------|
 | [`src/main/kotlin/.../model/dto/CycleDTO.kt`](../../src/main/kotlin/com/example/whoopdavidapi/model/dto/CycleDTO.kt) | `WhoopCycle` | 12 fields |
 | [`src/main/kotlin/.../model/dto/RecoveryDTO.kt`](../../src/main/kotlin/com/example/whoopdavidapi/model/dto/RecoveryDTO.kt) | `WhoopRecovery` | 12 fields |
 | [`src/main/kotlin/.../model/dto/SleepDTO.kt`](../../src/main/kotlin/com/example/whoopdavidapi/model/dto/SleepDTO.kt) | `WhoopSleep` | 26 fields |
 | [`src/main/kotlin/.../model/dto/WorkoutDTO.kt`](../../src/main/kotlin/com/example/whoopdavidapi/model/dto/WorkoutDTO.kt) | `WhoopWorkout` | 24 fields |
-| [`src/main/kotlin/.../model/dto/PaginatedResponse.kt`](../../src/main/kotlin/com/example/whoopdavidapi/model/dto/PaginatedResponse.kt) | (generic) | pagination wrapper |
+| [`src/main/kotlin/.../model/dto/PaginatedResponse.kt`](../../src/main/kotlin/com/example/whoopdavidapi/model/dto/PaginatedResponse.kt) | (generic) | Pagination wrapper |
 
 ### Mappers (MapStruct)
 
-| Archive | Convert |
+| File | Convert |
 |---------|-----------|
 | [`src/main/kotlin/.../mapper/CycleMapper.kt`](../../src/main/kotlin/com/example/whoopdavidapi/mapper/CycleMapper.kt) | `WhoopCycle` <-> `CycleDTO` |
 | [`src/main/kotlin/.../mapper/RecoveryMapper.kt`](../../src/main/kotlin/com/example/whoopdavidapi/mapper/RecoveryMapper.kt) | `WhoopRecovery` <-> `RecoveryDTO` |
 | [`src/main/kotlin/.../mapper/SleepMapper.kt`](../../src/main/kotlin/com/example/whoopdavidapi/mapper/SleepMapper.kt) | `WhoopSleep` <-> `SleepDTO` |
 | [`src/main/kotlin/.../mapper/WorkoutMapper.kt`](../../src/main/kotlin/com/example/whoopdavidapi/mapper/WorkoutMapper.kt) | `WhoopWorkout` <-> `WorkoutDTO` |
 
-### Where are they consumed
+### Where are they consumed?
 
-Mappers are used in reading services. Example in [`CycleService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/CycleService.kt):
+Mappers are used in read services. Example in [`CycleService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/CycleService.kt):
 
 ```kotlin
 @Service
@@ -74,14 +74,14 @@ In Kotlin, [`data class`](https://kotlinlang.org/docs/data-classes.html) is the 
 | Generated method | What is it for? |
 |----------------|----------------|
 | `equals()` | Compare two DTOs by content (not by reference) |
-| `hashCode()` | Use DTOs as keys in `HashMap`/`HashSet` |
+| `hashCode()` | Using DTOs as keys in `HashMap`/`HashSet` |
 | `toString()` | Debug: `CycleDTO(id=12345, userId=67890, strain=15.5, ...)` |
 | `copy()` | Create a copy by modifying only some fields |
 | `componentN()` | Destructuring: `val (id, userId) = cycleDto` |
 
-Additionally, all fields are `val` (immutable), which ensures that a DTO does not change after it is created.
+Additionally, all fields are `val` (immutable), which guarantees that a DTO does not change after being created.
 
-**Reminder**: JPA entities use regular `class` with `var`, not `data class`. See [03-entidades-jpa.md](./03-entidades-jpa.md) for the explanation.
+**Reminder**: JPA entities use `class` normal with `var`, not `data class`. See [03-jpa-entities.md](./03-entidades-jpa.md) for the explanation.
 
 ### 3b. Why MapStruct and not manual mapping?
 
@@ -107,10 +107,10 @@ fun WhoopCycle.toDto() = CycleDTO(
 // Y repetir para Recovery (12 campos), Sleep (26 campos), Workout (24 campos)...
 ```
 
-Manual mapping problems:
+Problems with manual mapping:
 
 - **Tedious**: `SleepDTO` has 26 fields. Writing the mapping by hand is 52+ lines of repetitive code.
-- **Fragile**: If you add a field to the entity and forget to add it to the manual mapping, there is no compilation error. The field is just silently lost.
+- **Fragile**: If you add a field to the entity and forget to add it to the manual mapping, there is no compilation error. The field is simply silently lost.
 
 **Alternative 2: MapStruct (what we use)**
 
@@ -125,13 +125,13 @@ interface CycleMapper {
 
 Advantages of MapStruct:
 
-- **Compilation security**: If the entity has a `strain` field but the DTO does not, MapStruct throws a **compilation error** (not a runtime error).
-- **Zero reflection**: The generated code is pure Kotlin/Java with getters and setters. It doesn't use reflection, so it's as fast as manual mapping.
-- **Maintainable**: If you add a field, MapStruct alerts you if the mapping is missing.
+- **Compile-time safety**: If the entity has a `strain` field but the DTO does not, MapStruct throws a **compile-time error** (not a runtime error).
+- **Zero reflection**: The generated code is pure Kotlin/Java with getters and setters. It does not use reflection, so it is as fast as manual mapping.
+- **Maintainable**: If you add a field, MapStruct warns you if the mapping is missing.
 
 **Alternative 3: ModelMapper / Dozer (reflection-based libraries)**
 
-These libraries map by convention (field name equal), but use reflection at runtime, are slower, and errors appear at runtime instead of at compile time. MapStruct is superior in all aspects.
+These libraries map by convention (same field name), but they use reflection at runtime, are slower, and errors appear at runtime instead of at compile time. MapStruct is superior in every respect.
 
 ### 3c. Why `PaginatedResponse<T>` as a generic wrapper?
 
@@ -146,15 +146,15 @@ data class PaginatedResponse<T>(
 
 Reasons:
 
-1. **JSON format control**: Spring's `Page<T>` serializes with many internal fields (`pageable`, `sort`, `first`, `last`, `numberOfElements`...). Our wrapper is cleaner and more predictable.
+1. **JSON format control**: Spring’s `Page<T>` serializes with many internal fields (`pageable`, `sort`, `first`, `last`, `numberOfElements`...). Our wrapper is cleaner and more predictable.
 2. **Consistency**: All API endpoints return the same format, regardless of the entity.
 3. **Power BI**: A simple and consistent format is easier to consume in Power BI.
 
 ---
 
-## 4. Code explained
+## 4. Explained code
 
-### 4a. A full DTO: `CycleDTO`
+### 4a. A complete DTO: `CycleDTO`
 
 [`CycleDTO.kt`](../../src/main/kotlin/com/example/whoopdavidapi/model/dto/CycleDTO.kt):
 
@@ -181,11 +181,11 @@ data class CycleDTO(               // (1) data class: genera equals, hashCode, t
 
 | # | Concept | Explanation |
 |---|---------|-------------|
-| (1) | `data class` | The Kotlin compiler generates `equals()`, `hashCode()`, `toString()`, `copy()`, and `componentN()` functions based on ALL fields in the parent constructor. |
-| (2) | `val` | Immutable. Once the DTO is built, no field can change. This is safe to go between layers. |
+| (1) | `data class` | The Kotlin compiler generates `equals()`, `hashCode()`, `toString()`, `copy()`, and `componentN()` functions based on ALL the fields of the primary constructor. |
+| (2) | `val` | Immutable. Once the DTO is constructed, no field can change. This is safe to pass between layers. |
 | (3) | `Instant?` | Nullable. `createdAt` may not exist if the data has not yet been fully processed by Whoop. |
-| (4) | `Instant` (non-nullable) | `start` always exists. A Whoop loop always has a start time. |
-| (5) | `Float?` | Scores are null when `scoreState = "PENDING_SCORE"`. In the resulting JSON, these fields appear as `null`. |
+| (4) | `Instant` (no nullable) | `start` always exists. A Whoop cycle always has a start time. |
+| (5) | `Float?` | The scores are null when `scoreState = "PENDING_SCORE"`. In the resulting JSON, these fields appear as `null`. |
 
 **Entity vs DTO comparison for Cycle:**
 
@@ -193,7 +193,7 @@ data class CycleDTO(               // (1) data class: genera equals, hashCode, t
 |-------|-------------------|-------------------|------------|
 | `id` | `var id: Long = 0` | `val id: Long` | `var` -> `val`, default value removed |
 | `start` | `var start: Instant = Instant.now()` | `val start: Instant` | Same pattern |
-| All | Mutable (`var`) with defaults | Immutable (`val`) without defaults | DTOs are stricter |
+| All | Mutables (`var`) with defaults | Immutables (`val`) without defaults | DTOs are stricter |
 
 ### 4b. `PaginatedResponse<T>` and `PaginationInfo`
 
@@ -213,7 +213,7 @@ data class PaginationInfo(
 )
 ```
 
-**`<T>` (generics)**: The `T` allows you to reuse the same class for any type of DTO:
+**`<T>` (generics)**: The `T` allows reusing the same class for any type of DTO:
 
 ```kotlin
 PaginatedResponse<CycleDTO>       // Para /api/v1/cycles
@@ -222,7 +222,7 @@ PaginatedResponse<SleepDTO>       // Para /api/v1/sleeps
 PaginatedResponse<WorkoutDTO>     // Para /api/v1/workouts
 ```
 
-**Example of resulting JSON** when a client calls `GET /api/v1/cycles?page=1&pageSize=2`:
+**Example of the resulting JSON** when a client calls `GET /api/v1/cycles?page=1&pageSize=2`:
 
 ```json
 {
@@ -276,12 +276,12 @@ interface CycleMapper {               // (2) Solo una interfaz, sin implementaci
 
 | # | Concept | Explanation |
 |---|---------|-------------|
-| (1) | [`componentModel = "spring"`](https://mapstruct.org/documentation/stable/reference/html/#configuration-options) | The class generated by MapStruct will have `@Component`, which allows it to be injected with `@Autowired` or injection by constructor in Spring. |
-| (2) | `interface` | You just declare WHAT you want to map. MapStruct generates the implementation at compile time. |
-| (3) | `toDto` | Converts a JPA entity (mutable, with `var`) to a DTO (immutable, with `val`). Map by naming convention: `entity.id` -> `dto.id`, `entity.strain` -> `dto.strain`, etc. |
-| (4) | `toEntity` | Reverse conversion. It is used when you need to create an entity from API data (although in this project the synchronization uses manual mapping from JSON). |
+| (1) | [`componentModel = "spring"`](https://mapstruct.org/documentation/stable/reference/html/#configuration-options) | The class generated by MapStruct will have `@Component`, which allows it to be injected with `@Autowired` or constructor injection in Spring. |
+| (2) | `interface` | You only declare WHAT you want to map. MapStruct generates the implementation at compile time. |
+| (3) | `toDto` | Convert a JPA entity (mutable, with `var`) into a DTO (immutable, with `val`). Map by naming convention: `entity.id` -> `dto.id`, `entity.strain` -> `dto.strain`, etc. |
+| (4) | `toEntity` | Reverse conversion. It is used when you need to create an entity from API data (although in this project synchronization uses manual mapping from JSON). |
 
-**What does MapStruct generate when compiled?** Something equivalent to this (simplified):
+**What does MapStruct generate at compile time?** Something equivalent to this (simplified):
 
 ```kotlin
 // Generado automaticamente en build/generated/source/kapt/main/
@@ -323,7 +323,7 @@ class CycleMapperImpl : CycleMapper {
 }
 ```
 
-**Mapping by convention**: MapStruct automatically maps fields when the **name and type** match. Since `WhoopCycle.id` (Long) and `CycleDTO.id` (Long) have the same name and type, you don't need additional annotations. This works for all 12 CycleDTO fields without writing a single line of configuration.
+**Convention-based mapping**: MapStruct maps fields automatically when the **name and type** match. Since `WhoopCycle.id` (Long) and `CycleDTO.id` (Long) have the same name and type, you don’t need additional annotations. This works for the 12 fields of CycleDTO without writing a single line of configuration.
 
 The other mappers follow exactly the same pattern:
 
@@ -355,11 +355,11 @@ interface WorkoutMapper {
 **kapt (Kotlin Annotation Processing Tool)** is the bridge between the Java annotation processor (which MapStruct uses) and the Kotlin compiler. When you compile the project:
 
 1. **[kapt](https://kotlinlang.org/docs/kapt.html)** analyzes your Kotlin interfaces annotated with [`@Mapper`](https://mapstruct.org/documentation/stable/reference/html/#defining-mapper)
-2. Generate Java stubs from them (so that the Java annotation processor understands them)
+2. Generate Java stubs from them (so that the Java annotation processor can understand them)
 3. **MapStruct** processes those stubs and generates Java implementations
-4. Kotlin compiler compiles everything together
+4. The Kotlin compiler compiles everything together
 
-The configuration is at [`build.gradle.kts`](../../build.gradle.kts):
+The configuration is in [`build.gradle.kts`](../../build.gradle.kts):
 
 ```kotlin
 plugins {
@@ -383,15 +383,15 @@ kapt {
 | # | Concept | Explanation |
 |---|---------|-------------|
 | (1) | `kotlin("kapt")` | Gradle plugin that enables annotation processing for Kotlin. Without this, MapStruct cannot generate code. |
-| (2) | `implementation("org.mapstruct:mapstruct:1.6.3")` | The annotations you use in your code (`@Mapper`). They are included in the build and runtime classpath. |
-| (3) | `kapt("org.mapstruct:mapstruct-processor:1.6.3")` | The processor that reads the annotations and generates the implementation classes. It is only executed in compilation, it is not included in the final JAR. |
-| (4) | `correctErrorTypes = true` | When kapt encounters types that it cannot fully resolve, it attempts to correct them instead of failing. Useful for mixed Kotlin/Java projects. |
-| (5) | `includeCompileClasspath = false` | Recommended optimization: prevent kapt from processing annotations that do not belong to it. |
-| (6) | `mapstruct.defaultComponentModel = "spring"` | Global configuration: all implementations generated by MapStruct will have `@Component`, integrating with Spring without the need to specify `componentModel = "spring"` in each `@Mapper`. (We specify it on both sides for explicit clarity.) |
+| (2) | `implementation("org.mapstruct:mapstruct:1.6.3")` | The annotations you use in your code (`@Mapper`). They are included in the compilation and runtime classpath. |
+| (3) | `kapt("org.mapstruct:mapstruct-processor:1.6.3")` | The processor that reads the annotations and generates the implementation classes. It only runs at compile time; it is not included in the final JAR. |
+| (4) | `correctErrorTypes = true` | When kapt encounters types that it cannot fully resolve, it tries to correct them instead of failing. Useful for mixed Kotlin/Java projects. |
+| (5) | `includeCompileClasspath = false` | Recommended optimization: prevent kapt from processing annotations that don’t apply to it. |
+| (6) | `mapstruct.defaultComponentModel = "spring"` | Global configuration: all implementations generated by MapStruct will have `@Component`, integrating with Spring without needing to specify `componentModel = "spring"` in each `@Mapper`. (We specify it on both sides for explicit clarity.) |
 
-### 4e. Spring Boot 4 gotcha: disable kapt for test sources
+### 4e. Spring Boot Gotcha 4: disable kapt for test sources
 
-At [`build.gradle.kts`](../../build.gradle.kts) there is a critical configuration:
+In [`build.gradle.kts`](../../build.gradle.kts) there is a critical configuration:
 
 ```kotlin
 // Desactivar kapt para test sources (no hay annotation processors en tests)
@@ -410,13 +410,13 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
 ```
 
-kapt tries to generate stubs for the test classes, and when it encounters these Spring Boot 4 annotations, it cannot resolve them correctly because the new packages are not in kapt's classpath. This causes compilation errors.
+kapt tries to generate stubs for the test classes, and when it encounters these Spring Boot 4 annotations, it cannot resolve them correctly because the new packages are not on kapt’s classpath. This causes compilation errors.
 
-The solution is simple: since we don't have annotation processors in tests (there is no `@Mapper` or anything that needs kapt in `src/test/`), we simply disable kapt for test sources.
+The solution is simple: since we don’t have annotation processors in tests (there’s no `@Mapper` or anything that needs kapt in `src/test/`), we simply disable kapt for the test sources.
 
-### 4f. Complete flow: from HTTP request to JSON response
+### 4f. Complete flow: from the HTTP request to the JSON response
 
-To consolidate all the concepts, let's look at the complete flow when Power BI calls `GET /api/v1/cycles?from=2024-01-01T00:00:00Z&page=1&pageSize=100`:
+To consolidate all the concepts, let’s look at the complete flow when Power BI calls `GET /api/v1/cycles?from=2024-01-01T00:00:00Z&page=1&pageSize=100`:
 
 ```
 1. CycleController.getCycles(from, to, page, pageSize)

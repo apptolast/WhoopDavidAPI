@@ -5,27 +5,27 @@
 1. [What is Docker](#1-what-is-docker)
 2. [Dockerfile explained line by line](#2-dockerfile-explained-line-by-line)
 3. [What is Kubernetes](#3-what-is-kubernetes)
-4. [Project K8s manifest structure](#4-project-k8s-manifest-structure)
-5. [K8s concepts explained with our code](#5-k8s-concepts-explained-with-our-code)
+4. [K8s manifests structure of the project](#4-k8s-manifest-structure-for-the-project)
+5. [K8s Concepts Explained with Our Code](#5-k8s-concepts-explained-with-our-code)
 6. [Complete flow: from code to pod](#6-complete-flow-from-code-to-pod)
 7. [Official documentation](#7-official-documentation)
 
 ---
 
-## 1. What is Docker
+## 1. What is Docker?
 
-Docker is a tool that packages your application along with everything it needs to run (JRE, dependencies, configuration) into a **image**. That image can run on any machine that has Docker installed, ensuring that it works the same in development, CI/CD, and production.
+Docker is a tool that packages your application together with everything it needs to run (JRE, dependencies, configuration) into an **image**. That image can be run on any machine that has Docker installed, ensuring that it works the same in development, CI/CD, and production.
 
 ### Key concepts
 
 | Concept | Description |
 |----------|-------------|
 | **Image** | An immutable package with your app + dependencies. It is created from a `Dockerfile`. |
-| **Container** | A running instance of an image. It's like an isolated process. |
+| **Container** | A running instance of an image. It is like an isolated process. |
 | **[Dockerfile](https://docs.docker.com/reference/dockerfile/)** | An instruction file for building an image. |
 | **[Multi-stage build](https://docs.docker.com/build/building/multi-stage/)** | Technique that uses multiple `FROM` to separate the compilation phase from the execution phase, reducing the size of the final image. |
-| **Layer caching** | Docker caches each instruction (`RUN`, `COPY`, etc.) as a layer. If a layer does not change, it is not re-executed. |
-| **Fat JAR (bootJar)** | Spring Boot packages the entire application + dependencies into a single `.jar` executable file. |
+| **Layer caching** | Docker caches each instruction (`RUN`, `COPY`, etc.) as a layer. If a layer doesn’t change, it isn’t re-executed. |
+| **Fat JAR (bootJar)** | Spring Boot packages the entire application + dependencies into a single executable `.jar` file. |
 
 ---
 
@@ -58,21 +58,21 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 ```
 
-### Stage 1: Build
+### Stage 1: Build (compilation)
 
 ```dockerfile
 FROM eclipse-temurin:24-jdk-noble AS builder
 ```
 
 - Use the base image **Eclipse Temurin JDK 24** on Ubuntu Noble (24.04).
-- `JDK` (not JRE) because we need the Java compiler to build the project.
-- `AS builder` gives a name to this stage so that it can be referenced later.
+- `JDK` (no JRE) because we need the Java compiler to build the project.
+- `AS builder` gives this stage a name so it can be referenced later.
 
 ```dockerfile
 WORKDIR /app
 ```
 
-- Set `/app` as the working directory inside the container. All subsequent commands are executed from here.
+- Set `/app` as the working directory inside the container. All subsequent commands are run from here.
 
 ```dockerfile
 COPY build.gradle.kts settings.gradle.kts gradlew ./
@@ -80,51 +80,51 @@ COPY gradle ./gradle
 RUN ./gradlew dependencies --no-daemon || true
 ```
 
-- **Layer cache trick**: first ONLY the Gradle configuration files are copied and the dependencies are downloaded.
-- Since the dependencies change little, Docker caches this layer. If you only change source code (not `build.gradle.kts`), this layer is reused and dependencies are not downloaded again.
-- `--no-daemon` prevents the Gradle daemon from running in the container (does not make sense in CI/Docker builds).
-- `|| true` prevents the build from failing if there are dependencies that are not resolved in this phase (some require the source code).
+- **Layer cache trick**: first, ONLY the Gradle configuration files are copied and the dependencies are downloaded.
+- Since dependencies change little, Docker caches this layer. If you only change source code (not `build.gradle.kts`), this layer is reused and the dependencies are not downloaded again.
+- `--no-daemon` prevents the Gradle daemon from staying running in the container (it doesn’t make sense in CI/Docker builds).
+- `|| true` prevents the build from failing if there are dependencies that are not resolved at this stage (some require the source code).
 
 ```dockerfile
 COPY src ./src
 RUN ./gradlew bootJar --no-daemon -x test
 ```
 
-- Now if you copy the source code.
-- `bootJar` is the Spring Boot task that generates the fat JAR (a single `.jar` with the entire application + dependencies embedded).
+- Now the source code is copied.
+- `bootJar` is the Spring Boot task that generates the fat JAR (a single `.jar` with the entire application + embedded dependencies).
 - `-x test` skips the tests (they were already run in the CI workflow).
 
-### Stage 2: Runtime
+### Stage 2: Runtime (execution)
 
 ```dockerfile
 FROM eclipse-temurin:24-jre-alpine
 ```
 
 - **Second base image**: this time only **JRE** (Java Runtime Environment), not JDK.
-- It uses **Alpine Linux**, which is much smaller than Ubuntu (~5 MB vs ~80 MB).
-- **Result**: the final image DOES NOT contain the Java compiler, nor the source code, nor Gradle, nor the compilation dependencies. Only the JAR and the JRE.
+- Use **Alpine Linux**, which is much smaller than Ubuntu (~5 MB vs ~80 MB).
+- **Result**: the final image does NOT contain the Java compiler, nor the source code, nor Gradle, nor the build dependencies. Only the JAR and the JRE.
 
 ```dockerfile
 RUN addgroup -S spring && adduser -S spring -G spring
 ```
 
-- Create a user `spring` without root privileges. **Security**: If someone compromises the application, they do not have root access to the container.
+- Create a user `spring` without root privileges. **Security**: if someone compromises the application, they do not have root access to the container.
 - `-S` = system user/group (no home directory, no password).
 
 ```dockerfile
 RUN apk add --no-cache curl
 ```
 
-- Install `curl` for `HEALTHCHECK`. Alpine does not include it by default.
-- `--no-cache` avoids storing the packet index, reducing the image size.
+- Install `curl` for `HEALTHCHECK`. Alpine doesn’t include it by default.
+- `--no-cache` avoids storing the package index, reducing the image size.
 
 ```dockerfile
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
 ```
 
-- **`--from=builder`**: copies the JAR from stage 1 (builder) to stage 2 (runtime).
-- Only the final artifact is copied. All compilation tooling is discarded.
+- **`--from=builder`**: copy the JAR from stage 1 (builder) to stage 2 (runtime).
+- Only the final artifact is copied. All the build tooling is discarded.
 
 ```dockerfile
 RUN chown spring:spring app.jar
@@ -132,69 +132,69 @@ USER spring:spring
 ```
 
 - Change the owner of the JAR to user `spring`.
-- **`USER spring:spring`**: from here on, all commands are executed as user `spring`, not as root.
+- **`USER spring:spring`**: from here on, all commands are executed as the user `spring`, not as root.
 
 ```dockerfile
 EXPOSE 8080
 ```
 
-- It documents that the container listens on port 8080. It is informational, it does not actually open the port (Kubernetes does that with `containerPort` or Docker with `-p`).
+- Document that the container listens on port 8080. It’s informational; it doesn’t actually open the port (Kubernetes does that with `containerPort` or Docker with `-p`).
 
 ```dockerfile
 ENV JAVA_OPTS="-Xms256m -Xmx512m"
 ```
 
-- Defines default JVM options: 256 MB minimum heap, 512 MB maximum.
-- It can be overwritten from Kubernetes with an environment variable `JAVA_OPTS`.
+- Set default JVM options: 256 MB minimum heap, 512 MB maximum.
+- It can be overridden from Kubernetes with an environment variable `JAVA_OPTS`.
 
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:8080/actuator/health || exit 1
 ```
 
-- Docker checks the health of the container every 30 seconds.
-- `--start-period=60s`: Give Spring Boot 60 seconds before starting to check.
-- `--retries=3`: after 3 consecutive failures, marks the container as `unhealthy`.
-- Endpoint `/actuator/health` is from Spring Boot Actuator.
+- Docker checks the container’s health every 30 seconds.
+- `--start-period=60s`: give Spring Boot 60 seconds to start up before beginning to check.
+- `--retries=3`: after 3 consecutive failures, mark the container as `unhealthy`.
+- The endpoint `/actuator/health` is from Spring Boot Actuator.
 
 ```dockerfile
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 ```
 
-- Start the application. Use `sh -c` for the variable `$JAVA_OPTS` to be interpreted.
-- If you used `["java", "$JAVA_OPTS", "-jar", "app.jar"]` (direct exec form), `$JAVA_OPTS` would not be expanded.
+- Start the application. Use `sh -c` so that the variable `$JAVA_OPTS` is interpreted.
+- If I used `["java", "$JAVA_OPTS", "-jar", "app.jar"]` (direct exec form), `$JAVA_OPTS` would not be expanded.
 
 ### Size comparison (multi-stage vs single-stage)
 
-| Image type | Contains | Size approx. |
+| Image type | Contains | Approx. size |
 |----------------|----------|---------------|
-| Complete JDK (single-stage) | JDK 24 + Gradle + sources + JAR | ~800MB |
-| JRE Alpine (multi-stage) | JRE 24 + JAR + curl | ~200MB |
+| Full JDK (single-stage) | JDK 24 + Gradle + sources + JAR | ~800 MB |
+| JRE Alpine (multi-stage) | JRE 24 + JAR + curl | ~200 MB |
 
 ---
 
-## 3. What is Kubernetes
+## 3. What is Kubernetes?
 
 Kubernetes (K8s) is a **container orchestrator**. It is responsible for:
 
-- **Deploy** containers to a server cluster.
-- **Escalar** (more replicas if there is more load).
+- **Deploy** containers in a server cluster.
+- **Scale** (more replicas if there is more load).
 - **Recover** (if a container dies, Kubernetes restarts it).
-- **Balance** traffic between replicas.
-- **Manage** secrets, configuration, storage and TLS certificates.
+- **Load-balance** traffic between replicas.
+- **Manage** secrets, configuration, storage, and TLS certificates.
 
-Our cluster uses **RKE2** (Rancher Kubernetes distribution) on server `138.199.157.58` with these additional components:
+Our cluster uses **RKE2** (Rancher’s Kubernetes distribution) on server `138.199.157.58` with these additional components:
 
 | Component | Function |
 |------------|---------|
-| **[Traefik](https://doc.traefik.io/traefik/)** | Ingress controller / reverse proxy. Route external traffic to the pods. |
+| **[Traefik](https://doc.traefik.io/traefik/)** | Ingress controller / reverse proxy. Routes external traffic to the pods. |
 | **[Longhorn](https://longhorn.io/docs/)** | Distributed persistent storage. Provides PersistentVolumes. |
 | **[cert-manager](https://cert-manager.io/docs/)** | Automatically generate and renew TLS certificates (via Cloudflare DNS). |
-| **[Keel](https://keel.sh/docs/)** | Detects new Docker images and updates deployments automatically. |
+| **[Keel](https://keel.sh/docs/)** | Detect new Docker images and automatically update the deployments. |
 
 ---
 
-## 4. Project K8s manifest structure
+## 4. K8s manifest structure for the project
 
 ```
 k8s/
@@ -248,13 +248,13 @@ metadata:
     app: whoop-david-api
 ```
 
-**What is**: A [Namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/) is like a folder in Kubernetes. Isolate resources so they don't mix. Pods, services, and secrets from one namespace are not visible from another (unless the fully qualified DNS name is used).
+**What is**: a [Namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/) is like a folder in Kubernetes. It isolates resources so they don’t get mixed up. The pods, services, and secrets in one namespace are not visible from another (unless the full DNS name is used).
 
-**Why 3 namespaces**: separating PostgreSQL, dev and prod allows:
+**Why 3 namespaces**: separating PostgreSQL, dev, and prod allows:
 
-- Limit permissions per namespace (RBAC).
+- Limit permissions by namespace (RBAC).
 - Prevent an error in dev from affecting prod.
-- Have different secrets per environment.
+- Having different secrets per environment.
 
 ### 5.2 StatefulSet vs Deployment: databases
 
@@ -330,15 +330,15 @@ spec:
 | Feature | Deployment | StatefulSet |
 |---------------|------------|-------------|
 | Pod identity | Random (pod-xyz123) | Stable (postgresql-0) |
-| Storage | Ephemeral (lost on reboot) | Persistent (PVC stays put) |
-| Boot order | all at once | One by one, in order |
-| Use case | Stateless apps (API) | Stateful apps (DB, caches) |
+| Storage | Ephemeral (lost upon restart) | Persistent (PVC remains) |
+| Boot order | All at once | One by one, in order |
+| Use case | Apps stateless (API) | Apps stateful (DB, caches) |
 
-PostgreSQL needs data to survive reboots, so it uses StatefulSet + [PersistentVolumeClaim](https://kubernetes.io/docs/concepts/storage/persistent-volumes/).
+PostgreSQL needs data to survive restarts, which is why it uses StatefulSet + [PersistentVolumeClaim](https://kubernetes.io/docs/concepts/storage/persistent-volumes/).
 
 **The credentials come from a [Secret](https://kubernetes.io/docs/concepts/configuration/secret/)** (`secretKeyRef`), they are not hardcoded in the manifest.
 
-**`securityContext.fsGroup: 999`**: Group 999 is group `postgres` within the container. This ensures that the files on the persistent volume have the correct permissions.
+**`securityContext.fsGroup: 999`**: group 999 is the `postgres` group inside the container. This ensures that the persistent volume files have the correct permissions.
 
 ### 5.3 PersistentVolumeClaim: storage with Longhorn
 
@@ -359,9 +359,9 @@ spec:
       storage: 2Gi
 ```
 
-- **`storageClassName: longhorn`**: Use Longhorn as the storage provider. Longhorn replicates data across multiple cluster nodes for durability.
-- **`ReadWriteOnce`**: Only one pod can mount this volume at a time (correct for a DB with 1 replica).
-- **`2Gi`**: Requests 2 GB of storage.
+- **`storageClassName: longhorn`**: uses Longhorn as the storage provider. Longhorn replicates data across multiple nodes in the cluster for durability.
+- **`ReadWriteOnce`**: only one pod can mount this volume at a time (correct for a DB with 1 replica).
+- **`2Gi`**: requests 2 GB of storage.
 
 ### 5.4 Secret: sensitive data
 
@@ -381,10 +381,10 @@ stringData:
 ```
 
 - **`type: Opaque`**: is the generic type for arbitrary secrets.
-- **`stringData`**: allows you to write the values ​​in plain text in the YAML. Kubernetes automatically encodes them in base64 when storing them in etcd.
-- Pods reference these secrets with `secretKeyRef` in their environment variables.
+- **`stringData`**: allows writing the values in plain text in the YAML. Kubernetes automatically encodes them in base64 when storing them in etcd.
+- The pods reference these secrets with `secretKeyRef` in their environment variables.
 
-**Important**: In production, these secrets should be managed with tools such as Sealed Secrets, Vault or SOPS. Having them in plain text in Git is a security risk (acceptable for learning).
+**Important**: in production, these secrets should be managed with tools like Sealed Secrets, Vault, or SOPS. Having them in plain text in Git is a security risk (acceptable for learning).
 
 ### 5.5 ConfigMap: non-sensitive configuration
 
@@ -415,15 +415,15 @@ data:
             dialect: org.hibernate.dialect.PostgreSQLDialect
 ```
 
-- It contains the `application.yaml` that is injected into the pod as a file mounted on `/app/config/`.
+- It contains the `application.yaml` that is injected into the pod as a file mounted at `/app/config/`.
 - **`SPRING_CONFIG_ADDITIONAL_LOCATION=file:/app/config/`** in the Deployment tells Spring Boot to read this additional configuration.
-- The DB URL uses the internal Kubernetes DNS: `postgresql.apptolast-whoop-david-api.svc.cluster.local` -- this is `<servicio>.<namespace>.svc.cluster.local`.
-- `${DB_USERNAME}` and `${DB_PASSWORD}` are resolved from the pod's environment variables (which come from Secret).
+- The DB URL uses Kubernetes’ internal DNS: `postgresql.apptolast-whoop-david-api.svc.cluster.local` -- this is `<servicio>.<namespace>.svc.cluster.local`.
+- `${DB_USERNAME}` and `${DB_PASSWORD}` are resolved from the pod’s environment variables (which come from the Secret).
 
-**Difference Secret vs ConfigMap**:
+**Difference: Secret vs ConfigMap**:
 
 - **Secret**: sensitive data (passwords, tokens, keys). They are stored encrypted in etcd.
-- **[ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/)**: non-sensitive data (configuration, URLs, flags). They are stored in plain text.
+- **[ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/)**: non-sensitive data (configuration, URLs, flags). Stored in plain text.
 
 ### 5.6 Deployment: the API
 
@@ -567,9 +567,9 @@ annotations:
 
 - **Keel** is a Kubernetes operator that monitors Docker Hub.
 - `keel.sh/policy: force` -- updates the deployment every time there is a new image, regardless of the tag.
-- `keel.sh/pollSchedule: "@every 1m"` -- checks every minute for a new image.
+- `keel.sh/pollSchedule: "@every 1m"` -- checks every minute whether there is a new image.
 - `keel.sh/trigger: poll` -- uses polling (instead of webhooks).
-- **Result**: when the CD workflow uploads a new image `apptolast/whoop-david-api:develop`, Keel detects it in ~1 minute and updates the deployment automatically.
+- **Result**: when the CD workflow pushes a new `apptolast/whoop-david-api:develop` image, Keel detects it in ~1 minute and automatically updates the deployment.
 
 #### Rolling update strategy
 
@@ -582,7 +582,7 @@ strategy:
 ```
 
 - `maxSurge: 1` -- can create up to 1 new pod before deleting the old one.
-- `maxUnavailable: 0` -- never deletes the old pod until the new one is ready.
+- `maxUnavailable: 0` -- it never deletes the old pod until the new one is ready.
 - **Result**: zero-downtime deployment. There is always at least 1 pod serving traffic.
 
 #### Image and profile
@@ -594,7 +594,7 @@ env:
     value: "demo"                           # Perfil Spring Boot activo
 ```
 
-Dev vs prod comparison:
+Dev vs. prod comparison:
 
 || Dev | Prod |
 |---|-----|------|
@@ -603,7 +603,7 @@ Dev vs prod comparison:
 | CPU limit | 500m | 1000m |
 | Domain | `david-whoop-dev.apptolast.com` | `david-whoop.apptolast.com` |
 
-#### Resources
+#### Resources (resource limits)
 
 ```yaml
 resources:
@@ -615,8 +615,8 @@ resources:
     memory: 768Mi   # Maximo 768 MB RAM
 ```
 
-- **requests**: What Kubernetes guarantees to the pod. It is used to decide which node to place the pod on.
-- **limits**: the maximum limit. If the pod exceeds the memory limit, Kubernetes kills it (OOMKilled). If it exceeds CPU, it throttles it.
+- **requests**: what Kubernetes guarantees to the pod. It is used to decide which node to place the pod on.
+- **limits**: the maximum cap. If the pod exceeds the memory limit, Kubernetes kills it (OOMKilled). If it exceeds CPU, it throttles it.
 
 #### Probes (health probes)
 
@@ -646,13 +646,13 @@ startupProbe:
   failureThreshold: 30
 ```
 
-| Probe | Question that answers | If it fails... |
+| Probe | Question answered | If it fails... |
 |-------|----------------------|-------------|
-| **startupProbe** | "Have I finished booting?" | Wait longer (up to 30 * 5s = 150s) |
-| **readinessProbe** | "Can you receive traffic?" | Stop sending traffic to it (but it doesn't kill it) |
+| **startupProbe** | "Has it finished starting up?" | Wait longer (up to 30 * 5s = 150s) |
+| **readinessProbe** | "Can it receive traffic?" | Stop sending traffic to it (but it doesn’t kill it) |
 | **livenessProbe** | "Is he still alive?" | Kubernetes restarts it |
 
-**Why 3 probes**: Spring Boot takes a long time to boot (~60-90s). Without `startupProbe`, `livenessProbe` could kill the pod before it finishes booting.
+**Why 3 probes**: Spring Boot takes quite a while to start (~60-90s). Without `startupProbe`, the `livenessProbe` could kill the pod before it finishes starting up.
 
 #### ConfigMap volume mount
 
@@ -670,8 +670,8 @@ volumes:
           path: application.yaml
 ```
 
-- Mounts the contents of ConfigMap `whoop-david-api-config` as a file on `/app/config/application.yaml`.
-- The variable `SPRING_CONFIG_ADDITIONAL_LOCATION=file:/app/config/` tells Spring Boot to read this file in addition to the `application.yaml` embedded in the JAR.
+- Mount the contents of ConfigMap `whoop-david-api-config` as a file at `/app/config/application.yaml`.
+- The `SPRING_CONFIG_ADDITIONAL_LOCATION=file:/app/config/` variable tells Spring Boot to read this file in addition to the `application.yaml` embedded in the JAR.
 
 ### 5.7 Service: expose the application
 
@@ -695,16 +695,16 @@ spec:
     environment: development
 ```
 
-**What is a [Service](https://kubernetes.io/docs/concepts/services-networking/service/)**: a Service gives a stable IP and DNS name to a set of pods. Pods can die and be reborn with different IPs; The Service always finds them via `selector`.
+**What is a [Service](https://kubernetes.io/docs/concepts/services-networking/service/)**: a Service provides a stable IP and a DNS name to a set of pods. Pods can die and be reborn with different IPs; the Service always finds them via `selector`.
 
 **Types of Service in our project**:
 
-| Guy | Access | Example |
+| Type | Access | Example |
 |------|--------|---------|
 | **[ClusterIP](https://kubernetes.io/docs/concepts/services-networking/service/#type-clusterip)** | Only within the cluster | `whoop-david-api` (API) and `postgresql` (internal DB) |
 | **[NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)** | From outside the cluster via IP:port | `postgresql-external` (port 30434 for DBeaver/pgAdmin) |
 
-**ClusterIP for API**: External access is managed by Traefik (IngressRoute), not by the Service directly.
+**ClusterIP for the API**: external access is handled by Traefik (IngressRoute), not by the Service directly.
 
 **NodePort for external PostgreSQL** (`k8s/01-postgresql/service-external.yaml`):
 
@@ -717,7 +717,7 @@ spec:
     nodePort: 30434
 ```
 
-Allows you to connect to PostgreSQL from external tools like DBeaver using `138.199.157.58:30434`.
+Allows connecting to PostgreSQL from external tools such as DBeaver using `138.199.157.58:30434`.
 
 ### 5.8 Certificate: Automatic TLS with cert-manager
 
@@ -740,17 +740,17 @@ spec:
   renewBefore: 720h    # Renueva 30 dias antes de expirar
 ```
 
-- **cert-manager** is a Kubernetes operator that manages [TLS](https://cert-manager.io/docs/usage/certificate/) certificates automatically.
-- **`cloudflare-clusterissuer`**: Use Cloudflare's DNS challenge to validate the domain and obtain a Let's Encrypt certificate.
+- **cert-manager** is a Kubernetes operator that manages [TLS certificates](https://cert-manager.io/docs/usage/certificate/) automatically.
+- **`cloudflare-clusterissuer`**: use Cloudflare’s DNS challenge to validate the domain and obtain a Let’s Encrypt certificate.
 - The certificate is stored as a Kubernetes Secret named `whoop-david-api-tls`.
-- It automatically renews 30 days before expiring.
+- It renews automatically 30 days before it expires.
 
 **Domains**:
 
 - Dev: `david-whoop-dev.apptolast.com`
 - Prod: `david-whoop.apptolast.com`
 
-### 5.9 IngressRoute: Traefik as reverse proxy
+### 5.9 IngressRoute: Traefik as a reverse proxy
 
 **File**: `k8s/02-api-dev/06-ingressroute.yaml`
 
@@ -776,11 +776,11 @@ spec:
 ```
 
 - **IngressRoute** is a Traefik CRD (Custom Resource Definition). It works like an [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) but with more functionality.
-- **`entryPoints: websecure`**: Only accepts HTTPS (port 443).
-- **`match: Host(...)`**: routes requests for `david-whoop-dev.apptolast.com` to service `whoop-david-api:8080`.
-- **`tls.secretName`**: Use the certificate generated by cert-manager.
+- **`entryPoints: websecure`**: only accepts HTTPS (port 443).
+- **`match: Host(...)`**: routes requests for `david-whoop-dev.apptolast.com` to the `whoop-david-api:8080` service.
+- **`tls.secretName`**: use the certificate generated by cert-manager.
 
-#### Security Middleware
+#### Security middleware
 
 ```yaml
 apiVersion: traefik.io/v1alpha1
@@ -806,11 +806,11 @@ spec:
 | Header | Protection |
 |--------|-----------|
 | `X-Robots-Tag: noindex, nofollow` | Prevent search engines from indexing the API |
-| `Server: ""` | Hide server version |
+| `Server: ""` | Hide the server version |
 | `sslRedirect: true` | Redirect HTTP to HTTPS |
-| `browserXssFilter: true` | Activate the browser's XSS filter |
+| `browserXssFilter: true` | Enable the browser's XSS filter |
 | `contentTypeNosniff: true` | Prevents MIME-type sniffing |
-| `forceSTSHeader + stsSeconds` | HSTS: force HTTPS for 1 year |
+| `forceSTSHeader + stsSeconds` | HSTS: forces HTTPS for 1 year |
 | `frameDeny: true` | Prevents clickjacking (do not allow iframes) |
 
 ### 5.10 PostgreSQL initialization ConfigMap
@@ -830,9 +830,9 @@ data:
     GRANT ALL PRIVILEGES ON DATABASE whoop_david_dev TO admin;
 ```
 
-- It is mounted on `/docker-entrypoint-initdb.d/` of the PostgreSQL container.
+- It is mounted in `/docker-entrypoint-initdb.d/` of the PostgreSQL container.
 - PostgreSQL automatically executes the SQL scripts in this directory when it is initialized for the first time.
-- Create the dev database (`whoop_david_dev`). The one for prod (`whoop_david`) is already created automatically by PostgreSQL because it is configured as `POSTGRES_DB`.
+- Create the dev database (`whoop_david_dev`). The prod one (`whoop_david`) is already created automatically by PostgreSQL because it is configured as `POSTGRES_DB`.
 
 ---
 

@@ -1,10 +1,10 @@
 # 06 - Services Layer (`@Service`)
 
-## What is the services layer?
+## What is the service layer?
 
-The services layer is the **intermediate layer** between REST controllers (which receive HTTP requests) and repositories (which access the database). Its responsibility is to contain the **business logic**: transform data, apply rules, coordinate operations between different repositories, etc.
+The service layer is the **middle layer** between the REST controllers (which receive HTTP requests) and the repositories (which access the database). Its responsibility is to contain the **business logic**: transform data, apply rules, coordinate operations between different repositories, etc.
 
-In Spring, a class is marked as a service with the annotation [`@Service`](https://docs.spring.io/spring-framework/reference/core/beans/classpath-scanning.html). This tells Spring: "this class is a component that contains business logic, register it in the [dependency injection](https://docs.spring.io/spring-framework/reference/core/beans/introduction.html) container."
+In Spring, a class is marked as a service with the annotation [`@Service`](https://docs.spring.io/spring-framework/reference/core/beans/classpath-scanning.html). This tells Spring: "this class is a component that contains business logic; register it in the [dependency injection](https://docs.spring.io/spring-framework/reference/core/beans/introduction.html) container."
 
 ```
 Peticion HTTP
@@ -16,7 +16,7 @@ Controller  -->  Service  -->  Repository  -->  Base de datos
 ResponseEntity   MapStruct (Entity -> DTO)
 ```
 
-Controller **should not** access the repository directly. It always delegates to the service, which decides how to obtain and transform the data.
+The controller **must not** access the repository directly. Always delegate to the service, which decides how to obtain and transform the data.
 
 ---
 
@@ -24,30 +24,30 @@ Controller **should not** access the repository directly. It always delegates to
 
 There are **5 services** in the project:
 
-| Service | Archive | Responsibility |
+| Service | File | Responsibility |
 |---|---|---|
-| `CycleService` | `src/main/kotlin/com/example/whoopdavidapi/service/CycleService.kt` | Paginated consultation of physiological cycles |
+| `CycleService` | `src/main/kotlin/com/example/whoopdavidapi/service/CycleService.kt` | Paginated query of physiological cycles |
 | `RecoveryService` | `src/main/kotlin/com/example/whoopdavidapi/service/RecoveryService.kt` | Paginated recovery query |
 | `SleepService` | `src/main/kotlin/com/example/whoopdavidapi/service/SleepService.kt` | Paginated sleep data query |
-| `WorkoutService` | `src/main/kotlin/com/example/whoopdavidapi/service/WorkoutService.kt` | Paginated training consultation |
-| `WhoopSyncService` | `src/main/kotlin/com/example/whoopdavidapi/service/WhoopSyncService.kt` | Orchestrate incremental sync with the Whoop API |
+| `WorkoutService` | `src/main/kotlin/com/example/whoopdavidapi/service/WorkoutService.kt` | Paginated training query |
+| `WhoopSyncService` | `src/main/kotlin/com/example/whoopdavidapi/service/WhoopSyncService.kt` | Orchestrate incremental synchronization with the Whoop API |
 
-The first 4 (Cycle, Recovery, Sleep, Workout) follow an **identical pattern**. The fifth (`WhoopSyncService`) has a different responsibility: it does not serve data to the user, but instead obtains it from the external API and saves it to the database.
+The first 4 (Cycle, Recovery, Sleep, Workout) follow an **identical pattern**. The fifth (`WhoopSyncService`) has a different responsibility: it doesn’t serve data to the user, but rather obtains it from the external API and saves it in the database.
 
 ---
 
-## Why a services layer?
+## Why a service layer?
 
-1. **Separation of responsibilities**: the controller is limited to validating HTTP parameters and returning responses. The service contains the actual logic.
+1. **Separation of responsibilities**: the controller is limited to validating HTTP parameters and returning responses. The service contains the real logic.
 2. **Reuse**: the same service can be invoked from a controller, from a scheduler, from a test... without duplicating code.
-3. **Testability**: the business logic of the service can be tested in isolation, using mocks for the repositories, without the need to set up an HTTP server.
-4. **DRY (Don't Repeat Yourself) Principle**: in this project, the 4 consultation services follow the same pattern. If the paging logic changes, simply modify it in the service layer.
+3. **Testability**: you can test the service’s business logic in isolation, using mocks for the repositories, without needing to spin up an HTTP server.
+4. **DRY Principle (Don't Repeat Yourself)**: in this project, the 4 query services follow the same pattern. If the pagination logic changed, it would be enough to modify it in the service layer.
 
 ---
 
-## Code explained
+## Explained code
 
-### 1. The annotation `@Service` and component scanning
+### 1. The `@Service` annotation and component scanning
 
 ```kotlin
 // src/main/kotlin/com/example/whoopdavidapi/service/CycleService.kt
@@ -61,11 +61,11 @@ class CycleService(
 }
 ```
 
-`@Service` is a **specialization** of `@Component`. Technically, they both do the same thing: register the class as a [bean](https://docs.spring.io/spring-framework/reference/core/beans/definition.html) in the Spring container. The difference is **semantics**: `@Service` indicates that the class contains business logic.
+`@Service` is a **specialization** of `@Component`. Technically, both do the same thing: register the class as a [bean](https://docs.spring.io/spring-framework/reference/core/beans/definition.html) in the Spring container. The difference is **semantic**: `@Service` indicates that the class contains business logic.
 
-When the application starts, Spring Boot executes **component scanning**: it scans all packages under the class marked with `@SpringBootApplication` (in this case, `com.example.whoopdavidapi`) and looks for classes annotated with `@Component`, `@Service`, `@Repository`, `@Controller`, etc. Each is registered as a singleton bean that can be injected into other classes.
+When the application starts, Spring Boot runs **component scanning**: it scans all packages under the class marked with `@SpringBootApplication` (in this case, `com.example.whoopdavidapi`) and looks for classes annotated with `@Component`, `@Service`, `@Repository`, `@Controller`, etc. Each one is registered as a singleton bean that can be injected into other classes.
 
-The component annotation hierarchy is:
+The hierarchy of component annotations is:
 
 ```
 @Component              <-- Generico (base)
@@ -84,14 +84,14 @@ class CycleService(
 ) {
 ```
 
-In Kotlin, the **[constructor primario](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html)** is declared directly in the class signature. Spring automatically detects that `CycleService` needs a `CycleRepository` and a `CycleMapper`, looks for beans of those types in its container, and injects them when creating the instance.
+In Kotlin, **[constructor primario](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html)** is declared directly in the class signature. Spring automatically detects that `CycleService` needs a `CycleRepository` and a `CycleMapper`, looks for beans of those types in its container, and injects them when creating the instance.
 
-**No need for `@Autowired`**. Since Spring 4.3, if a class has a single constructor, Spring automatically uses it for injection. Since in Kotlin the primary constructor is the only constructor (unless you declare secondary constructors with `constructor`), injection works without any additional annotations.
+**No `@Autowired`** is needed. Since Spring 4.3, if a class has a single constructor, Spring automatically uses it for injection. Since in Kotlin the primary constructor is the only constructor (unless you declare secondary constructors with `constructor`), injection works without any additional annotation.
 
 The properties are `private val` for two reasons:
 
 - `private`: encapsulation, no other class can access these dependencies directly.
-- `val`: immutability, once the dependency is assigned it cannot change.
+- `val`: immutability; once the dependency is assigned, it cannot change.
 
 ### 3. Pagination logic: `PageRequest.of()`
 
@@ -105,15 +105,15 @@ fun getCycles(
     val pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "start"))
 ```
 
-[`PageRequest.of()`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) creates an object `Pageable` that Spring Data JPA uses to automatically construct clauses `LIMIT`, `OFFSET` and `ORDER BY` in the SQL query.
+[`PageRequest.of()`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) creates an `Pageable` object that Spring Data JPA uses to automatically build the `LIMIT`, `OFFSET`, and `ORDER BY` clauses in the SQL query.
 
-The `page - 1` conversion is critical:
+The conversion `page - 1` is critical:
 
 - The **user** sends pages **based on 1** (page 1, 2, 3...) because it is more natural for a human.
-- Spring Data JPA uses pages **based on 0** internally (page 0, 1, 2...).
+- Spring Data JPA uses **0-based** pages internally (page 0, 1, 2...).
 - `page - 1` converts between both systems. If the user requests `page=1`, Spring receives `0` and returns the first results.
 
-`Sort.by(Sort.Direction.DESC, "start")` indicates that the results are ordered by the `start` field in descending order (most recent first). The name `"start"` must match the attribute name in the JPA entity (`WhoopCycle.start`), not the column name in the database.
+`Sort.by(Sort.Direction.DESC, "start")` indicates that the results should be sorted by the `start` field in descending order (most recent first). The name `"start"` must match the attribute name in the JPA entity (`WhoopCycle.start`), not the column name in the database.
 
 ### 4. The expression `when` for conditional filtering
 
@@ -126,24 +126,24 @@ val result = when {
 }
 ```
 
-[`when`](https://kotlinlang.org/docs/control-flow.html#when-expression) is the Kotlin version of a `switch` in Java, but much more powerful. Here it is used as **expression** (returns a value that is assigned to `result`), not as a statement.
+[`when`](https://kotlinlang.org/docs/control-flow.html#when-expression) is the Kotlin version of a `switch` in Java, but much more powerful. Here it is used as a **expression** (it returns a value that is assigned to `result`), not as a statement.
 
-Conditions are evaluated from top to bottom:
+The conditions are evaluated from top to bottom:
 
 | Condition | Repository method | Generated SQL (simplified) |
 |---|---|---|
 | `from` and `to` present | `findByStartBetween(from, to, pageable)` | `WHERE start BETWEEN ? AND ?` |
 | Only `from` present | `findByStartGreaterThanEqual(from, pageable)` | `WHERE start >= ?` |
 | Only `to` present | `findByStartLessThan(to, pageable)` | `WHERE start < ?` |
-| None present | `findAll(pageable)` | No filter (all records) |
+| None present | `findAll(pageable)` | Unfiltered (all records) |
 
 The parameters `from` and `to` are `Instant?` (nullable). This allows the user to make requests such as:
 
-- `/api/v1/cycles` -- no filter, returns all paginated.
-- `/api/v1/cycles?from=2024-01-01T00:00:00Z` -- from that date onwards.
+- `/api/v1/cycles` -- without a filter, returns everything paginated.
+- `/api/v1/cycles?from=2024-01-01T00:00:00Z` -- from that date onward.
 - `/api/v1/cycles?from=2024-01-01T00:00:00Z&to=2024-06-01T00:00:00Z` -- specific range.
 
-### 5. Mapping Entity to DTO with MapStruct
+### 5. Entity-to-DTO Mapping with MapStruct
 
 ```kotlin
 return PaginatedResponse(
@@ -157,12 +157,12 @@ return PaginatedResponse(
 )
 ```
 
-`result` is a `Page<WhoopCycle>` (a Spring Data object that contains the paginated results and pagination metadata).
+`result` is a `Page<WhoopCycle>` (a Spring Data object that contains paginated results and pagination metadata).
 
-- `result.content` returns `List<WhoopCycle>` with the entities of the current page.
+- `result.content` returns the `List<WhoopCycle>` with the entities from the current page.
 - `.map { cycleMapper.toDto(it) }` transforms each entity into its DTO using MapStruct.
 - `result.totalElements` is the **total** number of records in the database that match the filter (not just those on this page).
-- `result.hasNext()` indicates if there are more pages after the current one.
+- `result.hasNext()` indicates whether there are more pages after the current one.
 
 The mapper (`CycleMapper`) is an interface generated by MapStruct:
 
@@ -176,7 +176,7 @@ interface CycleMapper {
 }
 ```
 
-`componentModel = "spring"` causes MapStruct to generate an implementation annotated with `@Component`, which Spring can automatically inject into `CycleService`.
+`componentModel = "spring"` makes MapStruct generate an implementation annotated with `@Component`, which Spring can automatically inject into `CycleService`.
 
 The paginated response is wrapped in a generic DTO:
 
@@ -210,15 +210,15 @@ The JSON that the client (Power BI) receives has this structure:
 }
 ```
 
-### 6. DRY principle: the 4 consultation services are identical
+### 6. DRY principle: the 4 query services are identical
 
-Services `CycleService`, `RecoveryService`, `SleepService` and `WorkoutService` follow **exactly the same pattern**. The only difference is:
+Services `CycleService`, `RecoveryService`, `SleepService`, and `WorkoutService` follow **exactly the same pattern**. The only difference is:
 
 - The **repository** they use (`CycleRepository`, `RecoveryRepository`, etc.).
 - The **mapper** they use (`CycleMapper`, `RecoveryMapper`, etc.).
-- The **sort field** (`"start"` for Cycle/Sleep/Workout, `"createdAt"` for Recovery).
+- The **sorting field** (`"start"` for Cycle/Sleep/Workout, `"createdAt"` for Recovery).
 
-For example, `RecoveryService` differs only in that it orders by `"createdAt"` instead of `"start"`:
+For example, `RecoveryService` differs only in that it sorts by `"createdAt"` instead of `"start"`:
 
 ```kotlin
 // src/main/kotlin/com/example/whoopdavidapi/service/RecoveryService.kt
@@ -257,11 +257,11 @@ class RecoveryService(
 }
 ```
 
-This repeated pattern (4 classes with the same structure) is a conscious compromise: it could be abstracted into a generic class, but the simplicity and readability of having explicit classes is preferable when there are only 4 cases.
+This repeated pattern (4 classes with the same structure) is a conscious trade-off: it could be abstracted into a generic class, but the simplicity and readability of having explicit classes is preferable when there are only 4 cases.
 
 ### 7. WhoopSyncService: the synchronization orchestration
 
-`WhoopSyncService` has a different responsibility: it does not serve data to the user, but rather  **fetches data from the Whoop API and saves it to the database** .
+`WhoopSyncService` has a different responsibility: it does not serve data to the user; instead, **fetches data from the Whoop API and saves it to the database**.
 
 ```kotlin
 // src/main/kotlin/com/example/whoopdavidapi/service/WhoopSyncService.kt
@@ -293,10 +293,10 @@ class WhoopSyncService(
 
 Key points:
 
-- **5 injected dependencies**: the HTTP client (`WhoopApiClient`) and the 4 repositories. This service orchestrates the communication between the external API and the local database.
-- **`syncAll()`**: public method that the scheduler (`WhoopDataSyncScheduler`) invokes periodically. Synchronize all 4 types of data in sequence.
-- **Logging with SLF4J**: `LoggerFactory.getLogger(javaClass)` creates a logger with the class name. The `{}` are placeholders that SLF4J replaces only if the log level is active (more efficient than concatenating strings).
-- **Time measurement**: `System.currentTimeMillis()` before and after allows you to record how long the complete synchronization takes.
+- **5 injected dependencies**: the HTTP client (`WhoopApiClient`) and the 4 repositories. This service orchestrates communication between the external API and the local database.
+- **`syncAll()`**: public method that the scheduler (`WhoopDataSyncScheduler`) invokes periodically. Synchronizes the 4 data types in sequence.
+- **Logging with SLF4J**: `LoggerFactory.getLogger(javaClass)` creates a logger with the class name. `{}` are placeholders that SLF4J replaces only if the log level is active (more efficient than concatenating strings).
+- **Time measurement**: `System.currentTimeMillis()` before and after makes it possible to record how long the full synchronization takes.
 
 ### 8. Incremental synchronization
 
@@ -329,12 +329,12 @@ private fun syncCycles() {
 
 The **incremental** strategy avoids re-downloading everything every time:
 
-1. `cycleRepository.findTopByOrderByUpdatedAtDesc()` gets the most recent record from the local DB (the one with the highest `updatedAt`).
-2. `?.updatedAt` extracts field `updatedAt` using Kotlin's safe call. If there are no records, it returns `null`.
-3. `whoopApiClient.getAllCycles(start = lastUpdated)` asks the Whoop API only for records modified after that date. If `lastUpdated` is `null` (first sync), bring everything.
-4. Each record is mapped to entity and saved with `cycleRepository.save()`. If it already exists (same ID), JPA does an UPDATE instead of INSERT.
+1. `cycleRepository.findTopByOrderByUpdatedAtDesc()` retrieves the most recent record from the local DB (the one with the highest `updatedAt`).
+2. `?.updatedAt` extracts the `updatedAt` field using Kotlin’s safe call. If there are no records, it returns `null`.
+3. `whoopApiClient.getAllCycles(start = lastUpdated)` requests from the Whoop API only the records modified after that date. If `lastUpdated` is `null` (first synchronization), it fetches everything.
+4. Each record is mapped to an entity and saved with `cycleRepository.save()`. If it already exists (same ID), JPA performs an UPDATE instead of an INSERT.
 
-Methods `syncRecoveries()`, `syncSleeps()` and `syncWorkouts()` follow the same pattern.
+The methods `syncRecoveries()`, `syncSleeps()`, and `syncWorkouts()` follow the same pattern.
 
 ### 9. Mapping JSON to entities: Kotlin safe casts
 
@@ -360,16 +360,16 @@ private fun mapToCycle(record: Map<String, Any?>): WhoopCycle {
 }
 ```
 
-This method converts a `Map<String, Any?>` (deserialized JSON response) to a JPA entity. Use several Kotlin operators:
+This method converts a `Map<String, Any?>` (deserialized JSON response) into a JPA entity. It uses several Kotlin operators:
 
 | Operator | Meaning | Example |
 |---|---|---|
-| `as?` | **Safe cast**: try to cast. If it fails, it returns `null` instead of throwing an exception. | `record["score"] as? Map<*, *>` |
-| `?.` | **Safe call**: if the object is `null`, returns `null` without executing the method. | `score?.get("strain")` |
+| `as?` | **Safe cast**: tries to cast. If it fails, it returns `null` instead of throwing an exception. | `record["score"] as? Map<*, *>` |
+| `?.` | **Safe call**: if the object is `null`, it returns `null` without executing the method. | `score?.get("strain")` |
 | `?:` | **Elvis operator**: if the left expression is `null`, use the value on the right. | `record["score_state"] as? String ?: "PENDING_SCORE"` |
 | `requireNotNull()` | Throws `IllegalArgumentException` if the value is `null`. | `requireNotNull(parseInstant(record["start"])) { "mensaje" }` |
 
-The `parseInstant` method converts ISO-8601 strings to `Instant`:
+The method `parseInstant` converts ISO-8601 strings to `Instant`:
 
 ```kotlin
 private fun parseInstant(value: Any?): Instant? {
@@ -380,7 +380,7 @@ private fun parseInstant(value: Any?): Instant? {
 }
 ```
 
-If the value is not a `String` or cannot be parsed, it returns `null` instead of throwing an exception. This makes synchronization more robust against unexpected data from the external API.
+If the value is not a `String` or cannot be parsed, return `null` instead of throwing an exception. This makes synchronization more robust against unexpected data from the external API.
 
 ### 10. The scheduler that invokes the service
 
@@ -408,13 +408,13 @@ class WhoopDataSyncScheduler(
 }
 ```
 
-The scheduler is a `@Component`, not a `@Service`, because its only responsibility is to **schedule** the execution. The actual timing logic lives in `WhoopSyncService`. This separation allows synchronization to be triggered in other ways (a manual endpoint, a test) without depending on the scheduler.
+The scheduler is a `@Component`, not a `@Service`, because its only responsibility is to **schedule** execution. The actual synchronization logic lives in `WhoopSyncService`. This separation allows synchronization to be triggered in other ways (a manual endpoint, a test) without depending on the scheduler.
 
 ---
 
 ## Complete flow of a request
 
-Example: User (Power BI) requests `GET /api/v1/cycles?from=2024-01-01T00:00:00Z&page=2&pageSize=50`.
+Example: the user (Power BI) requests `GET /api/v1/cycles?from=2024-01-01T00:00:00Z&page=2&pageSize=50`.
 
 ```
 1. CycleController recibe la peticion
@@ -439,9 +439,9 @@ Example: User (Power BI) requests `GET /api/v1/cycles?from=2024-01-01T00:00:00Z&
 ## Official documentation
 
 - **`@Service` and component scanning**: [Spring Framework - Classpath Scanning and Managed Components](https://docs.spring.io/spring-framework/reference/core/beans/classpath-scanning.html)
-- **Constructor Injection**: [Spring Framework - Constructor-based Dependency Injection](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html#beans-constructor-injection)
+- **Constructor injection**: [Spring Framework - Constructor-based Dependency Injection](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html#beans-constructor-injection)
 - **`Pageable` and `PageRequest`**: [Spring Data JPA - Paging and Sorting](https://docs.spring.io/spring-data/jpa/reference/repositories/query-methods-details.html#repositories.special-parameters)
 - **`Page<T>` result**: [Spring Data Commons - Page Interface](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/Page.html)
 - **MapStruct with Spring**: [MapStruct Reference - Using dependency injection](https://mapstruct.org/documentation/stable/reference/html/#using-dependency-injection)
-- **SLF4J parameterized logging**: [SLF4J FAQ - What is the fastest way of logging?](https://www.slf4j.org/faq.html#logging_performance)
+- **SLF4J parameterized logging**: [SLF4J Manual](https://www.slf4j.org/manual.html)
 - **Kotlin safe casts and operators**: [Kotlin Reference - Type Checks and Casts](https://kotlinlang.org/docs/typecasts.html)

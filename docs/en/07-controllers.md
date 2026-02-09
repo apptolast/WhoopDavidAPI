@@ -2,7 +2,7 @@
 
 ## What is a REST controller?
 
-A REST controller is the **gateway** to the application. It receives HTTP requests from the client (in this case, Power BI), validates them, delegates the logic to the corresponding service and returns the response in JSON format.
+A REST controller is the **entry point** to the application. It receives HTTP requests from the client (in this case, Power BI), validates them, delegates the logic to the corresponding service, and returns the response in JSON format.
 
 In Spring, a REST controller is created with the annotation [`@RestController`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html), which is the combination of two annotations:
 
@@ -10,14 +10,14 @@ In Spring, a REST controller is created with the annotation [`@RestController`](
 @RestController = @Controller + @ResponseBody
 ```
 
-- `@Controller`: Registers the class as a web component that handles HTTP requests.
-- `@ResponseBody`: Indicates that the value returned by each method is serialized directly to the body of the HTTP response (by default as JSON), instead of searching for an HTML view/template.
+- `@Controller`: registers the class as a web component that handles HTTP requests.
+- `@ResponseBody`: indicates that the value returned by each method is serialized directly into the body of the HTTP response (by default as JSON), instead of looking for an HTML view/template.
 
 ---
 
 ## Where is it used in this project?
 
-| Controller | Archive | Endpoint | Pattern |
+| Controller | File | Endpoint | Pattern |
 |---|---|---|---|
 | `CycleController` | `src/main/kotlin/com/example/whoopdavidapi/controller/CycleController.kt` | `GET /api/v1/cycles` | Local data (DB) |
 | `RecoveryController` | `src/main/kotlin/com/example/whoopdavidapi/controller/RecoveryController.kt` | `GET /api/v1/recovery` | Local data (DB) |
@@ -25,9 +25,9 @@ In Spring, a REST controller is created with the annotation [`@RestController`](
 | `WorkoutController` | `src/main/kotlin/com/example/whoopdavidapi/controller/WorkoutController.kt` | `GET /api/v1/workouts` | Local data (DB) |
 | `ProfileController` | `src/main/kotlin/com/example/whoopdavidapi/controller/ProfileController.kt` | `GET /api/v1/profile` | Direct call to Whoop API |
 
-Additionally, the project has a global exception handler:
+In addition, the project has a global exception handler:
 
-| Class | Archive |
+| Class | File |
 |---|---|
 | `GlobalExceptionHandler` | `src/main/kotlin/com/example/whoopdavidapi/exception/GlobalExceptionHandler.kt` |
 | `WhoopApiException` | `src/main/kotlin/com/example/whoopdavidapi/exception/WhoopApiException.kt` |
@@ -35,16 +35,16 @@ Additionally, the project has a global exception handler:
 
 ---
 
-## Why REST drivers?
+## Why REST controllers?
 
-1. **Standard HTTP interface**: Power BI consumes data via GET requests with query parameters. REST drivers expose exactly that.
-2. **API Versioning**: The `/api/v1` prefix allows new versions (`/api/v2`) to be created in the future without breaking existing clients.
-3. **Separation of responsibilities**: the controller is only responsible for the HTTP layer (validate parameters, return status codes). The business logic lives in the services.
-4. **Centralized error handling**: [`@RestControllerAdvice`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-advice.html) allows you to catch all exceptions in a single place, returning consistent JSON responses.
+1. **Standard HTTP interface**: Power BI consumes data via GET requests with query parameters. REST controllers expose exactly that.
+2. **API versioning**: the `/api/v1` prefix makes it possible to create new versions (`/api/v2`) in the future without breaking existing clients.
+3. **Separation of responsibilities**: the controller is only responsible for the HTTP layer (validating parameters, returning status codes). Business logic lives in the services.
+4. **Centralized error handling**: [`@RestControllerAdvice`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-advice.html) allows capturing all exceptions in a single place, returning consistent JSON responses.
 
 ---
 
-## Code explained
+## Explained code
 
 ### 1. `@RestController` and `@RequestMapping`
 
@@ -56,9 +56,9 @@ Additionally, the project has a global exception handler:
 class CycleController(private val cycleService: CycleService) {
 ```
 
-- `@RestController`: Marks the class as a REST controller. All methods return JSON automatically.
-- [`@RequestMapping("/api/v1")`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html): Sets the **base path** for all endpoints of this class. Each `@GetMapping` within the class adds its path to this prefix.
-- Constructor injection: `CycleService` is injected automatically (just like in services, it doesn't need `@Autowired`).
+- `@RestController`: marks the class as a REST controller. All methods automatically return JSON.
+- [`@RequestMapping("/api/v1")`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html): sets the **base path** for all endpoints in this class. Each `@GetMapping` within the class adds its route to this prefix.
+- Constructor injection: `CycleService` is injected automatically (just like in services, it doesn’t need `@Autowired`).
 
 ### 2. `@GetMapping` and `@RequestParam`
 
@@ -72,18 +72,18 @@ fun getCycles(
 ): ResponseEntity<PaginatedResponse<CycleDTO>> {
 ```
 
-The final path of this endpoint is `/api/v1/cycles` (the sum of `@RequestMapping("/api/v1")` + [`@GetMapping("/cycles")`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html)).
+The final route for this endpoint is `/api/v1/cycles` (the sum of `@RequestMapping("/api/v1")` + [`@GetMapping("/cycles")`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html)).
 
 [`@RequestParam`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestparam.html) maps URL parameters (query string) to method parameters:
 
 | Parameter | Configuration | Example in URL | Behavior |
 |---|---|---|---|
-| `from` | `required = false`, type `Instant?` | `?from=2024-01-01T00:00:00Z` | Optional. If not sent, it is `null`. |
-| `to` | `required = false`, type `Instant?` | `?to=2024-12-31T23:59:59Z` | Optional. If not sent, it is `null`. |
-| `page` | `defaultValue = "1"` | `?page=3` | It has a default value. If not sent, it is `1`. |
-| `pageSize` | `defaultValue = "100"` | `?pageSize=50` | It has a default value. If not sent, it is `100`. |
+| `from` | `required = false`, type `Instant?` | `?from=2024-01-01T00:00:00Z` | Optional. If it is not sent, it is `null`. |
+| `to` | `required = false`, type `Instant?` | `?to=2024-12-31T23:59:59Z` | Optional. If it is not sent, it is `null`. |
+| `page` | `defaultValue = "1"` | `?page=3` | It has a default value. If it is not sent, it is `1`. |
+| `pageSize` | `defaultValue = "100"` | `?pageSize=50` | It has a default value. If it is not sent, it is `100`. |
 
-**Automatic conversion of `Instant`**: Spring Boot automatically converts ISO-8601 strings (such as `2024-01-01T00:00:00Z`) to `java.time.Instant` objects. No additional annotation or custom formatter is needed. Spring uses the default registered converter for types `java.time`.
+**Automatic conversion of `Instant`**: Spring Boot automatically converts ISO-8601 strings (such as `2024-01-01T00:00:00Z`) to `java.time.Instant` objects. No additional annotation or custom formatter is needed. Spring uses the converter registered by default for `java.time` types.
 
 ### 3. Validation with `require()` (Kotlin preconditions)
 
@@ -92,21 +92,21 @@ require(page >= 1) { "page debe ser >= 1" }
 require(pageSize in 1..1000) { "pageSize debe estar entre 1 y 1000" }
 ```
 
-`require()` is a function of the standard Kotlin library to validate **preconditions**. If the condition is `false`, throw a `IllegalArgumentException` with the message provided in the lambda block.
+`require()` is a function from Kotlin’s standard library used to validate **preconditions**. If the condition is `false`, it throws a `IllegalArgumentException` with the message provided in the lambda block.
 
-| Kotlin Function | Lance | typical use |
+| Kotlin function | Launch | Typical use |
 |---|---|---|
 | `require()` | `IllegalArgumentException` | Validate input arguments |
 | `requireNotNull()` | `IllegalArgumentException` | Validate that a value is not null |
-| `check()` | `IllegalStateException` | Validate object status |
+| `check()` | `IllegalStateException` | Validate object state |
 | `error()` | `IllegalStateException` | Fail unconditionally with message |
 
 In this case:
 
-- `page >= 1`: the page must be at least 1 (Spring Data uses base 0 internally, but the user sends base 1).
-- `pageSize in 1..1000`: The page size must be between 1 and 1000. This prevents requests that could return too many results and overload the server or database.
+- `page >= 1`: the page must be at least 1 (Spring Data uses 0-based indexing internally, but the user sends 1-based).
+- `pageSize in 1..1000`: the page size must be between 1 and 1000. This prevents requests that could return too many results and overload the server or the database.
 
-The `IllegalArgumentException` thrown by `require()` is captured by `GlobalExceptionHandler` (see section 7) and converted into an HTTP 400 response with a descriptive message.
+The `IllegalArgumentException` thrown by `require()` is caught by `GlobalExceptionHandler` (see section 7) and converted into an HTTP 400 response with a descriptive message.
 
 ### 4. `ResponseEntity<T>`: HTTP response control
 
@@ -114,7 +114,7 @@ The `IllegalArgumentException` thrown by `require()` is captured by `GlobalExcep
 return ResponseEntity.ok(cycleService.getCycles(from, to, page, pageSize))
 ```
 
-[`ResponseEntity<T>`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responseentity.html) is a Spring wrapper that allows you to control the entire HTTP response: the **body** (body), the **[codigo de estado](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)** (status code) and the **headers**.
+[`ResponseEntity<T>`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responseentity.html) is a Spring wrapper that allows you to control the complete HTTP response: the **body**, the **[codigo de estado](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status)** (status code), and the **headers**.
 
 `ResponseEntity.ok(body)` is a shortcut for `ResponseEntity.status(200).body(body)`. Common static methods:
 
@@ -125,11 +125,11 @@ return ResponseEntity.ok(cycleService.getCycles(from, to, page, pageSize))
 | `ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(body)` | 429 Too Many Requests | Rate limiting |
 | `ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body)` | 500 Internal Server Error | Unexpected error |
 
-**Alternative without `ResponseEntity`**: `PaginatedResponse<CycleDTO>` could be returned directly (without wrapping in `ResponseEntity`). Spring will assume HTTP 200 automatically. But `ResponseEntity` is preferable because it allows status codes other than 200 to be returned in other methods.
+**Alternative without `ResponseEntity`**: you could return `PaginatedResponse<CycleDTO>` directly (without wrapping it in `ResponseEntity`). Spring will automatically assume HTTP 200. But `ResponseEntity` is preferable because it allows returning status codes other than 200 in other methods.
 
-### 5. JSON serialization: Spring Boot 4 + Jackson 3
+### 5. JSON Serialization: Spring Boot 4 + Jackson 3
 
-Spring Boot 4 includes **Jackson 3** as a JSON serializer. An important difference compared to previous versions:
+Spring Boot 4 includes **Jackson 3** as the JSON serializer. An important difference compared to previous versions:
 
 - **Jackson 3 serializes dates (`Instant`, `LocalDate`, etc.) as ISO-8601 by default**. It is no longer necessary to configure `spring.jackson.serialization.write-dates-as-timestamps=false` as was done in Spring Boot 2/3.
 - The `Instant` are serialized as `"2024-01-15T08:30:00Z"` automatically.
@@ -184,12 +184,12 @@ class ProfileController(private val whoopApiClient: WhoopApiClient) {
 
 This controller is different from the other 4 because:
 
-1. **Does not have intermediate service**: directly injects `WhoopApiClient` instead of a service.
-2. **Does not query the database**: The user profile is not stored locally, it is obtained in real time from the Whoop API.
+1. **It has no intermediate service**: injects `WhoopApiClient` directly instead of a service.
+2. **Does not query the database**: the user profile is not stored locally; it is obtained in real time from the Whoop API.
 3. **It has no pagination or filters**: the profile is a single object, not a collection.
-4. **The return type is `Map<String, Any?>`**: there is no typed DTO. The Whoop API response is forwarded as is.
+4. **The return type is `Map<String, Any?>`**: there is no typed DTO. The Whoop API response is forwarded as-is.
 
-This pattern is suitable because the profile changes rarely and is simple data that does not need local persistence or transformations.
+This pattern is suitable because the profile rarely changes and is a simple piece of data that does not require local persistence or transformations.
 
 ### 7. `@RestControllerAdvice` and global exception handling
 
@@ -202,7 +202,7 @@ class GlobalExceptionHandler {
     private val log = LoggerFactory.getLogger(javaClass)
 ```
 
-`@RestControllerAdvice` is the combination of `@ControllerAdvice` + `@ResponseBody`. Allows you to define exception handlers that apply to **all** application controllers. Without this mechanism, each handler would have to handle its own exceptions with try-catch blocks, duplicating code.
+`@RestControllerAdvice` is the combination of `@ControllerAdvice` + `@ResponseBody`. It allows defining exception handlers that apply to **all** the application's controllers. Without this mechanism, each controller would have to handle its own exceptions with try-catch blocks, duplicating code.
 
 #### WhoopApiException Handler
 
@@ -225,12 +225,12 @@ fun handleWhoopApiException(ex: WhoopApiException): ResponseEntity<ErrorResponse
 }
 ```
 
-[`@ExceptionHandler(WhoopApiException::class)`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html) indicates: "when any controller throws a `WhoopApiException`, execute this method."
+[`@ExceptionHandler(WhoopApiException::class)`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-exceptionhandler.html) indicates: "when any controller throws a `WhoopApiException`, execute this method".
 
 The status code mapping logic is:
 
-- **429 from Whoop** is returned as **429 to client**: the rate limiting from the external API is propagated to the client. This way Power BI knows to wait before retrying.
-- **401/403 from Whoop** is returned as **502 Bad Gateway**: An authentication failure with the external API is a problem with the server (this BFF), not the client. The 502 indicates that the server received an invalid response from an upstream.
+- **429 from Whoop** is returned as **429 to the client**: the external API’s rate limiting is propagated to the client. This way Power BI knows it must wait before retrying.
+- **401/403 from Whoop** is returned as **502 Bad Gateway**: an authentication error with the external API is a server problem (this BFF), not a client problem. 502 indicates that the server received an invalid response from an upstream.
 - **Any other error** is also mapped to **502**: any communication failure with the Whoop API is treated as a gateway error.
 
 #### IllegalArgumentException Handler
@@ -249,9 +249,9 @@ fun handleIllegalArgument(ex: IllegalArgumentException): ResponseEntity<ErrorRes
 }
 ```
 
-This handler catches exceptions thrown by `require()` in handlers (for example, `page < 1` or `pageSize > 1000`). It returns them as HTTP 400 Bad Request with a descriptive message.
+This handler catches the exceptions thrown by `require()` in the controllers (for example, `page < 1` or `pageSize > 1000`). It returns them as HTTP 400 Bad Request with a descriptive message.
 
-It is logged as `warn` (not `error`) because a 400 is the client's fault, not a server failure.
+It logs as `warn` (not `error`) because a 400 is the client's fault, not a server failure.
 
 #### Generic handler (catch-all)
 
@@ -269,12 +269,12 @@ fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
 }
 ```
 
-This is the **last resort**: any exceptions that are not `WhoopApiException` or `IllegalArgumentException` are caught here. Important points:
+This is the **last resort**: any exception that is neither `WhoopApiException` nor `IllegalArgumentException` is caught here. Important points:
 
-- It is logged as `error` with the full exception (stacktrace) for debugging.
-- The message to the client is **generic** (`"Error interno del servidor"`), it does not expose internal details. This is a security practice: never reveal stacktraces, class names or internal paths to the client.
+- It logs in as `error` with the full exception (stack trace) for debugging.
+- The message to the client is **generic** (`"Error interno del servidor"`), it does not expose internal details. This is a security practice: never reveal stack traces, class names, or internal paths to the client.
 
-### 8. The hierarchy of exceptions
+### 8. The exception hierarchy
 
 ```kotlin
 // src/main/kotlin/com/example/whoopdavidapi/exception/WhoopApiException.kt
@@ -291,10 +291,10 @@ class WhoopApiException(
 Properties:
 
 - `message`: error description (inherited from `RuntimeException`).
-- `statusCode`: the HTTP code returned by the Whoop API (429, 401, 500...). It is nullable because some errors (timeout, network failure) do not have HTTP code.
+- `statusCode`: the HTTP code returned by the Whoop API (429, 401, 500...). It is nullable because some errors (timeout, network failure) do not have an HTTP code.
 - `cause`: the original exception that caused the error (for chaining exceptions).
 
-DTO error response:
+The error response DTO:
 
 ```kotlin
 // src/main/kotlin/com/example/whoopdavidapi/exception/GlobalExceptionHandler.kt
@@ -318,7 +318,7 @@ All error responses have the same JSON structure:
 
 ### 9. Evaluation order of `@ExceptionHandler`
 
-When a handler throws an exception, Spring looks for the most **specific** handler first:
+When a controller throws an exception, Spring looks for the most **specific** handler first:
 
 ```
 Excepcion lanzada
@@ -337,11 +337,11 @@ Es IllegalArgumentException? ----Si----> handleIllegalArgument() -> 400
 Es Exception? ----Si----> handleGenericException() -> 500
 ```
 
-This works because `WhoopApiException` and `IllegalArgumentException` are subclasses of `Exception`. Spring evaluates handlers from most specific to most generic.
+This works because `WhoopApiException` and `IllegalArgumentException` are subclasses of `Exception`. Spring evaluates the handlers from most specific to most generic.
 
 ### 10. The 4 data controllers follow the same pattern
 
-`CycleController`, `RecoveryController`, `SleepController` and `WorkoutController` are structurally identical. The only difference is the service they invoke and the endpoint they expose:
+`CycleController`, `RecoveryController`, `SleepController`, and `WorkoutController` are structurally identical. The only difference is the service they invoke and the endpoint they expose:
 
 ```kotlin
 // src/main/kotlin/com/example/whoopdavidapi/controller/RecoveryController.kt
@@ -374,11 +374,11 @@ Summary of the 5 API endpoints:
 | `/api/v1/workouts` | GET | `from`, `to`, `page`, `pageSize` | Basic Auth |
 | `/api/v1/profile` | GET | none | Basic Auth |
 
-They are all under `/api/**`, so the security chain `@Order(1)` of `SecurityConfig` applies Basic Auth to them (see `docs/08-seguridad.md`).
+All of them are under `/api/**`, so the `@Order(1)` security chain of `SecurityConfig` applies Basic Auth to them (see `docs/08-seguridad.md`).
 
 ---
 
-## Complete flow of an error
+## Complete error flow
 
 Example: the client sends `GET /api/v1/cycles?page=0`.
 
@@ -399,7 +399,7 @@ Example: the client sends `GET /api/v1/cycles?page=0`.
 
 ## Official documentation
 
-- **`@RestController`**: [Spring Framework - @RestController](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-restcontroller.html)
+- **`@RestController`**: [Spring Framework - @RestController](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html)
 - **`@RequestMapping`**: [Spring Framework - Request Mapping](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html)
 - **`@RequestParam`**: [Spring Framework - @RequestParam](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestparam.html)
 - **`ResponseEntity`**: [Spring Framework - ResponseEntity](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responseentity.html)
