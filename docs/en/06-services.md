@@ -2,7 +2,7 @@
 
 ## What is the service layer?
 
-The service layer is the **intermediate layer** between the REST controllers (which receive HTTP requests) and the repositories (which access the database). Its responsibility is to contain the **business logic**: transform data, apply rules, coordinate operations between different repositories, etc.
+The service layer is the **middle layer** between the REST controllers (which receive HTTP requests) and the repositories (which access the database). Its responsibility is to contain the **business logic**: transform data, apply rules, coordinate operations between different repositories, etc.
 
 In Spring, a class is marked as a service with the annotation [`@Service`](https://docs.spring.io/spring-framework/reference/core/beans/classpath-scanning.html). This tells Spring: "this class is a component that contains business logic; register it in the [dependency injection](https://docs.spring.io/spring-framework/reference/core/beans/introduction.html) container."
 
@@ -16,7 +16,7 @@ Controller  -->  Service  -->  Repository  -->  Base de datos
 ResponseEntity   MapStruct (Entity -> DTO)
 ```
 
-The controller **must not** access the repository directly. It always delegates to the service, which decides how to obtain and transform the data.
+The controller **must not** access the repository directly. Always delegate to the service, which decides how to obtain and transform the data.
 
 ---
 
@@ -32,7 +32,7 @@ There are **5 services** in the project:
 | `WorkoutService` | `src/main/kotlin/com/example/whoopdavidapi/service/WorkoutService.kt` | Paginated training query |
 | `WhoopSyncService` | `src/main/kotlin/com/example/whoopdavidapi/service/WhoopSyncService.kt` | Orchestrate incremental synchronization with the Whoop API |
 
-The first 4 (Cycle, Recovery, Sleep, Workout) follow an **identical pattern**. The fifth (`WhoopSyncService`) has a different responsibility: it doesn’t serve data to the user, but rather obtains it from the external API and saves it to the database.
+The first 4 (Cycle, Recovery, Sleep, Workout) follow an **identical pattern**. The fifth (`WhoopSyncService`) has a different responsibility: it doesn’t serve data to the user, but rather obtains it from the external API and saves it in the database.
 
 ---
 
@@ -65,7 +65,7 @@ class CycleService(
 
 When the application starts, Spring Boot runs **component scanning**: it scans all packages under the class marked with `@SpringBootApplication` (in this case, `com.example.whoopdavidapi`) and looks for classes annotated with `@Component`, `@Service`, `@Repository`, `@Controller`, etc. Each one is registered as a singleton bean that can be injected into other classes.
 
-The component annotation hierarchy is:
+The hierarchy of component annotations is:
 
 ```
 @Component              <-- Generico (base)
@@ -261,7 +261,7 @@ This repeated pattern (4 classes with the same structure) is a conscious trade-o
 
 ### 7. WhoopSyncService: the synchronization orchestration
 
-`WhoopSyncService` has a different responsibility: it does not serve data to the user, but rather **retrieves data from the Whoop API and saves it to the database**.
+`WhoopSyncService` has a different responsibility: it does not serve data to the user; instead, **fetches data from the Whoop API and saves it to the database**.
 
 ```kotlin
 // src/main/kotlin/com/example/whoopdavidapi/service/WhoopSyncService.kt
@@ -295,7 +295,7 @@ Key points:
 
 - **5 injected dependencies**: the HTTP client (`WhoopApiClient`) and the 4 repositories. This service orchestrates communication between the external API and the local database.
 - **`syncAll()`**: public method that the scheduler (`WhoopDataSyncScheduler`) invokes periodically. Synchronizes the 4 data types in sequence.
-- **Logging with SLF4J**: `LoggerFactory.getLogger(javaClass)` creates a logger with the class name. The `{}` are placeholders that SLF4J replaces only if the log level is active (more efficient than concatenating strings).
+- **Logging with SLF4J**: `LoggerFactory.getLogger(javaClass)` creates a logger with the class name. `{}` are placeholders that SLF4J replaces only if the log level is active (more efficient than concatenating strings).
 - **Time measurement**: `System.currentTimeMillis()` before and after makes it possible to record how long the full synchronization takes.
 
 ### 8. Incremental synchronization
@@ -329,10 +329,10 @@ private fun syncCycles() {
 
 The **incremental** strategy avoids re-downloading everything every time:
 
-1. `cycleRepository.findTopByOrderByUpdatedAtDesc()` gets the most recent record from the local DB (the one with the highest `updatedAt`).
+1. `cycleRepository.findTopByOrderByUpdatedAtDesc()` retrieves the most recent record from the local DB (the one with the highest `updatedAt`).
 2. `?.updatedAt` extracts the `updatedAt` field using Kotlin’s safe call. If there are no records, it returns `null`.
 3. `whoopApiClient.getAllCycles(start = lastUpdated)` requests from the Whoop API only the records modified after that date. If `lastUpdated` is `null` (first synchronization), it fetches everything.
-4. Each record is mapped to an entity and saved with `cycleRepository.save()`. If it already exists (same ID), JPA does an UPDATE instead of an INSERT.
+4. Each record is mapped to an entity and saved with `cycleRepository.save()`. If it already exists (same ID), JPA performs an UPDATE instead of an INSERT.
 
 The methods `syncRecoveries()`, `syncSleeps()`, and `syncWorkouts()` follow the same pattern.
 

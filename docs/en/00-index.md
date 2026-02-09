@@ -14,7 +14,7 @@ It is a project for a **single user** (David), which simplifies many architectur
 
 ---
 
-## BFF Pattern (Backend For Frontend)
+## BFF (Backend For Frontend) Pattern
 
 ```
 ┌─────────────┐       ┌──────────────────────┐       ┌─────────────┐
@@ -45,11 +45,11 @@ The BFF acts as an intermediary: it does not directly expose the Whoop API, but 
 | **[springdoc-openapi](https://springdoc.org/)** | 3.0.1 | Swagger UI Documentation |
 | **Gradle** | - | Build system (Kotlin DSL) |
 | **[Docker](https://www.docker.com/)** | - | Containerization |
-| **[Kubernetes](https://kubernetes.io/)** | RKE2 | Orchestration in production |
+| **[Kubernetes](https://kubernetes.io/)** | RKE2 | Production orchestration |
 
 ---
 
-## Swagger UI (Interactive API)
+## Swagger UI (interactive API)
 
 | Environment | URL |
 |---|---|
@@ -188,7 +188,7 @@ Each document explains a Spring Boot concept with references to the project's ac
 
 1. **Read in order** if you are new to Spring Boot: start with the architecture (01) and move forward sequentially
 2. **Jump to what you need** if you’re looking for something specific: each document is self-contained
-3. **Follow the links to the code**: each document references the actual source files with clickable relative paths on GitHub
+3. **Follow the links to the code**: each document references the real source files with clickable relative paths on GitHub
 4. **Consult the official documentation**: each document includes links to the official Spring Boot and Kotlin documentation
 
 ---

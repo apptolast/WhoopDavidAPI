@@ -35,7 +35,7 @@ A profile affects two things:
 
 There are several ways to activate a profile. In order of priority (from highest to lowest):
 
-| Metodo | Example | Where is it used? |
+| Method | Example | Where is it used? |
 |---|---|---|
 | **Environment variable** | `SPRING_PROFILES_ACTIVE=prod` | Production (Kubernetes, Docker) |
 | **JVM argument** | `-Dspring.profiles.active=dev` | IDE (IntelliJ, Eclipse) |
@@ -48,7 +48,7 @@ In this project:
 - **Production (Kubernetes)**: The environment variable `SPRING_PROFILES_ACTIVE=prod` is defined in the Kubernetes manifest
 - **Demo**: It runs with `--spring.profiles.active=dev,demo` (demo is combined with dev to have H2)
 
-You can activate **multiple profiles** by separating them with a comma: `dev,demo` activates both profiles simultaneously.
+You can enable **multiple profiles** by separating them with a comma: `dev,demo` activates both profiles simultaneously.
 
 ---
 
@@ -107,7 +107,7 @@ The annotation [`@Profile`](https://docs.spring.io/spring-framework/reference/co
 | `@Profile("dev")` | It is only created when the `dev` profile is active | (not used in this project) |
 | Without `@Profile` | It is always created, regardless of the profile | `WhoopApiClient`, `WhoopSyncService`, etc. |
 
-The `!` operator (negation) is key to the Strategy pattern used by this project with `TokenManager`:
+The `!` operator (negation) is key to the Strategy pattern that this project uses with `TokenManager`:
 
 ```
 Perfil activo  │  @Profile("!demo")         │  @Profile("demo")
@@ -211,7 +211,7 @@ limit 1
 `${ENCRYPTION_KEY:YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU=}` provides a default key for development. In production, the `ENCRYPTION_KEY` variable must be defined without a default (see the prod profile).
 
 **OAuth2 client-id/secret with defaults**:
-`${WHOOP_CLIENT_ID:dev-client-id}` allows starting up without Whoop’s real environment variables. This is useful in development when there’s no need to connect to the real API.
+`${WHOOP_CLIENT_ID:dev-client-id}` allows starting up without Whoop’s real environment variables. This is useful in development when there is no need to connect to the real API.
 
 ### Prod profile (production)
 
@@ -264,11 +264,11 @@ Key points of the prod profile:
 
 | Property | Value | Meaning |
 |---|---|---|
-| `maximum-pool-size` | `10` | Maximum of 10 simultaneous connections to PostgreSQL |
-| `minimum-idle` | `2` | Keeps at least 2 connections open at all times (for a quick response) |
+| `maximum-pool-size` | `10` | Maximum 10 simultaneous connections to PostgreSQL |
+| `minimum-idle` | `2` | Keeps at least 2 connections open at all times (for a fast response) |
 | `connection-timeout` | `30000` | 30 seconds max to obtain a connection from the pool |
 | `idle-timeout` | `600000` | 10 minutes: an inactive connection is closed |
-| `max-lifetime` | `1800000` | 30 minutes: maximum lifetime of a connection (it is recycled to avoid leaks) |
+| `max-lifetime` | `1800000` | 30 minutes: maximum lifetime of a connection (it is recycled to prevent leaks) |
 
 **`ddl-auto: validate`**:
 Unlike `update` in dev, `validate` **does not modify** the database. It only checks that the existing tables match the JPA entities. If they don’t match, the application **does not start**. This protects against accidental changes in production. Schema changes must be made with migration tools (such as Flyway or Liquibase).
@@ -488,7 +488,7 @@ class DemoTokenSeeder(
 
 **[`CommandLineRunner`](https://docs.spring.io/spring-boot/reference/features/spring-application.html)** is a Spring Boot interface that allows you to execute code **right after the application starts**. The `run()` method is automatically invoked only once at startup.
 
-In this case, insert a fake OAuth2 token into the database so that the application works without having gone through Whoop’s real authorization flow. The `if (tokenRepository.count() == 0L)` condition prevents inserting duplicates if the application is restarted without clearing the database.
+In this case, insert a fake OAuth2 token into the database so that the application works without having gone through Whoop’s real authorization flow. Condition `if (tokenRepository.count() == 0L)` prevents inserting duplicates if the application is restarted without clearing the database.
 
 The `accessToken` is `"demo-access-token"`, the same value returned by `DemoWhoopTokenManager.getValidAccessToken()`. The `expiresAt` is set to 24 hours in the future (`86400` seconds) so that it does not expire during a normal development session.
 

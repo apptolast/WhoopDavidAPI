@@ -3,7 +3,7 @@
 ## Index
 
 1. [What is CI/CD](#1-what-is-cicd)
-2. [Where is it used in our project](#2-where-is-it-used-in-our-project)
+2. [Where it is used in our project](#2-where-is-it-used-in-our-project)
 3. [The 3 workflows and how they are chained](#3-the-3-workflows-and-how-they-are-chained-together)
 4. [Workflow 1: CI (Continuous Integration)](#4-workflow-1-ci-continuous-integration)
 5. [Workflow 2: CD (Continuous Deployment)](#5-workflow-2-cd-continuous-deployment)
@@ -16,9 +16,9 @@
 
 ## 1. What is CI/CD?
 
-**CI (Continuous Integration)**: every time someone pushes or opens a pull request, tests and the build run automatically. If something fails, the team knows immediately.
+**CI (Continuous Integration)**: every time someone pushes or opens a pull request, the tests and the build run automatically. If something fails, the team knows immediately.
 
-**CD (Continuous Deployment)**: after CI passes, the Docker image is built and uploaded to [Docker Hub](https://hub.docker.com/). Then, Keel detects the new image and automatically updates the Kubernetes cluster.
+**CD (Continuous Deployment)**: after CI passes, the Docker image is built and pushed to [Docker Hub](https://hub.docker.com/). Then, Keel detects the new image and automatically updates the Kubernetes cluster.
 
 **The goal**: that every change in the code reaches production (or the dev environment) without manual intervention, but with the guarantee that it has passed the tests.
 
@@ -128,7 +128,7 @@ on:
     branches: [dev]
 ```
 
-- **[`pull_request`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)**: `branches: [main, dev]` -- it runs when a PR is created or updated toward `main` or `dev`. This allows verifying the code BEFORE merging it.
+- **[`pull_request`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)**: `branches: [main, dev]` -- runs when a PR is created or updated toward `main` or `dev`. This allows verifying the code BEFORE merging it.
 - **[`push`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#push)**: `branches: [dev]` -- runs when there is a direct push to `dev` (includes PR merges).
 - **There is no `push: branches: [main]`**: pushes to `main` are only done via PR (which already runs CI in the PR). CD does run on pushes to `main`.
 
@@ -139,7 +139,7 @@ permissions:
   contents: read
 ```
 
-- The workflow only needs to **read** the repository (code checkout). It does not need to write.
+- The workflow only needs to **read** the repository (code checkout). It doesn’t need to write.
 - **Principle of least privilege**: if the workflow is compromised, it cannot modify the repository.
 
 #### Steps
@@ -352,7 +352,7 @@ Buildx is a Docker extension that enables advanced builds: caching in GitHub Act
 - **`tags`**: the tags calculated in the previous step.
 - **`cache-from: type=gha`** and **`cache-to: type=gha,mode=max`**: use the GitHub Actions [cache for Docker layers](https://docs.docker.com/build/cache/). This greatly speeds up builds (dependency layers are not rebuilt if they haven’t changed).
 
-**`mode=max`**: caches all intermediate layers, not just those from the final result. Useful for multi-stage builds because it also caches the builder layers.
+**`mode=max`**: caches all intermediate layers, not just those of the final result. Useful for multi-stage builds because it also caches the builder layers.
 
 ---
 
@@ -401,7 +401,7 @@ on:
     branches: [main, dev]
 ```
 
-- **[`workflow_run`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run)**: runs AFTER another workflow finishes.
+- **[`workflow_run`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run)**: it runs AFTER another workflow finishes.
 - **`workflows: ["CD"]`**: triggers when the workflow named "CD" completes.
 - **`types: [completed]`**: it runs both if CD succeeded and if it failed. The job condition `if` filters only the successful ones.
 - **`branches: [main, dev]`**: only if the CD was for these branches.
@@ -456,7 +456,7 @@ jobs:
 
 - **`ref`**: checks out the branch that triggered the CD workflow, not the default branch. That way the commit is made on the correct branch.
 
-**Step 2-3: Setup Node.js + Install openapi2postmanv2**
+**Step 2-3: Set up Node.js + Install openapi2postmanv2**
 
 ```yaml
 - name: Setup Node.js
@@ -506,7 +506,7 @@ The `openapi2postmanv2` tool converts an OpenAPI spec into a Postman collection.
     sleep 60
 ```
 
-Keel takes ~1 minute to detect the new image and deploy. This sleep gives the new pod time to start up.
+Keel takes ~1 minute to detect the new image and deploy. This sleep gives time for the new pod to start up.
 
 **Step 6: Download OpenAPI spec**
 
@@ -536,7 +536,7 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives the ne
 ```
 
 - Makes up to 3 attempts to download `/v3/api-docs` (springdoc-openapi endpoint).
-- If the first attempt fails (the API may not be ready), wait 30 seconds and try again.
+- If the first attempt fails (the API may not be ready), wait 30 seconds and retry.
 - Format the JSON with `jq` to make diffs in Git easier.
 
 **Step 7: Generate Postman collection**
@@ -567,11 +567,11 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives the ne
     git diff --staged --quiet || echo "changed=true" >> $GITHUB_OUTPUT
 ```
 
-- **`git add`**: adds the files to the staging area. This is important because they may be **new** files (which `git diff` without `--staged` would not detect).
+- **`git add`**: adds the files to the staging area. This is important because they can be **new** files (which `git diff` without `--staged` would not detect).
 - **`git diff --staged --quiet`**: returns exit code 0 if there are no changes, 1 if there are changes.
 - **`|| echo "changed=true"`**: if there are changes, set the variable `changed` for the next step.
 
-**Why `git add` + `git diff --staged` instead of `git diff --quiet`**: `git diff --quiet` only detects changes in files that are already tracked. If `openapi.json` is a new file (first time it is generated), `git diff --quiet` would not detect it. `git add` first and `git diff --staged` afterwards detects both new and modified files.
+**Why `git add` + `git diff --staged` instead of `git diff --quiet`**: `git diff --quiet` only detects changes in files that are already tracked. If `openapi.json` is a new file (the first time it is generated), `git diff --quiet` would not detect it. `git add` first and `git diff --staged` afterwards detects both new and modified files.
 
 **Step 9: Commit and push**
 
@@ -611,13 +611,13 @@ Keel takes ~1 minute to detect the new image and deploy. This sleep gives the ne
     ...
 ```
 
-- **`$GITHUB_STEP_SUMMARY`**: generates a summary visible on the workflow page in GitHub. It is a markdown table with the execution result.
+- **`$GITHUB_STEP_SUMMARY`**: generates a visible summary on the workflow page in GitHub. It is a markdown table with the execution result.
 
 ---
 
 ## 7. Complete pipeline flow
 
-### When a PR is created targeting `dev` or `main`
+### When a PR is created toward `dev` or `main`
 
 ```
 1. Developer crea/actualiza PR
@@ -735,7 +735,7 @@ Actions are reusable blocks of functionality, published by the community or by G
 | `actions/upload-artifact@v4` | v4 | Upload files as artifacts |
 | `docker/login-action@v3` | v3 | Log in to a Docker registry |
 | `docker/setup-buildx-action@v3` | v3 | Set up Docker Buildx |
-| [`docker/build-push-action@v6`](https://github.com/docker/build-push-action) | v6 | Build + push of Docker image |
+| [`docker/build-push-action@v6`](https://github.com/docker/build-push-action) | v6 | Build + push of a Docker image |
 | `actions/setup-node@v4` | v4 | Install Node.js |
 
 ### `secrets` (Secrets)
@@ -825,7 +825,7 @@ on:
     branches: [main, dev]
 ```
 
-It is the way to run a workflow AFTER another one finishes. Unlike putting everything in a single workflow, it allows:
+It’s the way to run a workflow AFTER another one finishes. Unlike putting everything in a single workflow, it allows:
 
 - That each workflow has different permissions (`read` vs `write`).
 - Workflows should be independent and reusable.

@@ -23,9 +23,9 @@ In Spring, a REST controller is created with the annotation [`@RestController`](
 | `RecoveryController` | `src/main/kotlin/com/example/whoopdavidapi/controller/RecoveryController.kt` | `GET /api/v1/recovery` | Local data (DB) |
 | `SleepController` | `src/main/kotlin/com/example/whoopdavidapi/controller/SleepController.kt` | `GET /api/v1/sleep` | Local data (DB) |
 | `WorkoutController` | `src/main/kotlin/com/example/whoopdavidapi/controller/WorkoutController.kt` | `GET /api/v1/workouts` | Local data (DB) |
-| `ProfileController` | `src/main/kotlin/com/example/whoopdavidapi/controller/ProfileController.kt` | `GET /api/v1/profile` | Direct call to the Whoop API |
+| `ProfileController` | `src/main/kotlin/com/example/whoopdavidapi/controller/ProfileController.kt` | `GET /api/v1/profile` | Direct call to Whoop API |
 
-Additionally, the project has a global exception handler:
+In addition, the project has a global exception handler:
 
 | Class | File |
 |---|---|
@@ -92,13 +92,13 @@ require(page >= 1) { "page debe ser >= 1" }
 require(pageSize in 1..1000) { "pageSize debe estar entre 1 y 1000" }
 ```
 
-`require()` is a function from Kotlin’s standard library for validating **preconditions**. If the condition is `false`, it throws a `IllegalArgumentException` with the message provided in the lambda block.
+`require()` is a function from Kotlin’s standard library used to validate **preconditions**. If the condition is `false`, it throws a `IllegalArgumentException` with the message provided in the lambda block.
 
 | Kotlin function | Launch | Typical use |
 |---|---|---|
 | `require()` | `IllegalArgumentException` | Validate input arguments |
 | `requireNotNull()` | `IllegalArgumentException` | Validate that a value is not null |
-| `check()` | `IllegalStateException` | Validate the object's status |
+| `check()` | `IllegalStateException` | Validate object state |
 | `error()` | `IllegalStateException` | Fail unconditionally with message |
 
 In this case:
@@ -114,11 +114,11 @@ The `IllegalArgumentException` thrown by `require()` is caught by `GlobalExcepti
 return ResponseEntity.ok(cycleService.getCycles(from, to, page, pageSize))
 ```
 
-[`ResponseEntity<T>`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responseentity.html) is a Spring wrapper that allows you to control the complete HTTP response: the **body** (body), the **[codigo de estado](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status)** (status code), and the **headers**.
+[`ResponseEntity<T>`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responseentity.html) is a Spring wrapper that allows you to control the complete HTTP response: the **body**, the **[codigo de estado](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status)** (status code), and the **headers**.
 
 `ResponseEntity.ok(body)` is a shortcut for `ResponseEntity.status(200).body(body)`. Common static methods:
 
-| Metodo | Status Code | Use |
+| Method | Status Code | Use |
 |---|---|---|
 | `ResponseEntity.ok(body)` | 200 OK | Successful response with body |
 | `ResponseEntity.badRequest().body(body)` | 400 Bad Request | Validation error |
@@ -230,7 +230,7 @@ fun handleWhoopApiException(ex: WhoopApiException): ResponseEntity<ErrorResponse
 The status code mapping logic is:
 
 - **429 from Whoop** is returned as **429 to the client**: the external API’s rate limiting is propagated to the client. This way Power BI knows it must wait before retrying.
-- **Whoop 401/403** is returned as **502 Bad Gateway**: an authentication error with the external API is a server problem (this BFF), not the client. 502 indicates that the server received an invalid response from an upstream.
+- **401/403 from Whoop** is returned as **502 Bad Gateway**: an authentication error with the external API is a server problem (this BFF), not a client problem. 502 indicates that the server received an invalid response from an upstream.
 - **Any other error** is also mapped to **502**: any communication failure with the Whoop API is treated as a gateway error.
 
 #### IllegalArgumentException Handler
@@ -374,7 +374,7 @@ Summary of the 5 API endpoints:
 | `/api/v1/workouts` | GET | `from`, `to`, `page`, `pageSize` | Basic Auth |
 | `/api/v1/profile` | GET | none | Basic Auth |
 
-All of them are under `/api/**`, so the `SecurityConfig` security chain `@Order(1)` applies Basic Auth to them (see `docs/08-seguridad.md`).
+All of them are under `/api/**`, so the `@Order(1)` security chain of `SecurityConfig` applies Basic Auth to them (see `docs/08-seguridad.md`).
 
 ---
 

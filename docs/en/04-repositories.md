@@ -6,7 +6,7 @@
 
 ## 1. What is the Repository pattern?
 
-The **Repository pattern** is an abstraction that separates business logic from data access. Instead of your service writing SQL directly, it asks the repository "give me the cycles between these dates" and the repository takes care of how.
+The **Repository pattern** is an abstraction that separates business logic from data access. Instead of your service writing SQL directly, it asks the repository "give me the cycles between these dates," and the repository takes care of the how.
 
 ```
 Controller  -->  Service  -->  Repository  -->  Base de datos
@@ -46,7 +46,7 @@ The repositories are in the `repository` package:
 
 Repositories are consumed in two layers:
 
-- **Read services** (e.g.: [`CycleService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/CycleService.kt)): They use filtering and pagination methods to serve data to the REST API.
+- **Reading services** (e.g.: [`CycleService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/CycleService.kt)): They use filtering and pagination methods to serve data to the REST API.
 - **Synchronization service** ([`WhoopSyncService.kt`](../../src/main/kotlin/com/example/whoopdavidapi/service/WhoopSyncService.kt)): Uses `findTopByOrderByUpdatedAtDesc()` for incremental synchronization and `save()` to persist data.
 
 ---
@@ -56,8 +56,8 @@ Repositories are consumed in two layers:
 ### Why Spring Data JPA and not write manual queries?
 
 1. **Zero boilerplate**: You don’t need `EntityManager`, `CriteriaBuilder`, or SQL strings. You define an interface and Spring does the rest.
-2. **Type safety**: If you change the name of a field in the entity (e.g., `start` to `startTime`), the `findByStartBetween` method would no longer compile. Spring validates method names against the entity fields when starting the application.
-3. **Integrated pagination**: The parameter [`Pageable`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) and the return [`Page<T>`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) give you full pagination (total items, total pages, has next page) effortlessly.
+2. **Type safety**: If you change the name of a field in the entity (e.g., `start` to `startTime`), the `findByStartBetween` method would no longer compile. Spring validates method names against the entity’s fields when the application starts up.
+3. **Integrated pagination**: The parameter [`Pageable`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) and the return value [`Page<T>`](https://docs.spring.io/spring-data/commons/reference/repositories/query-methods-details.html) give you complete pagination (total elements, total pages, has next page) effortlessly.
 4. **Queries in this project are simple**: Date filters and pagination. There are no complex joins or subqueries that would justify manual SQL.
 
 ### Why `JpaRepository` and not `CrudRepository`?
@@ -92,9 +92,9 @@ By extending `JpaRepository<WhoopCycle, Long>`, you get **without writing anythi
 | `deleteById(id)` | `DELETE FROM whoop_cycles WHERE id = ?` | - |
 | `existsById(id)` | `SELECT COUNT(*) > 0 FROM ... WHERE id = ?` | - |
 
-**Note about `save()`**: This method is smart. If the entity has a `@Id` with a value (not null/0), Hibernate checks whether it already exists in the DB:
+**Note about `save()`**: This method is smart. If the entity has an `@Id` with a value (not null/0), Hibernate checks whether it already exists in the DB:
 
-- If **exists**: run `UPDATE` (merge).
+- If **exists**: execute `UPDATE` (merge).
 - If **does not exist**: execute `INSERT` (persist).
 
 This is fundamental for Whoop’s incremental synchronization: when re-synchronizing data, existing records are updated instead of being duplicated.
@@ -217,7 +217,7 @@ interface RecoveryRepository : JpaRepository<WhoopRecovery, Long> {
 }
 ```
 
-Note: `WhoopRecovery` does not have a `start` field, so date filters use `createdAt`.
+Note: `WhoopRecovery` does not have a `start` field, so the date filters use `createdAt`.
 
 **[`SleepRepository.kt`](../../src/main/kotlin/com/example/whoopdavidapi/repository/SleepRepository.kt)**:
 
@@ -251,7 +251,7 @@ interface OAuthTokenRepository : JpaRepository<OAuthTokenEntity, Long> {
 }
 ```
 
-It only has one custom method: get the most recent token. It doesn’t need date filters or pagination because there is only one user and few historical tokens.
+It only has one custom method: get the most recent token. It doesn’t need date filters or pagination because there’s only one user and few historical tokens.
 
 ### 4e. `Page<T>` and `Pageable`: complete pagination
 
@@ -280,7 +280,7 @@ result.number          // Int - numero de pagina actual (base-0)
 result.size            // Int - tamano de pagina solicitado
 ```
 
-Spring automatically runs **two queries** to build the `Page`:
+Spring automatically executes **two queries** to build the `Page`:
 
 1. `SELECT * FROM whoop_cycles WHERE ... ORDER BY ... LIMIT ? OFFSET ?` (the data)
 2. `SELECT COUNT(*) FROM whoop_cycles WHERE ...` (the total, to know how many pages there are)

@@ -187,7 +187,7 @@ All endpoints `GET /api/v1/*` require **Basic Auth** and support:
 The tests include:
 
 - **Context load**: Spring context startup verification
-- **Repository**: tests with H2 (`@DataJpaTest`) for queries with a date range
+- **Repository**: tests with H2 (`@DataJpaTest`) for queries with date range
 - **Controller**: tests with MockMvc (`@WebMvcTest`) for endpoints and authentication
 - **Service**: unit tests with Mockito for business logic
 

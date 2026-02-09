@@ -6,7 +6,7 @@
 
 Gradle is responsible for:
 
-- **Download dependencies** (libraries the project needs) from Maven Central
+- **Download dependencies** (libraries that the project needs) from Maven Central
 - **Compile** the Kotlin code to JVM bytecode
 - **Run tests** with JUnit
 - **Package** the application into an executable JAR (`bootJar`)
@@ -42,7 +42,7 @@ plugins {
 }
 ```
 
-1. **`kotlin("jvm")`**: Base Kotlin plugin for JVM. Compiles `.kt` files to Java bytecode. Without this plugin, Gradle doesn't know how to compile Kotlin
+1. **`kotlin("jvm")`**: Base Kotlin plugin for JVM. Compiles `.kt` files to Java bytecode. Without this plugin, Gradle does not know how to compile Kotlin
 
 2. **`kotlin("plugin.spring")`**: Alias of [`kotlin-allopen`](https://kotlinlang.org/docs/all-open-plugin.html) configured for Spring. In Kotlin, all classes are `final` by default. Spring needs to create proxies of classes (for `@Transactional`, `@Configuration`, etc.), and proxies require non-final classes. This plugin automatically opens classes annotated with:
    - `@Component`, `@Service`, `@Controller`, `@Repository`
@@ -106,7 +106,7 @@ implementation("org.springframework.boot:spring-boot-starter-actuator")
 implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 ```
 
-**What it does**: Includes [Spring Data JPA](https://docs.spring.io/spring-boot/reference/data/sql.html) + Hibernate (ORM) + [HikariCP](https://github.com/brettwooldridge/HikariCP) (connection pool). Allows defining Repository interfaces that Spring implements automatically.
+**What it does**: Includes [Spring Data JPA](https://docs.spring.io/spring-boot/reference/data/sql.html) + Hibernate (ORM) + [HikariCP](https://github.com/brettwooldridge/HikariCP) (connection pool). It allows you to define Repository interfaces that Spring implements automatically.
 **Where it is used**: All entities in [`model/entity/`](../../src/main/kotlin/com/example/whoopdavidapi/model/entity/) and repositories in [`repository/`](../../src/main/kotlin/com/example/whoopdavidapi/repository/).
 **If you remove it**: There is no database access. Nothing works.
 
@@ -329,7 +329,7 @@ tasks.matching { it.name == "kaptTestKotlin" || it.name == "kaptGenerateStubsTes
 }
 ```
 
-> **GOTCHA Spring Boot 4**: kapt tries to process the test annotations (`@DataJpaTest`, `@WebMvcTest`, etc.) from Spring Boot 4 and fails because these annotations changed package. Since no annotation processors are needed in tests, we disable kapt for tests completely.
+> **GOTCHA Spring Boot 4**: kapt tries to process the test annotations (`@DataJpaTest`, `@WebMvcTest`, etc.) from Spring Boot 4 and fails because these annotations changed packages. Since there are no annotation processors needed in tests, we disable kapt for tests entirely.
 
 Without this line, the test compilation fails with kapt errors when trying to resolve the new Spring Boot 4 annotations.
 
@@ -363,7 +363,7 @@ allOpen {
 
 As mentioned, in Kotlin all classes are `final` by default. Hibernate needs to create proxies (subclasses) of entities for features such as lazy loading. `final` classes cannot have subclasses.
 
-The `allOpen` block complements the `kotlin("plugin.jpa")` plugin:
+Block `allOpen` complements plugin `kotlin("plugin.jpa")`:
 
 - `plugin.jpa` generates no-argument constructors
 - `allOpen` opens the classes (makes them non-final)
@@ -395,7 +395,7 @@ tasks.withType<Test> {
 }
 ```
 
-Configure Gradle to use the JUnit Platform (JUnit 5) as the test execution engine. Without this line, Gradle uses JUnit 4 by default and does not find the tests annotated with `@Test` from JUnit 5.
+Configure Gradle to use the JUnit Platform (JUnit 5) as the test execution engine. Without this line, Gradle uses JUnit 4 by default and does not find tests annotated with JUnit 5’s `@Test`.
 
 ---
 

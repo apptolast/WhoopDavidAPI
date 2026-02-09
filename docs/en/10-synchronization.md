@@ -75,7 +75,7 @@ class WhoopDataSyncScheduler(
 
 Breakdown:
 
-1. **`@Component`**: Registers the class as a Spring bean. It is necessary because Spring only looks for `@Scheduled` in beans managed by the container.
+1. **`@Component`**: Registers the class as a Spring bean. This is necessary because Spring only looks for `@Scheduled` in beans managed by the container.
 
 2. **Constructor injection**: `WhoopDataSyncScheduler` receives `WhoopSyncService` via constructor. This follows the principle of **separation of responsibilities**: the scheduler only decides **when** to execute; the service decides **what** to execute.
 
@@ -94,9 +94,9 @@ The cron expression  **is not hardcoded**. It is read from the `app.whoop.sync-c
 | Base (all) | `src/main/resources/application.yaml` | `"0 */30 * * * *"` | Every 30 minutes |
 | demo | `src/main/resources/application-demo.yaml` | `"0 */5 * * * *"` | Every 5 minutes |
 
-In profile `demo`, synchronization is more frequent (every 5 minutes) because the data is mock and there is no risk of exceeding the real API’s rate limits.
+In profile `demo`, synchronization is more frequent (every 5 minutes) because the data is mock and there is no risk of exceeding the real API's rate limits.
 
-The syntax `"\${...}"` is **SpEL (Spring Expression Language)**. In Kotlin code it is written as `"\${app.whoop.sync-cron}"` (with a backslash to escape Kotlin’s `$`). Spring resolves it to the property value at startup time.
+The syntax `"\${...}"` is **SpEL (Spring Expression Language)**. In Kotlin code it is written `"\${app.whoop.sync-cron}"` (with a backslash to escape Kotlin’s `$`). Spring resolves it to the property value at startup time.
 
 ### Cron format in Spring (6 fields)
 
@@ -119,7 +119,7 @@ Breakdown of the expression `"0 */30 * * * *"`:
 
 | Field | Value | Meaning |
 |---|---|---|
-| Second | `0` | At second 0 (start of the minute) |
+| Second | `0` | At the second 0 (start of the minute) |
 | Minute | `*/30` | Every 30 minutes (`*/N` = every N units) |
 | Time | `*` | Any time |
 | Day of the month | `*` | Any day |
@@ -150,7 +150,7 @@ try {
 
 The `try-catch` is **critical** in a `@Scheduled` method. If an uncaught exception escapes from the method, Spring cancels future executions of that scheduled method. That is, if a synchronization fails without try-catch, it would never run again until the application is restarted.
 
-With the try-catch, the error is logged, but the scheduler remains scheduled for the next execution.
+With try-catch, the error is logged, but the scheduler remains scheduled for the next execution.
 
 ---
 
@@ -221,21 +221,21 @@ private fun syncCycles() {
 
 Step by step:
 
-1. **`cycleRepository.findTopByOrderByUpdatedAtDesc()?.updatedAt`**: Looks up the most recent cycle in the database and retrieves its `updatedAt` field. If the database is empty, it returns `null` (first synchronization).
+1. **`cycleRepository.findTopByOrderByUpdatedAtDesc()?.updatedAt`**: Looks for the most recent cycle in the database and retrieves its `updatedAt` field. If the database is empty, it returns `null` (first synchronization).
 
-2. **`whoopApiClient.getAllCycles(start = lastUpdated)`**: Requests from the Whoop API all cycles since date `lastUpdated`. If it is `null` (first time), Whoop returns the entire history.
+2. **`whoopApiClient.getAllCycles(start = lastUpdated)`**: Request from the Whoop API all cycles since date `lastUpdated`. If it is `null` (first time), Whoop returns the entire history.
 
 3. **Save loop with internal try-catch**: Each record is mapped and saved individually. If a record has invalid data (for example, the `start` field is missing), `mapToCycle` throws `IllegalArgumentException` and that record is skipped. The others continue to be processed.
 
 4. **`cycleRepository.save(cycle)`**: JPA `save()` performs an **upsert**: if a record with the same `id` already exists, it updates it. If it doesn’t exist, it inserts it. This allows reprocessing records that have been updated in Whoop.
 
-5. **Counters `saved` and `skipped`**: They are recorded in the logs to monitor the health of synchronization.
+5. **Counters `saved` and `skipped`**: They are recorded in the logs to monitor the health of the synchronization.
 
 The methods `syncRecoveries()`, `syncSleeps()`, and `syncWorkouts()` follow exactly the same pattern. The only difference is the repository and the mapping method they use.
 
 ### Independence between synchronizations
 
-Each `syncXxx()` method has its own external `try-catch`:
+Each method `syncXxx()` has its own external `try-catch`:
 
 ```kotlin
 fun syncAll() {
@@ -248,7 +248,7 @@ fun syncAll() {
 
 If `syncCycles()` fails (for example, Whoop returns a 500 error for cycles), the exception is caught inside `syncCycles()` and the recoveries, sleeps, and workouts syncs run normally. This design prevents a partial failure from losing the entire sync.
 
-### JSON Mapping to Entities
+### JSON mapping to entities
 
 The Whoop API returns JSON like `Map<String, Any?>`. The mapping to JPA entities is done manually with Kotlin safe casts.
 
@@ -280,13 +280,13 @@ private fun mapToCycle(record: Map<String, Any?>): WhoopCycle {
 
 | Expression | What does it do? | When it is used |
 |---|---|---|
-| `as Number` | Unsafe cast **insecure**. Throws `ClassCastException` if it is not a `Number` | Required fields such as `id` |
+| `as Number` | Unsafe cast **unsafe**. Throws `ClassCastException` if it is not a `Number` | Required fields such as `id` |
 | `as? Number` | Safe cast **safe** (safe cast). Returns `null` if it cannot be converted | Optional fields such as `strain` |
 | `as? Map<*, *>` | Safe cast to a generic Map. Used for nested JSON objects | The `score` field is a nested JSON object |
 | `?.toFloat()` | Safe call operator. Only calls `toFloat()` if it is not `null` | Chained conversion after safe cast |
 | `?: "PENDING_SCORE"` | Elvis operator. If the value is `null`, use the default value | Fields with default value |
 
-**Why `as Number` and not `as Long` directly?** Jackson (the JSON deserializer) converts JSON numbers to different Java types depending on their size: `Integer` for small numbers, `Long` for large ones. Using `Number` (the parent class of all numeric types in Java), any numeric type is accepted and then converted with `.toLong()`.
+**Why `as Number` and not `as Long` directly?** Jackson (the JSON deserializer) converts JSON numbers to different Java types depending on their size: `Integer` for small numbers, `Long` for large ones. By using `Number` (the parent class of all numeric types in Java), any numeric type is accepted and then converted with `.toLong()`.
 
 **Nested fields (score)**: The Whoop API returns the score as a nested JSON object. First, the score map is extracted and then its fields are accessed:
 
@@ -311,7 +311,7 @@ private fun parseInstant(value: Any?): Instant? {
 }
 ```
 
-This utility function converts a JSON value (which may be `String`, `null`, or another type) to a Java [`Instant`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/time/Instant.html).
+This utility function converts a JSON value (which can be `String`, `null`, or another type) to a Java [`Instant`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/time/Instant.html).
 
 - **`when (value)`**: Kotlin when expression (equivalent to switch in other languages).
 - **`is String`**: Verify that the value is a String. If it is not, return `null`.

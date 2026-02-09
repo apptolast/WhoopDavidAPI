@@ -8,7 +8,7 @@
   - [Fluent API: how requests are made](#fluent-api-how-requests-are-made)
   - [URI builder with query parameters](#uri-builder-with-query-parameters)
   - [Timeouts with SimpleClientHttpRequestFactory](#timeouts-with-simpleclienthttprequestfactory)
-- [WhoopApiClient: consuming the paginated API](#whoopapiclient-consumption-of-the-paginated-api)
+- [WhoopApiClient: consumption of the paginated API](#whoopapiclient-consumption-of-the-paginated-api)
   - [What problem does it solve?](#what-problem-does-it-solve)
   - [WhoopPageResponse: the page structure](#whooppageresponse-the-page-structure)
   - [getAllRecords(): the generic pagination method](#getallrecords-the-generic-pagination-method)
@@ -18,13 +18,13 @@
   - [WhoopTokenManager: real OAuth2 token management](#whooptokenmanager-real-oauth2-token-management)
   - [DemoWhoopTokenManager: static token for demos](#demowhooptokenmanager-static-token-for-demos)
   - [How Spring chooses which one to inject](#how-does-spring-choose-which-one-to-inject)
-- [Resilience4j: resilience against external failures](#resilience4j-resilience-against-external-failures)
+- [Resilience4j: resilience against external failures](#resilience4j-resilience-in-the-face-of-external-failures)
   - [What is Resilience4j?](#what-is-resilience4j)
   - [CircuitBreaker](#circuitbreaker)
   - [Retry](#retry)
   - [RateLimiter](#ratelimiter)
   - [Fallback methods](#fallback-methods)
-  - [Why is AOP needed](#why-is-aop-needed)
+  - [Why is AOP needed?](#why-is-aop-needed)
 - [Official documentation](#official-documentation)
 
 ---
@@ -77,7 +77,7 @@ class WhoopClientConfig(
 
 Step-by-step breakdown:
 
-1. **`@Configuration`**: Marks the class as a source of Spring beans. Spring processes it at startup and registers the beans defined by its `@Bean` methods.
+1. **`@Configuration`**: Marks the class as a source of Spring beans. Spring processes it at startup and registers the beans defined by its methods `@Bean`.
 
 2. **`@Value("\${app.whoop.base-url}")`**: Injects the value of the `app.whoop.base-url` property from `application.yaml`. The default value is `https://api.prod.whoop.com` (defined in the base YAML), but the `demo` profile overrides it to `http://localhost:8080/mock`.
 
@@ -87,7 +87,7 @@ Step-by-step breakdown:
 
 5. **`.baseUrl(baseUrl)`**: All calls made by this `RestClient` will start from this base URL. If `.uri("/developer/v1/cycle")` is done afterwards, the full URL will be `https://api.prod.whoop.com/developer/v1/cycle`.
 
-6. **`.defaultHeader("Content-Type", "application/json")`**: Header that will be included in **all** requests from this client. This way it doesn't have to be repeated in each call.
+6. **`.defaultHeader("Content-Type", "application/json")`**: Header that will be included in **all** requests from this client. This way it doesn’t have to be repeated in each call.
 
 7. **`.requestFactory(requestFactory)`**: Connect the HTTP connection factory with the configured timeouts (explained below).
 
@@ -107,7 +107,7 @@ val response = whoopRestClient.get()           // (1) Metodo HTTP
 |---|---|---|
 | 1 | `.get()` | Indicates that it is an HTTP GET request. There are also `.post()`, `.put()`, `.delete()`, `.patch()` |
 | 2 | `.uri(...)` | Specify the path. It is concatenated with `baseUrl` from the builder |
-| 3 | `.header(...)` | Add a header to this specific request (not to all of them). |
+| 3 | `.header(...)` | Add a header to this specific request (not to all of them) |
 | 4 | `.retrieve()` | Executes the HTTP request and obtains the response. If the server returns an error (4xx, 5xx), it throws an exception |
 | 5 | `.body(...)` | Deserializes the body of the JSON response into the specified type. Jackson (Spring’s JSON serializer) takes care of it automatically |
 
@@ -129,7 +129,7 @@ When the URL needs optional query parameters (such as `?limit=25&start=2024-01-0
 Why a lambda and not a String?
 
 - **Optional parameters**: With `?.let { ... }` the parameter is only added if it is not `null`. With a String you would have to build the query manually by concatenating.
-- **Automatic encoding**: `UriBuilder` automatically encodes special characters (such as `+` in timestamps). This prevents subtle encoding bugs.
+- **Automatic encoding**: `UriBuilder` automatically encodes special characters (such as `+` in timestamps). This avoids subtle encoding bugs.
 - **Type-safe**: There is no risk of errors due to string concatenation.
 
 Example of the resulting URL:
@@ -198,7 +198,7 @@ This internal `data class` models the JSON structure returned by the Whoop API:
 ```
 
 - **`records`**: List of records from the current page. `Map<String, Any?>` is used instead of a typed DTO because the structure varies between endpoints (cycles, recovery, sleep, workout). The mapping to entities is done later in `WhoopSyncService`.
-- **`next_token`**: If it is `null`, there are no more pages. If it has a value, another request must be made including this token.
+- **`next_token`**: If it is `null`, there are no more pages. If it has a value, you must make another request including this token.
 
 ### getAllRecords(): the generic pagination method
 
@@ -258,7 +258,7 @@ fun getAllCycles(start: Instant? = null, end: Instant? = null): List<Map<String,
 // ... getAllWorkouts -> "/developer/v1/activity/workout"
 ```
 
-Each public method has the same three Resilience4j annotations. The annotations must be on the **public** method because Resilience4j uses AOP proxies that only intercept external calls (more on this in the AOP section).
+Each public method has the same three Resilience4j annotations. The annotations must be on the **public** method because Resilience4j uses AOP proxies that only intercept external calls (more about this in the AOP section).
 
 ### Bearer token injection
 
@@ -282,7 +282,7 @@ interface TokenManager {
 }
 ```
 
-An interface with a single method. It defines **what** is needed (a valid access token) without specifying **how** it is obtained. This allows having multiple implementations and for Spring to inject the correct one depending on the active profile.
+An interface with a single method. It defines **what** is needed (a valid access token) without specifying **how** it is obtained. This allows having multiple implementations and for Spring to inject the correct one according to the active profile.
 
 ### WhoopTokenManager: real OAuth2 token management
 
@@ -318,9 +318,9 @@ class WhoopTokenManager(
 
 Important points:
 
-1. **[`@Profile`](https://docs.spring.io/spring-boot/reference/features/profiles.html)`("!demo")`**: The `!` is a negation. This class is active in **all** profiles **except** `demo`. When it is run with `--spring.profiles.active=dev` or `prod`, Spring creates this bean. When it is run with `demo`, it does not create it.
+1. **[`@Profile`](https://docs.spring.io/spring-boot/reference/features/profiles.html)`("!demo")`**: `!` is a negation. This class is active in **all** profiles **except** `demo`. When run with `--spring.profiles.active=dev` or `prod`, Spring creates this bean. When run with `demo`, it does not create it.
 
-2. **`tokenRepository.findTopByOrderByUpdatedAtDesc()`**: Search in the `oauth_tokens` table for the most recent token (ordered by `updated_at` descending). It is a **derived query** from Spring Data JPA.
+2. **`tokenRepository.findTopByOrderByUpdatedAtDesc()`**: Search in the `oauth_tokens` table for the most recent token (ordered by `updated_at` descending). It is a Spring Data JPA **derived query**.
 
 3. **Logic for [token refresh](https://datatracker.ietf.org/doc/html/rfc6749#section-6) (5 minutes)**: `token.expiresAt.isBefore(Instant.now().plusSeconds(300))` checks whether the token expires within the next 300 seconds (5 minutes). If so, it proactively refreshes it. This prevents it from expiring right in the middle of a paginated sync.
 
@@ -379,7 +379,7 @@ Only 4 lines of logic. It always returns the string `"demo-access-token"`. It do
 
 ### How does Spring choose which one to inject?
 
-When `WhoopApiClient` requests a `TokenManager`:
+When `WhoopApiClient` asks for a `TokenManager`:
 
 ```kotlin
 class WhoopApiClient(
@@ -400,11 +400,11 @@ The **[`@Primary`](https://docs.spring.io/spring-framework/reference/core/beans/
 
 ---
 
-## Resilience4j: resilience against external failures
+## Resilience4j: resilience in the face of external failures
 
 ### What is Resilience4j?
 
-Resilience4j is a resilience library for Java/Kotlin that implements patterns to handle **external service failures**. When your application depends on an external API (like Whoop), that API can:
+Resilience4j is a resilience library for Java/Kotlin that implements patterns to handle **failures of external services**. When your application depends on an external API (like Whoop), that API can:
 
 - Fall temporarily
 - Respond very slowly
@@ -443,7 +443,7 @@ The **Circuit Breaker** pattern (circuit breaker) works like an electrical switc
 
 | Status | Behavior |
 |---|---|
-| **CLOSED** (closed) | Normal status. All requests go through. Failures are monitored. |
+| **CLOSED** (closed) | Normal status. All requests pass. Failures are monitored |
 | **OPEN** (open) | Requests **are not executed**. The [fallback](https://resilience4j.readme.io/docs/circuitbreaker#fallback-methods) is returned immediately. It protects both your app and the downed server |
 | **HALF_OPEN** (half-open) | A few test requests are allowed to see if the service has recovered. If they succeed, it returns to CLOSED. If they fail, it returns to OPEN |
 
@@ -471,11 +471,11 @@ resilience4j:
 | `wait-duration-in-open-state` | `30s` | After opening, wait 30 seconds before trying again (HALF_OPEN) |
 | `permitted-number-of-calls-in-half-open-state` | `3` | In the HALF_OPEN state, it allows 3 test requests |
 
-**Practical example**: If, out of the last 10 calls to Whoop, 5 return a 500 error, the circuit breaker opens. For 30 seconds, all calls return the fallback without attempting to contact Whoop. After 30s, it allows 3 test requests. If those 3 work, it goes back to CLOSED.
+**Practical example**: If, out of the last 10 calls to Whoop, 5 return a 500 error, the circuit breaker opens. For 30 seconds, all calls return the fallback without attempting to contact Whoop. After 30s, it allows 3 trial requests. If those 3 work, it goes back to CLOSED.
 
 ### Retry
 
-The **Retry** pattern retries requests that fail. It is useful for **transient** errors (an occasional timeout, a temporary 503 error).
+The **Retry** pattern retries failed requests. It is useful for **transient** errors (an occasional timeout, a temporary 503 error).
 
 ```yaml
 resilience4j:
@@ -521,9 +521,9 @@ resilience4j:
 |---|---|---|
 | `limit-for-period` | `90` | Maximum 90 requests per period |
 | `limit-refresh-period` | `60s` | The period resets every 60 seconds |
-| `timeout-duration` | `10s` | If the limit is exceeded, wait up to 10s for a permit to be released. If it isn’t released, throw an exception |
+| `timeout-duration` | `10s` | If the limit is exceeded, wait up to 10s for a permit to be released. If it isn’t released, throw an exception. |
 
-This means: a maximum of **90 requests per minute** to the Whoop API. If the sync tries to make request number 91 within the same minute, it is blocked for up to 10 seconds waiting for the period to reset. If it doesn’t succeed, it fails.
+This means: a maximum of **90 requests per minute** to the Whoop API. If the sync tries to make request number 91 within the same minute, it is blocked for up to 10 seconds waiting for the period to reset. If it doesn’t manage to, it fails.
 
 ### Fallback methods
 
@@ -550,7 +550,7 @@ Rules for fallback methods:
 
 In this project, the fallbacks return empty lists. The result is that if Whoop is down, the synchronization simply doesn’t import new data (it doesn’t fail with an exception). When Whoop comes back, the next synchronization will work normally.
 
-There is also a specific fallback for the `getUserProfile()` method:
+There is also a specific fallback for the method `getUserProfile()`:
 
 ```kotlin
 @Suppress("UNUSED_PARAMETER")
@@ -579,7 +579,7 @@ How does AOP work with these annotations:
 3. The proxy executes the Resilience4j logic **before** and **after** the real method:
    - **RateLimiter**: Checks whether there are permits available. If not, waits or fails.
    - **Retry**: Executes the method. If it fails, wait and retry.
-   - **CircuitBreaker**: Checks the state of the circuit. If it is open, it executes the fallback without calling the real method.
+   - **CircuitBreaker**: Checks the circuit state. If it is open, it executes the fallback without calling the real method.
 
 ```
 Llamada a getAllCycles()

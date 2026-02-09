@@ -94,10 +94,10 @@ fun main(args: Array<String>) {
 1. `WhoopDataSyncScheduler` triggers `syncAll()` every 30 minutes (configurable via cron)
 2. `WhoopSyncService` requests the data from `WhoopApiClient` with incremental synchronization (only new data since the last `updatedAt`)
 3. `WhoopApiClient` uses [`RestClient`](https://docs.spring.io/spring-framework/reference/integration/rest-clients.html) to call the Whoop API v2 with a Bearer OAuth2 token
-4. `WhoopTokenManager` ensures that the token is valid; if it expires in less than 5 minutes, it automatically refreshes it
+4. `WhoopTokenManager` ensures that the token is valid; if it expires in less than 5 minutes, it refreshes it automatically
 5. `WhoopSyncService` maps the JSON responses to JPA entities and saves them in the DB
 
-### Query flow (read)
+### Query (read) flow
 
 1. Power BI does `GET /api/v1/cycles?page=1&pageSize=100` with HTTP Basic Auth
 2. `SecurityConfig` validates the credentials (user `powerbi`)
@@ -126,7 +126,7 @@ Spring offers two web programming models:
 
 1. **JPA is blocking**: Spring Data JPA (Hibernate) uses JDBC, which is blocking by nature. Using WebFlux with JPA would negate the reactive advantages
 2. **`@Scheduled` is blocking**: Periodic synchronization uses blocking threads
-3. **Single user**: There is no benefit to handling thousands of concurrent connections when only Power BI makes requests
+3. **A single user**: There is no benefit to handling thousands of concurrent connections when only Power BI makes requests
 
 ### Why incremental synchronization?
 
@@ -149,7 +149,7 @@ This avoids downloading all the data on each synchronization. On the first run, 
 
 The **entities** (`WhoopCycle`) represent the database structure. The **DTOs** (`CycleDTO`) represent what the API returns to the client. Separating them allows:
 
-- Change the DB structure without affecting the API
+- Change the structure of the DB without affecting the API
 - Hide internal fields (such as synchronization timestamps)
 - Return different formats to different clients in the future
 
@@ -188,13 +188,13 @@ fun main(args: Array<String>) {   // (4)
 
 4. **`fun main`**: Top-level function. In Kotlin it does not need to be inside a class
 
-5. **`runApplication<WhoopDavidApiApplication>(*args)`**: Kotlin extension function that is equivalent to `SpringApplication.run(WhoopDavidApiApplication::class.java, *args)`. `*args` is Kotlin’s spread operator that converts a `Array` into varargs
+5. **`runApplication<WhoopDavidApiApplication>(*args)`**: Kotlin extension function equivalent to `SpringApplication.run(WhoopDavidApiApplication::class.java, *args)`. `*args` is Kotlin’s spread operator that converts a `Array` into varargs
 
 ### Multi-chain security architecture
 
 **File**: [`src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt`](../../src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt)
 
-Spring Security allows defining multiple [`SecurityFilterChain`](https://docs.spring.io/spring-security/reference/servlet/architecture.html), each with its own URL pattern and rules. The `@Order` determines the priority:
+Spring Security allows you to define multiple [`SecurityFilterChain`](https://docs.spring.io/spring-security/reference/servlet/architecture.html), each with its own URL pattern and rules. The `@Order` determines the priority:
 
 ```kotlin
 @Bean @Order(1)  // API: Basic Auth, stateless

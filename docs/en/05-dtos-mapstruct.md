@@ -1,6 +1,6 @@
 # 05 - DTOs and MapStruct
 
-> How to separate what you expose in the API from what you store in the database, and how [MapStruct](https://mapstruct.org/documentation/stable/reference/html/) automatically generates the conversion code at compile time.
+> How to separate what you expose in the API from what you store in the DB, and how [MapStruct](https://mapstruct.org/documentation/stable/reference/html/) automatically generates the conversion code at compile time.
 
 ---
 

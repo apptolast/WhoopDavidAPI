@@ -14,7 +14,7 @@
 
 ## 1. What is Docker?
 
-Docker is a tool that packages your application together with everything it needs to run (JRE, dependencies, configuration) into an **image**. That image can be run on any machine that has Docker installed, ensuring it works the same in development, CI/CD, and production.
+Docker is a tool that packages your application together with everything it needs to run (JRE, dependencies, configuration) into an **image**. That image can be run on any machine that has Docker installed, ensuring that it works the same in development, CI/CD, and production.
 
 ### Key concepts
 
@@ -22,7 +22,7 @@ Docker is a tool that packages your application together with everything it need
 |----------|-------------|
 | **Image** | An immutable package with your app + dependencies. It is created from a `Dockerfile`. |
 | **Container** | A running instance of an image. It is like an isolated process. |
-| **[Dockerfile](https://docs.docker.com/reference/dockerfile/)** | An instruction file to build an image. |
+| **[Dockerfile](https://docs.docker.com/reference/dockerfile/)** | An instruction file for building an image. |
 | **[Multi-stage build](https://docs.docker.com/build/building/multi-stage/)** | Technique that uses multiple `FROM` to separate the compilation phase from the execution phase, reducing the size of the final image. |
 | **Layer caching** | Docker caches each instruction (`RUN`, `COPY`, etc.) as a layer. If a layer doesn’t change, it isn’t re-executed. |
 | **Fat JAR (bootJar)** | Spring Boot packages the entire application + dependencies into a single executable `.jar` file. |
@@ -115,7 +115,7 @@ RUN addgroup -S spring && adduser -S spring -G spring
 RUN apk add --no-cache curl
 ```
 
-- Install `curl` for `HEALTHCHECK`. Alpine does not include it by default.
+- Install `curl` for `HEALTHCHECK`. Alpine doesn’t include it by default.
 - `--no-cache` avoids storing the package index, reducing the image size.
 
 ```dockerfile
@@ -124,7 +124,7 @@ COPY --from=builder /app/build/libs/*.jar app.jar
 ```
 
 - **`--from=builder`**: copy the JAR from stage 1 (builder) to stage 2 (runtime).
-- Only the final artifact is copied. All the compilation tooling is discarded.
+- Only the final artifact is copied. All the build tooling is discarded.
 
 ```dockerfile
 RUN chown spring:spring app.jar
@@ -144,7 +144,7 @@ EXPOSE 8080
 ENV JAVA_OPTS="-Xms256m -Xmx512m"
 ```
 
-- Define default JVM options: 256 MB minimum heap, 512 MB maximum.
+- Set default JVM options: 256 MB minimum heap, 512 MB maximum.
 - It can be overridden from Kubernetes with an environment variable `JAVA_OPTS`.
 
 ```dockerfile
@@ -155,7 +155,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
 - Docker checks the container’s health every 30 seconds.
 - `--start-period=60s`: give Spring Boot 60 seconds to start up before beginning to check.
 - `--retries=3`: after 3 consecutive failures, mark the container as `unhealthy`.
-- The `/actuator/health` endpoint is from Spring Boot Actuator.
+- The endpoint `/actuator/health` is from Spring Boot Actuator.
 
 ```dockerfile
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
@@ -248,13 +248,13 @@ metadata:
     app: whoop-david-api
 ```
 
-**What is**: a [Namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/) is like a folder in Kubernetes. It isolates resources so they don’t get mixed together. The pods, services, and secrets in a namespace are not visible from another (unless the full DNS name is used).
+**What is**: a [Namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/) is like a folder in Kubernetes. It isolates resources so they don’t get mixed up. The pods, services, and secrets in one namespace are not visible from another (unless the full DNS name is used).
 
 **Why 3 namespaces**: separating PostgreSQL, dev, and prod allows:
 
 - Limit permissions by namespace (RBAC).
-- Prevent a dev error from affecting prod.
-- Have different secrets per environment.
+- Prevent an error in dev from affecting prod.
+- Having different secrets per environment.
 
 ### 5.2 StatefulSet vs Deployment: databases
 
@@ -384,7 +384,7 @@ stringData:
 - **`stringData`**: allows writing the values in plain text in the YAML. Kubernetes automatically encodes them in base64 when storing them in etcd.
 - The pods reference these secrets with `secretKeyRef` in their environment variables.
 
-**Important**: in production, these secrets should be managed with tools like Sealed Secrets, Vault, or SOPS. Keeping them in plain text in Git is a security risk (acceptable for learning).
+**Important**: in production, these secrets should be managed with tools like Sealed Secrets, Vault, or SOPS. Having them in plain text in Git is a security risk (acceptable for learning).
 
 ### 5.5 ConfigMap: non-sensitive configuration
 
@@ -418,12 +418,12 @@ data:
 - It contains the `application.yaml` that is injected into the pod as a file mounted at `/app/config/`.
 - **`SPRING_CONFIG_ADDITIONAL_LOCATION=file:/app/config/`** in the Deployment tells Spring Boot to read this additional configuration.
 - The DB URL uses Kubernetes’ internal DNS: `postgresql.apptolast-whoop-david-api.svc.cluster.local` -- this is `<servicio>.<namespace>.svc.cluster.local`.
-- `${DB_USERNAME}` and `${DB_PASSWORD}` are resolved from the pod's environment variables (which come from the Secret).
+- `${DB_USERNAME}` and `${DB_PASSWORD}` are resolved from the pod’s environment variables (which come from the Secret).
 
 **Difference: Secret vs ConfigMap**:
 
 - **Secret**: sensitive data (passwords, tokens, keys). They are stored encrypted in etcd.
-- **[ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/)**: non-sensitive data (configuration, URLs, flags). They are stored in plain text.
+- **[ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/)**: non-sensitive data (configuration, URLs, flags). Stored in plain text.
 
 ### 5.6 Deployment: the API
 
@@ -652,7 +652,7 @@ startupProbe:
 | **readinessProbe** | "Can it receive traffic?" | Stop sending traffic to it (but it doesn’t kill it) |
 | **livenessProbe** | "Is he still alive?" | Kubernetes restarts it |
 
-**Why 3 probes**: Spring Boot takes quite a while to start up (~60-90s). Without `startupProbe`, `livenessProbe` could kill the pod before it finishes starting up.
+**Why 3 probes**: Spring Boot takes quite a while to start (~60-90s). Without `startupProbe`, the `livenessProbe` could kill the pod before it finishes starting up.
 
 #### ConfigMap volume mount
 
@@ -741,7 +741,7 @@ spec:
 ```
 
 - **cert-manager** is a Kubernetes operator that manages [TLS certificates](https://cert-manager.io/docs/usage/certificate/) automatically.
-- **`cloudflare-clusterissuer`**: use Cloudflare's DNS challenge to validate the domain and obtain a Let's Encrypt certificate.
+- **`cloudflare-clusterissuer`**: use Cloudflare’s DNS challenge to validate the domain and obtain a Let’s Encrypt certificate.
 - The certificate is stored as a Kubernetes Secret named `whoop-david-api-tls`.
 - It renews automatically 30 days before it expires.
 
@@ -777,7 +777,7 @@ spec:
 
 - **IngressRoute** is a Traefik CRD (Custom Resource Definition). It works like an [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) but with more functionality.
 - **`entryPoints: websecure`**: only accepts HTTPS (port 443).
-- **`match: Host(...)`**: routes requests for `david-whoop-dev.apptolast.com` to service `whoop-david-api:8080`.
+- **`match: Host(...)`**: routes requests for `david-whoop-dev.apptolast.com` to the `whoop-david-api:8080` service.
 - **`tls.secretName`**: use the certificate generated by cert-manager.
 
 #### Security middleware

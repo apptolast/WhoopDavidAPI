@@ -2,7 +2,7 @@
 
 ## What is Spring Security?
 
-Spring Security is Spring’s security framework. It is responsible for **authentication** (verifying who you are) and **authorization** (verifying what you can do). It works as a [filter chain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-securityfilterchain) that runs **before** the request reaches the controller.
+Spring Security is Spring’s security framework. It handles **authentication** (verifying who you are) and **authorization** (verifying what you can do). It works as a [filter chain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-securityfilterchain) that runs **before** the request reaches the controller.
 
 In this project, Spring Security protects the API with three different mechanisms:
 
@@ -19,7 +19,7 @@ In this project, Spring Security protects the API with three different mechanism
 | `src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt` | 4 security chains + user management |
 | `src/main/kotlin/com/example/whoopdavidapi/util/TokenEncryptor.kt` | Encryption [AES-256-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) of OAuth2 tokens in the DB |
 | `src/main/kotlin/com/example/whoopdavidapi/util/EncryptedStringConverter.kt` | JPA converter that automatically encrypts/decrypts |
-| `src/main/kotlin/com/example/whoopdavidapi/model/entity/OAuthTokenEntity.kt` | JPA entity with encrypted tokens |
+| `src/main/kotlin/com/example/whoopdavidapi/model/entity/OAuthTokenEntity.kt` | JPA Entity with Encrypted Tokens |
 
 ---
 
@@ -103,7 +103,7 @@ fun userDetailsService(passwordEncoder: PasswordEncoder): UserDetailsService {
 
 [`UserDetailsService`](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/user-details-service.html) is the interface that Spring Security uses to look up users. When a request with Basic Auth arrives, Spring:
 
-1. Extract `username` and `password` from the `Authorization` header.
+1. Extract `username` and `password` from the header `Authorization`.
 2. Call `userDetailsService.loadUserByUsername(username)` to retrieve the stored user.
 3. Compare the sent password with the stored hash using `passwordEncoder.matches()`.
 4. If they match, the request is authenticated.
@@ -141,7 +141,7 @@ Peticion HTTP entrante
 @Order(4): todo lo demas   -- Catch-all --> DENEGAR
 ```
 
-A request is only processed by **a chain**: the first one whose `securityMatcher` matches the URL.
+A request is only processed by **one chain**: the first whose `securityMatcher` matches the URL.
 
 ### 5. String 1 (`@Order(1)`): API endpoints with Basic Auth
 
@@ -170,8 +170,8 @@ Line-by-line breakdown:
 
 **`.sessionManagement { it.sessionCreationPolicy(`[`SessionCreationPolicy`](https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html)`.STATELESS) }`**: indicates that Spring **never** will create an HTTP session for these endpoints. Each request must include the Basic Auth credentials. This is important because:
 
-- Power BI sends credentials with each request (it does not maintain a session).
-- Server memory is not wasted storing sessions.
+- Power BI sends credentials in each request (it does not maintain a session).
+- No server memory is wasted storing sessions.
 - It facilitates horizontal scaling (there is no shared state between replicas).
 
 **`.authorizeHttpRequests { auth -> auth.anyRequest().authenticated() }`**: every request to `/api/**` requires authentication. There are no public endpoints within `/api/`.
@@ -199,14 +199,14 @@ fun oauth2SecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
 
 **`.securityMatcher("/login/**", "/oauth2/**")`**: applies to the OAuth2 flow routes. `/login/oauth2/code/whoop` is where the Whoop API redirects after David authorizes the application. `/oauth2/**` are Spring’s internal routes to handle the handshake.
 
-**`.oauth2Login { }`**: enables the OAuth2 Authorization Code flow. Spring Security takes care of:
+**`.oauth2Login { }`**: activates the OAuth2 Authorization Code flow. Spring Security is responsible for:
 
 1. Redirect the user to the Whoop authorization page.
 2. Receive the callback with the authorization code.
 3. Exchange the code for access and refresh tokens.
 4. Store the tokens (in this project, in the database via `OAuthTokenEntity`).
 
-This flow runs only once: David visits `/login` in a browser, authorizes the application, and the tokens are saved. From that point on, automatic synchronization uses the stored tokens (and renews them automatically when they expire).
+This flow runs only once: David visits `/login` in a browser, authorizes the application, and the tokens are saved. From that point on, the automatic synchronization uses the stored tokens (and renews them automatically when they expire).
 
 ### 7. String 3 (`@Order(3)`): Public endpoints
 
@@ -237,7 +237,7 @@ fun publicSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
 | `/h2-console/**` | H2 web console for development. Only available in profile `dev`. |
 | `/mock/**` | Mock endpoints for testing without real API keys (profile `demo`). |
 | `/v3/api-docs/**` | OpenAPI definition in JSON (used by Swagger UI). |
-| `/swagger-ui/**`, `/swagger-ui.html` | Interactive web interface for testing the API. |
+| `/swagger-ui/**`, `/swagger-ui.html` | Interactive web interface to test the API. |
 
 **`.headers { headers -> headers.frameOptions { it.sameOrigin() } }`**: allows the H2 console to load inside an `<iframe>`. By default, Spring Security blocks iframes as protection against clickjacking. `sameOrigin()` allows iframes only if they come from the same domain.
 
@@ -329,11 +329,11 @@ init {
 }
 ```
 
-Kotlin’s `init` block runs when the bean instance is created. Here, the encryption key is validated strictly:
+Kotlin’s `init` block is executed when the bean instance is created. Here, the encryption key is validated strictly:
 
 1. **It cannot be empty**: a default key is not allowed (`#{null}` in `@Value` means that if the property does not exist, it will be `null`). If the key is not configured, the application **does not start**. This is intentional: it is preferable to fail at startup than to run without encryption.
 2. **It must be valid Base64**: it is decoded to obtain the actual bytes.
-3. **It must be exactly 32 bytes**: AES-256 requires a key of exactly 256 bits (32 bytes). If the key has a different size, the application fails with a message explaining how to generate a correct key.
+3. **It must be exactly 32 bytes**: AES-256 requires a key of exactly 256 bits (32 bytes). If the key has a different size, the application fails with a message that explains how to generate a correct key.
 
 #### Encryption process
 
@@ -385,7 +385,7 @@ String almacenado en BD ("SGVsbG8gV29ybGQ...")
 
 The IV is prepended to the ciphertext because it is necessary for decryption. It is not secret (it can be in plaintext), but it must be unique for each encryption operation.
 
-The generic error message (`"Error procesando credenciales"`) is intentional: no cryptographic details are revealed externally.
+The generic error message (`"Error procesando credenciales"`) is intentional: no cryptographic details are disclosed externally.
 
 #### Decryption process
 

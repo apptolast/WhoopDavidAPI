@@ -4,7 +4,7 @@
 
 1. [What is testing in Spring Boot](#1-what-is-testing-in-spring-boot)
 2. [The testing pyramid](#2-the-testing-pyramid)
-3. [Where it is used in our project](#3-where-is-it-used-in-our-project)
+3. [Where is it used in our project](#3-where-is-it-used-in-our-project)
 4. [Why do we test like this](#4-why-do-we-test-like-this)
 5. [Key annotations explained](#5-key-annotations-explained)
 6. [Explained code](#6-explained-code)
@@ -65,7 +65,7 @@ src/test/kotlin/com/example/whoopdavidapi/
     └── CycleControllerTest.kt                # Tests de integracion HTTP
 ```
 
-They are executed with:
+They are run with:
 
 ```bash
 ./gradlew build      # Compila + ejecuta tests
@@ -78,20 +78,20 @@ They are executed with:
 
 | Decision | Reason |
 |----------|-------|
-| [`@ActiveProfiles("dev")`](https://docs.spring.io/spring-framework/reference/testing/annotations.html) in all tests | Use in-memory H2 instead of a real PostgreSQL instance |
+| [`@ActiveProfiles("dev")`](https://docs.spring.io/spring-framework/reference/testing/annotations.html) in all tests | Use in-memory H2 instead of real PostgreSQL |
 | [`@ExtendWith(MockitoExtension::class)`](https://docs.junit.org/6.0.2/user-guide/#extensions) for services | We don’t need Spring to test pure business logic. |
-| [`@DataJpaTest`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html#testing.spring-boot-applications.autoconfigured-spring-data-jpa) for repositories | Start only JPA + H2, much faster than [`@SpringBootTest`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html) |
+| [`@DataJpaTest`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html#testing.spring-boot-applications.autoconfigured-spring-data-jpa) for repositories | Start up only JPA + H2, much faster than [`@SpringBootTest`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html) |
 | `@SpringBootTest` + [`@AutoConfigureMockMvc`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html) for controllers | We need security (Basic Auth) and real HTTP to verify endpoints |
 | [`@MockitoBean`](https://docs.spring.io/spring-framework/reference/testing/annotations.html) to inject mocks in integration tests | Isolate the controller from its real dependencies (service, repository) |
 | `@Import(TokenEncryptor::class)` in `@DataJpaTest` | `@DataJpaTest` does not load all the beans, but `OAuthTokenEntity` needs `TokenEncryptor` as a JPA converter |
 
 ---
 
-## 5. Key Annotations Explained
+## 5. Key annotations explained
 
 ### `@SpringBootTest`
 
-It loads the **full context** of the Spring application. It is the heaviest annotation: it brings up all the beans, configuration, security, JPA, etc.
+Loads the **full context** of the Spring application. It is the heaviest annotation: it brings up all the beans, configuration, security, JPA, etc.
 
 ```kotlin
 @SpringBootTest  // Levanta toda la aplicacion
@@ -156,7 +156,7 @@ lateinit var cycleService: CycleService  // Spring inyecta un mock en vez del se
 
 ### `@ExtendWith(MockitoExtension::class)`
 
-Enable Mockito in a test **without Spring**. It’s the way to write pure unit tests: fast, without a Spring context, just business logic.
+Enable Mockito in a test **without Spring**. It’s the way to do pure unit tests: fast, without a Spring context, only business logic.
 
 ```kotlin
 @ExtendWith(MockitoExtension::class)  // Activa @Mock, @InjectMocks, etc.
@@ -207,7 +207,7 @@ class WhoopDavidApiApplicationTests {
 }
 ```
 
-**What it does**: verifies that the entire Spring Boot application starts without errors. If there is a misconfigured bean, a circular dependency, a `application.yaml` with errors, or any configuration issue, this test fails.
+**What it does**: verifies that the entire Spring Boot application starts without errors. If there is a misconfigured bean, a circular dependency, a `application.yaml` with errors, or any configuration problem, this test fails.
 
 **Why is it empty**: the test doesn’t need to do anything. The mere fact that `@SpringBootTest` brings up the context without throwing an exception already verifies that everything is correct.
 
@@ -291,7 +291,7 @@ Line by line:
     }
 ```
 
-**What it verifies**: that the `findByStartBetween` method of the repository correctly generates the SQL query `WHERE start BETWEEN ? AND ?`. Three cycles with different dates are saved, and it is expected that only 1 falls within the range.
+**What it verifies**: that the repository method `findByStartBetween` correctly generates the SQL query `WHERE start BETWEEN ? AND ?`. Three cycles with different dates are saved, and it is expected that only 1 falls within the range.
 
 ```kotlin
     @Test
@@ -351,7 +351,7 @@ class CycleServiceTest {
 
 **Anatomy**:
 
-- **`@ExtendWith(MockitoExtension::class)`**: It does NOT start Spring. It only activates Mockito annotations (`@Mock`, `@InjectMocks`). This makes the test very fast.
+- **`@ExtendWith(MockitoExtension::class)`**: It does NOT start Spring. It only activates the Mockito annotations (`@Mock`, `@InjectMocks`). This makes the test very fast.
 - **`@Mock lateinit var cycleRepository`**: creates a fake object that simulates the repository. When you tell it `when(cycleRepository.findAll(...)).thenReturn(...)`, it returns whatever you specify without going to the DB.
 - **`@Mock lateinit var cycleMapper`**: same for the mapper. It doesn’t run MapStruct; it returns whatever you configure.
 - **`@InjectMocks lateinit var cycleService`**: creates a real instance of `CycleService` and injects the previous mocks into its dependencies.
@@ -393,10 +393,10 @@ class CycleServiceTest {
 
 1. **Prepare data**: create an entity `WhoopCycle` and a DTO `CycleDTO`.
 2. **Configure mocks**: when the service calls `cycleRepository.findAll(pageable)`, return the page with the entity. When it calls `cycleMapper.toDto(entity)`, return the DTO.
-3. **Execute**: calls `cycleService.getCycles(null, null, 1, 100)` -- this invokes the real service logic, which uses the mocks.
+3. **Run**: calls `cycleService.getCycles(null, null, 1, 100)` -- this invokes the real service logic, which uses the mocks.
 4. **Verify**: checks that the result has the expected values.
 
-**What we are really testing**: the service logic -- how it builds the `Pageable`, how it decides which repository method to call (with filters or without them), how it transforms entities into DTOs, how it builds the `PaginatedResponse`.
+**What are we really testing**: the service logic -- how it builds the `Pageable`, how it decides which repository method to call (with filters or without them), how it transforms entities into DTOs, how it builds the `PaginatedResponse`.
 
 ```kotlin
     @Test
@@ -443,7 +443,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.time.Instant
 ```
 
-Look at the imports — here are the Spring Boot 4 changes:
+Take a look at the imports — here are the Spring Boot 4 changes:
 
 - **`org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc`**: it used to be `org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc`
 - **`org.springframework.test.context.bean.override.mockito.MockitoBean`**: it used to be `org.springframework.boot.test.mock.mockito.MockBean`
@@ -508,7 +508,7 @@ class CycleControllerTest {
     }
 ```
 
-**What it checks**:
+**Which verifies**:
 
 1. That with Basic Auth (`powerbi`/`changeme`) you get HTTP 200.
 2. That the JSON response has the correct structure (`$.data` is an array, `$.pagination` has the expected fields).
@@ -610,7 +610,7 @@ These replace the generic Spring Boot 3.x `spring-boot-starter-test` starters, p
 
 **File**: `build.gradle.kts`
 
-The parts relevant for testing:
+The relevant parts for testing:
 
 ```kotlin
 dependencies {
