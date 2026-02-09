@@ -26,7 +26,7 @@
 
 ## 2. Donde se usa en nuestro proyecto
 
-Los [workflows](https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions) estan en `.github/workflows/`:
+Los [workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax) estan en `.github/workflows/`:
 
 ```
 .github/workflows/
@@ -128,8 +128,8 @@ on:
     branches: [dev]
 ```
 
-- **[`pull_request`](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#pull_request)**: `branches: [main, dev]` -- se ejecuta cuando se crea o actualiza un PR hacia `main` o `dev`. Esto permite verificar el codigo ANTES de mergearlo.
-- **[`push`](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#push)**: `branches: [dev]` -- se ejecuta cuando hay un push directo a `dev` (incluye merges de PRs).
+- **[`pull_request`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)**: `branches: [main, dev]` -- se ejecuta cuando se crea o actualiza un PR hacia `main` o `dev`. Esto permite verificar el codigo ANTES de mergearlo.
+- **[`push`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#push)**: `branches: [dev]` -- se ejecuta cuando hay un push directo a `dev` (incluye merges de PRs).
 - **No hay `push: branches: [main]`**: los pushes a `main` solo se hacen via PR (que ya ejecuto CI en el PR). El CD si se ejecuta en pushes a `main`.
 
 #### Permisos
@@ -297,7 +297,7 @@ Solo se ejecuta en pushes a `main` o `dev`. No se ejecuta en PRs (no queremos pu
     password: ${{ secrets.DOCKERHUB_TOKEN }}
 ```
 
-- **`${{ secrets.DOCKERHUB_USERNAME }}`** y **`${{ secrets.DOCKERHUB_TOKEN }}`**: [secretos](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions) configurados en GitHub (Settings > Secrets and variables > Actions).
+- **`${{ secrets.DOCKERHUB_USERNAME }}`** y **`${{ secrets.DOCKERHUB_TOKEN }}`**: [secretos](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets) configurados en GitHub (Settings > Secrets and variables > Actions).
 - Se usa un Access Token de Docker Hub, no la contrasena directa.
 
 #### Docker Buildx
@@ -401,7 +401,7 @@ on:
     branches: [main, dev]
 ```
 
-- **[`workflow_run`](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#workflow_run)**: se ejecuta DESPUES de que otro workflow termine.
+- **[`workflow_run`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run)**: se ejecuta DESPUES de que otro workflow termine.
 - **`workflows: ["CD"]`**: se dispara cuando el workflow llamado "CD" completa.
 - **`types: [completed]`**: se ejecuta tanto si CD tuvo exito como si fallo. La condicion `if` del job filtra solo los exitosos.
 - **`branches: [main, dev]`**: solo si el CD fue para estas ramas.
@@ -750,7 +750,7 @@ Secretos usados en nuestro proyecto:
 | `DOCKERHUB_TOKEN` | CD | Access Token de Docker Hub |
 | `GITHUB_TOKEN` | Update API Docs | Token automatico de GitHub para hacer push |
 
-**[`GITHUB_TOKEN`](https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication)** es especial: GitHub lo genera automaticamente para cada ejecucion del workflow. No necesitas configurarlo manualmente.
+**[`GITHUB_TOKEN`](https://docs.github.com/en/actions/tutorials/authenticate-with-github_token)** es especial: GitHub lo genera automaticamente para cada ejecucion del workflow. No necesitas configurarlo manualmente.
 
 ### `permissions`
 
@@ -838,10 +838,10 @@ Es la forma de ejecutar un workflow DESPUES de que otro termine. A diferencia de
 ## 9. Documentacion oficial
 
 - [GitHub Actions - Documentacion](https://docs.github.com/en/actions)
-- [GitHub Actions - Workflow syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
-- [GitHub Actions - Events that trigger workflows](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows)
-- [GitHub Actions - Encrypted secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets)
-- [GitHub Actions - workflow_run event](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run)
+- [GitHub Actions - Workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)
+- [GitHub Actions - Events that trigger workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)
+- [GitHub Actions - Use secrets](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets)
+- [GitHub Actions - workflow_run event](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run)
 - [GitHub Actions - GITHUB_OUTPUT](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter)
 - [docker/build-push-action](https://github.com/docker/build-push-action)
 - [docker/login-action](https://github.com/docker/login-action)
