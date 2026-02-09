@@ -43,6 +43,22 @@ jobs:
       - name: Check docs links
         run: ./scripts/check-docs-links.sh
 
+      - name: Check English docs structure
+        run: |
+          if [ -d "docs/en" ]; then
+            ./scripts/check-docs-en-structure.sh
+          else
+            echo "docs/en/ not found, skipping English docs checks"
+          fi
+
+      - name: Check English docs links
+        run: |
+          if [ -d "docs/en" ]; then
+            ./scripts/check-docs-en-links.sh
+          else
+            echo "docs/en/ not found, skipping English docs checks"
+          fi
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4

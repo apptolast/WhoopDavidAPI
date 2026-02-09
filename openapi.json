@@ -33,12 +33,261 @@
     }
   ],
   "paths": {
+    "/mock/developer/v1/user/profile/basic": {
+      "get": {
+        "tags": [
+          "mock-whoop-api-controller"
+        ],
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mock/developer/v1/recovery": {
+      "get": {
+        "tags": [
+          "mock-whoop-api-controller"
+        ],
+        "operationId": "getRecoveries",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            }
+          },
+          {
+            "name": "nextToken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mock/developer/v1/cycle": {
+      "get": {
+        "tags": [
+          "mock-whoop-api-controller"
+        ],
+        "operationId": "getCycles",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            }
+          },
+          {
+            "name": "nextToken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mock/developer/v1/activity/workout": {
+      "get": {
+        "tags": [
+          "mock-whoop-api-controller"
+        ],
+        "operationId": "getWorkouts",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            }
+          },
+          {
+            "name": "nextToken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mock/developer/v1/activity/sleep": {
+      "get": {
+        "tags": [
+          "mock-whoop-api-controller"
+        ],
+        "operationId": "getSleeps",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 25
+            }
+          },
+          {
+            "name": "nextToken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/workouts": {
       "get": {
         "tags": [
           "workout-controller"
         ],
-        "operationId": "getWorkouts",
+        "operationId": "getWorkouts_1",
         "parameters": [
           {
             "name": "from",
@@ -98,7 +347,7 @@
         "tags": [
           "sleep-controller"
         ],
-        "operationId": "getSleeps",
+        "operationId": "getSleeps_1",
         "parameters": [
           {
             "name": "from",
@@ -158,7 +407,7 @@
         "tags": [
           "recovery-controller"
         ],
-        "operationId": "getRecoveries",
+        "operationId": "getRecoveries_1",
         "parameters": [
           {
             "name": "from",
@@ -218,7 +467,7 @@
         "tags": [
           "profile-controller"
         ],
-        "operationId": "getProfile",
+        "operationId": "getProfile_1",
         "responses": {
           "200": {
             "description": "OK",
@@ -239,7 +488,7 @@
         "tags": [
           "cycle-controller"
         ],
-        "operationId": "getCycles",
+        "operationId": "getCycles_1",
         "parameters": [
           {
             "name": "from",

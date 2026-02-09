@@ -32,3 +32,17 @@ jobs:
       - name: Check docs structure
         if: steps.changed.outputs.any_changed == 'true'
         run: ./scripts/check-docs-structure.sh
+
+      - name: Check English docs reference validity
+        if: steps.changed.outputs.any_changed == 'true'
+        run: |
+          if [ -d "docs/en" ]; then
+            ./scripts/check-docs-en-links.sh
+          fi
+
+      - name: Check English docs structure
+        if: steps.changed.outputs.any_changed == 'true'
+        run: |
+          if [ -d "docs/en" ]; then
+            ./scripts/check-docs-en-structure.sh
+          fi

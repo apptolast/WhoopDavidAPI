@@ -1,5 +1,6 @@
 # WhoopDavidAPI
 
+> **[Leer en espanol](README.md)**
 > **[Read this in English](README.en.md)**
 
 [![Build](https://github.com/apptolast/WhoopDavidAPI/actions/workflows/ci.yml/badge.svg)](https://github.com/apptolast/WhoopDavidAPI/actions/workflows/ci.yml)
@@ -8,9 +9,9 @@
 [![Java](https://img.shields.io/badge/Java-24-orange.svg)](https://openjdk.org/)
 [![License](https://img.shields.io/badge/License-Private-red.svg)]()
 
-API REST intermediaria que conecta la **Whoop API v2** con **Power BI**, eliminando la entrada manual de datos. Sigue un patron **Backend-For-Frontend (BFF)**: sincroniza periodicamente datos de rendimiento deportivo desde la pulsera WHOOP hacia PostgreSQL y los expone como JSON plano optimizado para el conector Web de Power BI.
+Intermediary REST API that connects **Whoop API v2** to **Power BI**, eliminating manual data entry. It follows a **Backend-For-Frontend (BFF)** pattern: periodically synchronizes sports performance data from the WHOOP bracelet to PostgreSQL and exposes it as plain JSON optimized for the Power BI Web Connector.
 
-## Arquitectura
+## Architecture
 
 ```
 ┌─────────────┐     OAuth2      ┌──────────────┐    @Scheduled    ┌──────────────┐
@@ -27,12 +28,12 @@ API REST intermediaria que conecta la **Whoop API v2** con **Power BI**, elimina
                                 └──────────────┘
 ```
 
-### Flujo de datos
+### Data flow
 
-1. **Sincronizacion automatica** (cada 30 min): `@Scheduled` → `WhoopSyncService` → `WhoopApiClient` → Whoop API v2 → PostgreSQL
-2. **Consumo Power BI** (bajo demanda): Power BI → `GET /api/v1/*` (Basic Auth) → Controller → Service → Repository → JSON plano
+1. **Automatic synchronization** (every 30 min): `@Scheduled` → `WhoopSyncService` → `WhoopApiClient` → Whoop API v2 → PostgreSQL
+2. **Power BI consumption** (on demand): Power BI → `GET /api/v1/*` (Basic Auth) → Controller → Service → Repository → Plain JSON
 
-### Estructura del proyecto
+### Project structure
 
 ```
 com.example.whoopdavidapi
@@ -50,39 +51,39 @@ com.example.whoopdavidapi
 └── exception/                      # GlobalExceptionHandler, WhoopApiException
 ```
 
-## Stack tecnico
+## technical stack
 
-| Tecnologia | Version | Uso |
+| Technology | Version | Use |
 |------------|---------|-----|
-| **Kotlin** | 2.2.21 | Lenguaje principal |
+| **Kotlin** | 2.2.21 | Primary language |
 | **Spring Boot** | 4.0.2 | Framework |
 | **Java** | 24 | Runtime |
 | **Spring Security** | 7.x | Basic Auth (Power BI) + OAuth2 (Whoop) |
-| **Spring Data JPA** | 4.x | Persistencia |
-| **PostgreSQL** | 17 | Base de datos (produccion) |
-| **H2** | - | Base de datos (desarrollo) |
+| **Spring Data JPA** | 4.x | Persistence |
+| **PostgreSQL** | 17 | Database (production) |
+| **H2** | - | Database (development) |
 | **Resilience4j** | 2.3.0 | Circuit breaker, retry, rate limiter |
-| **MapStruct** | 1.6.3 | Mapeo Entity ↔ DTO |
-| **Jackson 3** | - | Serializacion JSON (ISO-8601 por defecto) |
+| **MapStruct** | 1.6.3 | Entity ↔ DTO Mapping |
+| **Jackson 3** | - | JSON serialization (ISO-8601 by default) |
 | **Gradle** | 9.3 | Build tool (Kotlin DSL) |
 
-## Prerrequisitos
+## Prerequisites
 
 - **Java 24** (JDK)
-- **Gradle 9.3+** (o usar `./gradlew`)
-- **Docker** (para despliegue)
-- Cuenta de desarrollador en [Whoop Developer Portal](https://developer.whoop.com/)
+- **Gradle 9.3+** (or use `./gradlew`)
+- **Docker** (for deployment)
+- Developer account on [Whoop Developer Portal](https://developer.whoop.com/)
 
-## Instalacion y configuracion
+## Installation and configuration
 
-### 1. Clonar el repositorio
+### 1. Clone the repository
 
 ```bash
 git clone git@github.com:apptolast/WhoopDavidAPI.git
 cd WhoopDavidAPI
 ```
 
-### 2. Configurar variables de entorno
+### 2. Configure environment variables
 
 ```bash
 export WHOOP_CLIENT_ID=tu-client-id
@@ -91,18 +92,18 @@ export POWERBI_USERNAME=powerbi
 export POWERBI_PASSWORD=tu-password-seguro
 ```
 
-### 3. Ejecutar en modo desarrollo (H2)
+### 3. Run in development mode (H2)
 
 ```bash
 SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 ```
 
-La aplicacion arranca en `http://localhost:8080` con:
+The application starts at `http://localhost:8080` with:
 
 - H2 Console: `http://localhost:8080/h2-console`
 - Health check: `http://localhost:8080/actuator/health`
 
-### 4. Ejecutar en modo produccion (PostgreSQL)
+### 4. Run in production mode (PostgreSQL)
 
 ```bash
 export DATABASE_URL=jdbc:postgresql://localhost:5432/whoop_david
@@ -111,37 +112,37 @@ export DB_PASSWORD=tu-password
 SPRING_PROFILES_ACTIVE=prod ./gradlew bootRun
 ```
 
-## Variables de entorno
+## Environment variables
 
-| Variable | Obligatoria | Descripcion |
+| Variable | Mandatory | Description |
 |----------|-------------|-------------|
-| `WHOOP_CLIENT_ID` | Si | Client ID de la app en Whoop Developer |
-| `WHOOP_CLIENT_SECRET` | Si | Client Secret de la app en Whoop Developer |
-| `ENCRYPTION_KEY` | Si (prod), No (dev) | Clave AES-256-GCM para cifrar tokens OAuth2 - **Base64 de exactamente 32 bytes** (ej: `openssl rand -base64 32`). Perfil 'dev' usa clave predeterminada. |
-| `POWERBI_USERNAME` | No (default: `powerbi`) | Usuario para Basic Auth de Power BI |
-| `POWERBI_PASSWORD` | No (default: `changeme`) | Password para Basic Auth de Power BI |
-| `DATABASE_URL` | Si (prod) | URL JDBC de PostgreSQL |
-| `DB_USERNAME` | Si (prod) | Usuario de PostgreSQL |
-| `DB_PASSWORD` | Si (prod) | Password de PostgreSQL |
-| `SPRING_PROFILES_ACTIVE` | No (default: `dev`) | Perfil activo (`dev` o `prod`) |
+| `WHOOP_CLIENT_ID` | Yeah | Client ID of the app in Whoop Developer |
+| `WHOOP_CLIENT_SECRET` | Yeah | Client Secret of the app in Whoop Developer |
+| `ENCRYPTION_KEY` | Yes (prod), No (dev) | AES-256-GCM key to encrypt OAuth2 tokens - **Base64 of exactly 32 bytes** (ex: `openssl rand -base64 32`). Profile 'dev' uses default key. |
+| `POWERBI_USERNAME` | No (default: `powerbi`) | User for Power BI Basic Auth |
+| `POWERBI_PASSWORD` | No (default: `changeme`) | Password for Power BI Basic Auth |
+| `DATABASE_URL` | Yes (prod) | PostgreSQL JDBC URL |
+| `DB_USERNAME` | Yes (prod) | PostgreSQL user |
+| `DB_PASSWORD` | Yes (prod) | PostgreSQL Password |
+| `SPRING_PROFILES_ACTIVE` | No (default: `dev`) | Active profile (`dev` or `prod`) |
 
-## Endpoints de la API
+## API endpoints
 
-Todos los endpoints `GET /api/v1/*` requieren **Basic Auth** y soportan:
+All `GET /api/v1/*` endpoints require **Basic Auth** and support:
 
-- **Paginacion**: `page` (default 1), `pageSize` (default 100)
-- **Filtros de fecha**: `from`, `to` (ISO 8601 UTC)
+- **Pagination**: `page` (default 1), `pageSize` (default 100)
+- **Date filters**: `from`, `to` (ISO 8601 UTC)
 
-| Metodo | Endpoint | Descripcion |
+| Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/v1/cycles` | Ciclos fisiologicos (strain, kJ, HR) |
-| `GET` | `/api/v1/recovery` | Recovery diario (HRV, recovery score, HR reposo) |
-| `GET` | `/api/v1/sleep` | Datos de sueno (etapas, eficiencia, duracion) |
-| `GET` | `/api/v1/workouts` | Workouts (strain, HR, zonas, distancia) |
-| `GET` | `/api/v1/profile` | Perfil del usuario Whoop |
-| `GET` | `/actuator/health` | Health check (publico) |
+| `GET` | `/api/v1/cycles` | Physiological cycles (strain, kJ, HR) |
+| `GET` | `/api/v1/recovery` | Daily recovery (HRV, recovery score, resting HR) |
+| `GET` | `/api/v1/sleep` | Sleep data (stages, efficiency, duration) |
+| `GET` | `/api/v1/workouts` | Workouts (strain, HR, zones, distance) |
+| `GET` | `/api/v1/profile` | Whoop User Profile |
+| `GET` | `/actuator/health` | Health check (public) |
 
-### Ejemplo de respuesta
+### Example response
 
 ```json
 {
@@ -166,9 +167,9 @@ Todos los endpoints `GET /api/v1/*` requieren **Basic Auth** y soportan:
 }
 ```
 
-## Desarrollo
+## Development
 
-### Comandos
+### Commands
 
 ```bash
 ./gradlew build      # Compilar y ejecutar tests
@@ -183,14 +184,14 @@ Todos los endpoints `GET /api/v1/*` requieren **Basic Auth** y soportan:
 ./gradlew test
 ```
 
-Los tests incluyen:
+The tests include:
 
-- **Context load**: verificacion de arranque del contexto Spring
-- **Repository**: tests con H2 (`@DataJpaTest`) para queries con rango de fechas
-- **Controller**: tests con MockMvc (`@WebMvcTest`) para endpoints y autenticacion
-- **Service**: tests unitarios con Mockito para logica de negocio
+- **Context load**: Spring context boot verification
+- **Repository**: tests with H2 (`@DataJpaTest`) for queries with date range
+- **Controller**: tests with MockMvc (`@WebMvcTest`) for endpoints and authentication
+- **Service**: unit tests with Mockito for business logic
 
-## Despliegue
+## Deployment
 
 ### Docker
 
@@ -211,12 +212,12 @@ docker run -p 8080:8080 \
 
 ### Kubernetes
 
-La aplicacion se despliega en un cluster **RKE2/Rancher** con:
+The application is deployed on a cluster **RKE2/Rancher** with:
 
-- **Traefik** como ingress controller
-- **cert-manager** para TLS (Let's Encrypt via Cloudflare)
-- **Longhorn** para persistent volumes
-- **Keel** para auto-deploy (poll cada 1 min)
+- **Traefik** as ingress controller
+- **cert-manager** for TLS (Let's Encrypt via Cloudflare)
+- **Longhorn** for persistent volumes
+- **Keel** for auto-deploy (poll every 1 min)
 
 ```bash
 # Crear namespace y recursos
@@ -227,39 +228,39 @@ kubectl apply -f k8s/03-service.yaml
 kubectl apply -f k8s/04-ingress.yaml
 ```
 
-**URL de produccion**: `https://david-whoop.apptolast.com`
+**Production URL**: `https://david-whoop.apptolast.com`
 
 ### CI/CD Pipeline
 
-- **CI** (`ci.yml`): build + test en cada PR a `main` y `dev`
-- **CD** (`cd.yml`): build Docker + push a Docker Hub en push a `main`
-- **Keel** detecta la nueva imagen y actualiza el deployment automaticamente
+- **CI** (`ci.yml`): build + test in each PR to `main` and `dev`
+- **CD** (`cd.yml`): build Docker + push to Docker Hub on push to `main`
+- **Keel** detects the new image and updates the deployment automatically
 
-## Resiliencia
+## Resilience
 
-La comunicacion con Whoop API v2 esta protegida por Resilience4j:
+Communication with Whoop API v2 is protected by Resilience4j:
 
-| Patron | Configuracion |
+| Pattern | Configuration |
 |--------|---------------|
-| **Circuit Breaker** | Ventana de 10 llamadas, umbral de fallo 50%, pausa 30s |
-| **Retry** | 3 intentos, backoff exponencial (2s base, multiplicador x2) |
-| **Rate Limiter** | 90 requests/min (Whoop limita a 100/min) |
+| **Circuit Breaker** | 10 call window, failure threshold 50%, pause 30s |
+| **Retry** | 3 attempts, exponential backoff (base 2s, x2 multiplier) |
+| **Rate Limiter** | 90 requests/min (Whoop limits to 100/min) |
 
-## Autenticacion
+## Authentication
 
 ### Whoop API (OAuth2 Authorization Code)
 
 - Authorization URL: `https://api.prod.whoop.com/oauth/oauth2/auth`
 - Token URL: `https://api.prod.whoop.com/oauth/oauth2/token`
 - Scopes: `offline, read:profile, read:body_measurement, read:cycles, read:recovery, read:sleep, read:workout`
-- Access token expira en 1h, refresh automatico
+- Access token expires in 1h, automatic refresh
 
 ### Power BI (Basic Auth)
 
-- Endpoints `/api/v1/**` protegidos con HTTP Basic Auth
-- Compatible con Power BI Desktop y Power BI Service (scheduled refresh)
+- Endpoints `/api/v1/**` protected with HTTP Basic Auth
+- Compatible with Power BI Desktop and Power BI Service (scheduled refresh)
 
-## Referencias
+## References
 
 - [Whoop Developer Portal](https://developer.whoop.com/)
 - [Whoop API v2 Docs](https://api.prod.whoop.com/developer/)
