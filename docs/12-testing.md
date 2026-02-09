@@ -648,5 +648,5 @@ tasks.withType<Test> {
 - [JUnit 5 User Guide](https://docs.junit.org/6.0.2/overview.html)
 - [Mockito Framework](https://site.mockito.org/)
 - [Spring Security Testing](https://docs.spring.io/spring-security/reference/servlet/test/index.html)
-- [MockMvc - Documentacion de Spring](https://docs.spring.io/spring-framework/reference/testing/spring-mvc-test-framework.html)
+- [MockMvc - Documentacion de Spring](https://docs.spring.io/spring-framework/reference/testing/mockmvc.html)
 - [Spring Boot 4 Release Notes - Test annotations migration](https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Release-Notes)
