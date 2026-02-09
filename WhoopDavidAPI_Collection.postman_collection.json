@@ -1,14 +1,734 @@
 {
   "item": [
     {
+      "name": "mock-whoop-api-controller",
+      "description": "",
+      "item": [
+        {
+          "id": "01ef346d-4f8f-4086-ab3a-d6aff4aad204",
+          "name": "get Profile",
+          "request": {
+            "name": "get Profile",
+            "description": {},
+            "url": {
+              "path": [
+                "mock",
+                "developer",
+                "v1",
+                "user",
+                "profile",
+                "basic"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "5e541c48-1fca-45a9-9b8d-d1d73c73a8f3",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "mock",
+                    "developer",
+                    "v1",
+                    "user",
+                    "profile",
+                    "basic"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: basic",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Basic <credentials>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\",\n  \"key_2\": false\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "096e9666-7d04-4bcf-8d8c-f1cd583049a2",
+          "name": "get Recoveries",
+          "request": {
+            "name": "get Recoveries",
+            "description": {},
+            "url": {
+              "path": [
+                "mock",
+                "developer",
+                "v1",
+                "recovery"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "limit",
+                  "value": "25"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "nextToken",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "start",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "end",
+                  "value": "<string>"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "5e2260b0-2624-4f5c-a5be-0c473034eb36",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "mock",
+                    "developer",
+                    "v1",
+                    "recovery"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "limit",
+                      "value": "25"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "nextToken",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "start",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "end",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: basic",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Basic <credentials>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\",\n  \"key_2\": false\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "cf4678cb-15f9-442a-99f6-11c4765015ae",
+          "name": "get Cycles",
+          "request": {
+            "name": "get Cycles",
+            "description": {},
+            "url": {
+              "path": [
+                "mock",
+                "developer",
+                "v1",
+                "cycle"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "limit",
+                  "value": "25"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "nextToken",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "start",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "end",
+                  "value": "<string>"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "76e61e47-5656-4ab9-ac44-e9e20896fe83",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "mock",
+                    "developer",
+                    "v1",
+                    "cycle"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "limit",
+                      "value": "25"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "nextToken",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "start",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "end",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: basic",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Basic <credentials>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\",\n  \"key_2\": false\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "d5b89fc8-556a-46ff-9fbc-d5acfde7f5bf",
+          "name": "get Workouts",
+          "request": {
+            "name": "get Workouts",
+            "description": {},
+            "url": {
+              "path": [
+                "mock",
+                "developer",
+                "v1",
+                "activity",
+                "workout"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "limit",
+                  "value": "25"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "nextToken",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "start",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "end",
+                  "value": "<string>"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "86669afe-2ba5-48ea-9c64-735cbabc0725",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "mock",
+                    "developer",
+                    "v1",
+                    "activity",
+                    "workout"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "limit",
+                      "value": "25"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "nextToken",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "start",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "end",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: basic",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Basic <credentials>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\",\n  \"key_2\": false\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a1ca0ead-bbb2-48c4-8fa8-c333a435f46d",
+          "name": "get Sleeps",
+          "request": {
+            "name": "get Sleeps",
+            "description": {},
+            "url": {
+              "path": [
+                "mock",
+                "developer",
+                "v1",
+                "activity",
+                "sleep"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "limit",
+                  "value": "25"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "nextToken",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "start",
+                  "value": "<string>"
+                },
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "end",
+                  "value": "<string>"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "6b3185d7-756c-4c4e-a956-99deff038364",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "mock",
+                    "developer",
+                    "v1",
+                    "activity",
+                    "sleep"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "limit",
+                      "value": "25"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "nextToken",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "start",
+                      "value": "<string>"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "end",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: basic",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Basic <credentials>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\",\n  \"key_2\": false\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    },
+    {
       "name": "workout-controller",
       "description": "",
       "item": [
         {
-          "id": "662730a0-8a5f-4b3e-80a2-919c92f80345",
-          "name": "get Workouts",
+          "id": "39230a2e-f0b7-4431-8111-1e12e07fa0cd",
+          "name": "get Workouts 1",
           "request": {
-            "name": "get Workouts",
+            "name": "get Workouts 1",
             "description": {},
             "url": {
               "path": [
@@ -71,7 +791,7 @@
           },
           "response": [
             {
-              "id": "a7c5f25b-9832-45ee-9c4e-aecc068f0066",
+              "id": "ecf2ce19-4ce3-4295-b258-e2be3a6b2372",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -165,10 +885,10 @@
       "description": "",
       "item": [
         {
-          "id": "39a49bfd-c413-4a4a-bdb4-01f7d6469b76",
-          "name": "get Sleeps",
+          "id": "bf86df64-fca1-4178-af72-abae530fdf52",
+          "name": "get Sleeps 1",
           "request": {
-            "name": "get Sleeps",
+            "name": "get Sleeps 1",
             "description": {},
             "url": {
               "path": [
@@ -231,7 +951,7 @@
           },
           "response": [
             {
-              "id": "408b5bd4-9fb1-4527-b581-05de80cde6ca",
+              "id": "e84b0a09-a6e3-40da-a76f-4ef2fea6442c",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -325,10 +1045,10 @@
       "description": "",
       "item": [
         {
-          "id": "32070987-d6da-474f-88da-25d5b30f3f17",
-          "name": "get Recoveries",
+          "id": "070ca22a-7ecb-4272-924a-7d679715c0ce",
+          "name": "get Recoveries 1",
           "request": {
-            "name": "get Recoveries",
+            "name": "get Recoveries 1",
             "description": {},
             "url": {
               "path": [
@@ -391,7 +1111,7 @@
           },
           "response": [
             {
-              "id": "c52a2473-e3cc-4dbc-91d7-24cbcc977d7e",
+              "id": "6cfef046-0cbc-4ce9-ab5c-8f1cb8fc2fef",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -485,10 +1205,10 @@
       "description": "",
       "item": [
         {
-          "id": "699310af-77ce-4c92-830c-1f553e0f394b",
-          "name": "get Profile",
+          "id": "496a4de6-fb7b-46e2-9e4c-b06d3d68bfe7",
+          "name": "get Profile 1",
           "request": {
-            "name": "get Profile",
+            "name": "get Profile 1",
             "description": {},
             "url": {
               "path": [
@@ -514,7 +1234,7 @@
           },
           "response": [
             {
-              "id": "be27e657-f879-4a33-8516-4b04dbb7dea7",
+              "id": "f48a1be4-2878-4eb8-b34b-8f9a3e9a345b",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -554,7 +1274,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": 4668,\n  \"key_1\": true\n}",
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\",\n  \"key_2\": false\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -571,10 +1291,10 @@
       "description": "",
       "item": [
         {
-          "id": "8f4ad617-b038-4dab-9875-49c240b61e97",
-          "name": "get Cycles",
+          "id": "b9098ae3-44d6-4307-bc19-dab3e3d770bd",
+          "name": "get Cycles 1",
           "request": {
-            "name": "get Cycles",
+            "name": "get Cycles 1",
             "description": {},
             "url": {
               "path": [
@@ -637,7 +1357,7 @@
           },
           "response": [
             {
-              "id": "37f8add2-be56-4899-a875-5e619416ee5e",
+              "id": "0eb7e671-e9dd-4a96-959a-448221e019cc",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -750,9 +1470,9 @@
     }
   ],
   "info": {
-    "_postman_id": "fbe3227b-6efa-43c9-84ff-ecc6ed48604e",
+    "_postman_id": "66421bbe-2774-4545-8882-45ae7e5e56c3",
     "name": "Whoop David API - Auto-generated",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Coleccion generada automaticamente desde OpenAPI spec.\n\nFecha: 2026-02-07 17:58 UTC\nRama: main\nEntorno: prod\n\nGenerado por GitHub Actions workflow."
+    "description": "Coleccion generada automaticamente desde OpenAPI spec.\n\nFecha: 2026-02-09 11:08 UTC\nRama: dev\nEntorno: dev\n\nGenerado por GitHub Actions workflow."
   }
 }
