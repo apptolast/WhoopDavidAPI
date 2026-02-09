@@ -9,7 +9,7 @@
 [![Java](https://img.shields.io/badge/Java-24-orange.svg)](https://openjdk.org/)
 [![License](https://img.shields.io/badge/License-Private-red.svg)]()
 
-Intermediate REST API that connects the **Whoop API v2** with **Power BI**, eliminating manual data entry. It follows a **Backend-For-Frontend (BFF)** pattern: it periodically synchronizes sports performance data from the WHOOP wristband to PostgreSQL and exposes it as plain JSON optimized for Power BI’s Web connector.
+Intermediate REST API that connects the **Whoop API v2** with **Power BI**, eliminating manual data entry. It follows a **Backend-For-Frontend (BFF)** pattern: it periodically syncs sports performance data from the WHOOP wristband to PostgreSQL and exposes it as plain JSON optimized for Power BI’s Web connector.
 
 ## Architecture
 
@@ -55,7 +55,7 @@ com.example.whoopdavidapi
 
 | Technology | Version | Use |
 |------------|---------|-----|
-| **Kotlin** | 2.2.21 | Main language |
+| **Kotlin** | 2.2.21 | Primary language |
 | **Spring Boot** | 4.0.2 | Framework |
 | **Java** | 24 | Runtime |
 | **Spring Security** | 7.x | Basic Auth (Power BI) + OAuth2 (Whoop) |
@@ -133,7 +133,7 @@ All endpoints `GET /api/v1/*` require **Basic Auth** and support:
 - **Pagination**: `page` (default 1), `pageSize` (default 100)
 - **Date filters**: `from`, `to` (ISO 8601 UTC)
 
-| Metodo | Endpoint | Description |
+| Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/api/v1/cycles` | Physiological cycles (strain, kJ, HR) |
 | `GET` | `/api/v1/recovery` | Daily recovery (HRV, recovery score, resting HR) |
