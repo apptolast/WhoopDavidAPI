@@ -2,14 +2,14 @@
 
 ## What is it?
 
-**Gradle** is the build system (compilation, packaging, tests) of the project. We use **Gradle with [Kotlin DSL](https://docs.gradle.org/current/userguide/kotlin_dsl.html)** (`build.gradle.kts`), which means that the configuration file is written in Kotlin instead of classic Groovy (`build.gradle`).
+**Gradle** is the project's build system (compilation, packaging, tests). We use **Gradle with [Kotlin DSL](https://docs.gradle.org/current/userguide/kotlin_dsl.html)** (`build.gradle.kts`), which means that the configuration file is written in Kotlin instead of classic Groovy (`build.gradle`).
 
-Gradle takes care of:
+Gradle is responsible for:
 
-- **Download dependencies** (libraries needed by the project) from Maven Central
+- **Download dependencies** (libraries the project needs) from Maven Central
 - **Compile** the Kotlin code to JVM bytecode
 - **Run tests** with JUnit
-- **Package** the application in an executable JAR (`bootJar`)
+- **Package** the application into an executable JAR (`bootJar`)
 - **Process annotations** with [kapt](https://kotlinlang.org/docs/kapt.html) (for [MapStruct](https://mapstruct.org/documentation/stable/reference/html/))
 
 ---
@@ -18,7 +18,7 @@ Gradle takes care of:
 
 **Main file**: [`build.gradle.kts`](../../build.gradle.kts)
 
-**Supplementary file**: [`settings.gradle.kts`](../settings.gradle.kts) (only defines the root project name)
+**Supplementary file**: [`settings.gradle.kts`](../settings.gradle.kts) (only defines the name of the root project)
 
 ```kotlin
 // settings.gradle.kts
@@ -27,9 +27,9 @@ rootProject.name = "whoop-david-api"
 
 ---
 
-## Code explained
+## Explained code
 
-### Plugin Block
+### Plugin block
 
 ```kotlin
 plugins {
@@ -42,27 +42,27 @@ plugins {
 }
 ```
 
-1. **`kotlin("jvm")`**: Kotlin base plugin for JVM. Compiles `.kt` files to Java bytecode. Without this plugin, Gradle doesn't know how to compile Kotlin
+1. **`kotlin("jvm")`**: Base Kotlin plugin for JVM. Compiles `.kt` files to Java bytecode. Without this plugin, Gradle doesn't know how to compile Kotlin
 
-2. **`kotlin("plugin.spring")`**: Alias ​​of [`kotlin-allopen`](https://kotlinlang.org/docs/all-open-plugin.html) configured for Spring. In Kotlin, all classes are `final` by default. Spring needs to create proxies for classes (for `@Transactional`, `@Configuration`, etc.), and proxies require non-final classes. This plugin automatically opens classes annotated with:
+2. **`kotlin("plugin.spring")`**: Alias of [`kotlin-allopen`](https://kotlinlang.org/docs/all-open-plugin.html) configured for Spring. In Kotlin, all classes are `final` by default. Spring needs to create proxies of classes (for `@Transactional`, `@Configuration`, etc.), and proxies require non-final classes. This plugin automatically opens classes annotated with:
    - `@Component`, `@Service`, `@Controller`, `@Repository`
    - `@Configuration`
    - `@Transactional`
    - `@Async`
    - `@Cacheable`
 
-3. **`kotlin("plugin.jpa")`**: Alias ​​of [`kotlin-noarg`](https://kotlinlang.org/docs/no-arg-plugin.html) configured for JPA. Hibernate needs constructors without arguments on entities to be able to instantiate them via reflection. Kotlin with `data class` or classes with parameters in the constructor does not have an empty constructor by default. This plugin generates constructors without arguments (invisible in the code) for classes annotated with `@Entity`, `@MappedSuperclass` and `@Embeddable`
+3. **`kotlin("plugin.jpa")`**: Alias of [`kotlin-noarg`](https://kotlinlang.org/docs/no-arg-plugin.html) configured for JPA. Hibernate needs no-argument constructors in entities to be able to instantiate them via reflection. Kotlin with `data class` or classes with parameters in the constructor does not have an empty constructor by default. This plugin generates no-argument constructors (invisible in the code) for classes annotated with `@Entity`, `@MappedSuperclass` and `@Embeddable`
 
-4. **`kotlin("kapt")`**: **Kotlin Annotation Processing Tool**. Necessary so that MapStruct can generate code at compile time. kapt is the bridge between Java's annotation processors and the Kotlin compiler. Without kapt, MapStruct would not generate mapper implementations
+4. **`kotlin("kapt")`**: **Kotlin Annotation Processing Tool**. Required so that MapStruct can generate code at compile time. kapt is the bridge between Java annotation processors and the Kotlin compiler. Without kapt, MapStruct would not generate the mapper implementations
 
 5. **`org.springframework.boot`**: The [Spring Boot plugin](https://docs.spring.io/spring-boot/gradle-plugin/) that adds:
-   - Task `bootJar`: Package the application as an executable fat JAR with all dependencies included
+   - Task `bootJar`: package the application as an executable fat JAR with all dependencies included
    - Task `bootRun`: run the application directly from Gradle
    - Version management for Spring Boot dependencies
 
-6. **`io.spring.dependency-management`**: Manages versions of ALL transitive Spring Boot dependencies. Thanks to this plugin, when you type `implementation("org.springframework.boot:spring-boot-starter-data-jpa")` you don't need to specify the version: the plugin automatically resolves it to the version compatible with Spring Boot 4.0.2
+6. **`io.spring.dependency-management`**: Manages the versions of ALL Spring Boot transitive dependencies. Thanks to this plugin, when you write `implementation("org.springframework.boot:spring-boot-starter-data-jpa")` you don’t need to specify the version: the plugin automatically resolves it to the version compatible with Spring Boot 4.0.2
 
-### Java configuration
+### Java Configuration
 
 ```kotlin
 java {
@@ -72,7 +72,7 @@ java {
 }
 ```
 
-This configures the **Java Toolchain**: Gradle will automatically download and use Java 24 (JDK) to compile the project, regardless of the version of Java installed on the system. This ensures that all developers and the CI use the same version of Java.
+This configures the **Java Toolchain**: Gradle will automatically download and use Java 24 (JDK) to compile the project, regardless of the Java version installed on the system. This ensures that all developers and CI use the same Java version.
 
 ### Repositories
 
@@ -86,19 +86,19 @@ Dependencies are downloaded from **Maven Central**, the largest public repositor
 
 ---
 
-### Dependencies explained
+### Explained dependencies
 
 #### Spring Boot Starters
 
-The **starters** are convenience packages that bundle together several related dependencies. Instead of adding 15 dependencies to configure JPA, you add a single starter.
+**starters** are convenience packages that bundle several related dependencies. Instead of adding 15 dependencies to configure JPA, you add a single starter.
 
 ```kotlin
 implementation("org.springframework.boot:spring-boot-starter-actuator")
 ```
 
-**What does**: Expose [monitoring endpoints](https://docs.spring.io/spring-boot/reference/actuator/index.html) as `/actuator/health` and `/actuator/info`.
-**Where used**: Set to [`src/main/resources/application.yaml`](../../src/main/resources/application.yaml) (lines `management:...`). The Dockerfile uses it for HEALTHCHECK.
-**If you remove it**: There are no monitoring endpoints. The Docker HEALTHCHECK would fail. Kubernetes could not verify if the app is alive.
+**What it does**: Exposes [monitoring endpoints](https://docs.spring.io/spring-boot/reference/actuator/index.html) such as `/actuator/health` and `/actuator/info`.
+**Where it is used**: Configured in [`src/main/resources/application.yaml`](../../src/main/resources/application.yaml) (lines `management:...`). The Dockerfile uses it for the HEALTHCHECK.
+**If you remove it**: There are no monitoring endpoints. The Docker HEALTHCHECK would fail. Kubernetes wouldn’t be able to verify whether the app is alive.
 
 ---
 
@@ -106,9 +106,9 @@ implementation("org.springframework.boot:spring-boot-starter-actuator")
 implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 ```
 
-**What it does**: Includes [Spring Data JPA](https://docs.spring.io/spring-boot/reference/data/sql.html) + Hibernate (ORM) + [HikariCP](https://github.com/brettwooldridge/HikariCP) (connection pool). It allows you to define Repository interfaces that Spring implements automatically.
-**Where used**: All entities in [`model/entity/`](../../src/main/kotlin/com/example/whoopdavidapi/model/entity/) and repositories in [`repository/`](../../src/main/kotlin/com/example/whoopdavidapi/repository/).
-**If you remove it**: There is no access to the database. Nothing works.
+**What it does**: Includes [Spring Data JPA](https://docs.spring.io/spring-boot/reference/data/sql.html) + Hibernate (ORM) + [HikariCP](https://github.com/brettwooldridge/HikariCP) (connection pool). Allows defining Repository interfaces that Spring implements automatically.
+**Where it is used**: All entities in [`model/entity/`](../../src/main/kotlin/com/example/whoopdavidapi/model/entity/) and repositories in [`repository/`](../../src/main/kotlin/com/example/whoopdavidapi/repository/).
+**If you remove it**: There is no database access. Nothing works.
 
 ---
 
@@ -116,9 +116,9 @@ implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 implementation("org.springframework.boot:spring-boot-starter-security")
 ```
 
-**What does**: Includes [Spring Security](https://docs.spring.io/spring-security/reference/). By default, it protects ALL endpoints with authentication.
-**Where to use**: [`config/SecurityConfig.kt`](../../src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt) - defines the 4 security chains.
-**If you remove it**: The API is completely open. Anyone can access the data.
+**What it does**: Includes [Spring Security](https://docs.spring.io/spring-security/reference/). By default, it protects ALL endpoints with authentication.
+**Where it is used**: [`config/SecurityConfig.kt`](../../src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt) - defines the 4 security strings.
+**If you remove it**: The API is left completely open. Anyone can access the data.
 
 ---
 
@@ -126,9 +126,9 @@ implementation("org.springframework.boot:spring-boot-starter-security")
 implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
 ```
 
-**What does**: Add support for [OAuth2](https://docs.spring.io/spring-security/reference/servlet/oauth2/index.html) client. Allows the app to act as an OAuth2 client to authenticate against Whoop.
-**Where used**: The OAuth2 flow at [`config/SecurityConfig.kt`](../../src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt) (`oauth2Login { }`) and the provider configuration at [`application.yaml`](../../src/main/resources/application.yaml) (`spring.security.oauth2.client`).
-**If you remove it**: You cannot authenticate against Whoop API. You can't get the initial OAuth2 token.
+**What it does**: Adds support for the [OAuth2 client](https://docs.spring.io/spring-security/reference/servlet/oauth2/index.html). Allows the app to act as an OAuth2 client to authenticate against Whoop.
+**Where it is used**: The OAuth2 flow in [`config/SecurityConfig.kt`](../../src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt) (`oauth2Login { }`) and the provider configuration in [`application.yaml`](../../src/main/resources/application.yaml) (`spring.security.oauth2.client`).
+**If you remove it**: You can’t authenticate against the Whoop API. You can’t obtain the initial OAuth2 token.
 
 ---
 
@@ -136,15 +136,15 @@ implementation("org.springframework.boot:spring-boot-starter-security-oauth2-cli
 implementation("org.springframework.boot:spring-boot-starter-validation")
 ```
 
-**What it does**: Includes Jakarta Bean Validation (Hibernate Validator). It allows validating parameters with annotations such as `@NotNull`, `@Size`, etc.
-**Where**  is used: Validations with `require()` in controllers, for example in [`controller/CycleController.kt`](../../src/main/kotlin/com/example/whoopdavidapi/controller/CycleController.kt):
+**What it does**: Includes Jakarta Bean Validation (Hibernate Validator). Allows validating parameters with annotations like `@NotNull`, `@Size`, etc.
+**Where it is used**: Validations with `require()` in the controllers, for example in [`controller/CycleController.kt`](../../src/main/kotlin/com/example/whoopdavidapi/controller/CycleController.kt):
 
 ```kotlin
 require(page >= 1) { "page debe ser >= 1" }
 require(pageSize in 1..1000) { "pageSize debe estar entre 1 y 1000" }
 ```
 
-**If you remove it**: Manual validations with `require()` still work (they're from Kotlin), but you lose the infrastructure of `@Valid` and `@Validated` if you need them in the future.
+**If you remove it**: Manual validations with `require()` still work (they’re from Kotlin), but you lose the `@Valid` and `@Validated` infrastructure if you need it in the future.
 
 ---
 
@@ -153,7 +153,7 @@ implementation("org.springframework.boot:spring-boot-starter-webmvc")
 ```
 
 **What it does**: Includes [Spring Web MVC](https://docs.spring.io/spring-boot/reference/web/servlet.html) + embedded Tomcat. It is the core of the web server.
-**Where used**: All controllers in [`controller/`](../../src/main/kotlin/com/example/whoopdavidapi/controller/) use WebMVC's `@RestController` and `@GetMapping`.
+**Where it is used**: All controllers in [`controller/`](../../src/main/kotlin/com/example/whoopdavidapi/controller/) use `@RestController` and `@GetMapping` from WebMVC.
 **If you remove it**: There is no web server. The application cannot receive HTTP requests.
 
 ---
@@ -162,9 +162,9 @@ implementation("org.springframework.boot:spring-boot-starter-webmvc")
 implementation("org.springframework.boot:spring-boot-h2console")
 ```
 
-**What it does**: Enables the H2 web console (graphical interface to view the in-memory DB in development).
-**Where used**: Set to [`application-dev.yaml`](../../src/main/resources/application-dev.yaml) (`spring.h2.console.enabled: true`). Accessible in `http://localhost:8080/h2-console`.
-**If you remove it**: You cannot see the H2 DB from the development browser. The DB continues to work.
+**What it does**: Enables the H2 web console (graphical interface to view the in-memory DB during development).
+**Where it is used**: Configured in [`application-dev.yaml`](../../src/main/resources/application-dev.yaml) (`spring.h2.console.enabled: true`). Accessible in `http://localhost:8080/h2-console`.
+**If you remove it**: You can’t view the H2 DB from the browser in development. The DB keeps working.
 
 ---
 
@@ -174,9 +174,9 @@ implementation("org.springframework.boot:spring-boot-h2console")
 implementation("org.jetbrains.kotlin:kotlin-reflect")
 ```
 
-**What does**: Kotlin reflection library. Spring needs it to inspect Kotlin classes at runtime (read annotations, create instances, etc.).
-**Where used**: Internally by Spring Framework, Jackson and Hibernate.
-**If you remove it**: Spring cannot work correctly with Kotlin classes. Errors in runtime.
+**What it does**: Kotlin reflection library. Spring needs it to inspect Kotlin classes at runtime (read annotations, create instances, etc.).
+**Where it is used**: Internally by Spring Framework, Jackson, and Hibernate.
+**If you remove it**: Spring can’t work correctly with Kotlin classes. Runtime errors.
 
 ---
 
@@ -184,9 +184,9 @@ implementation("org.jetbrains.kotlin:kotlin-reflect")
 implementation("tools.jackson.module:jackson-module-kotlin")
 ```
 
-**What it does**: Jackson module for Kotlin. Allows Jackson to serialize/deserialize Kotlin `data class` correctly (recognizes constructor parameters, nullable types, default values, etc.).
-**Where used**: Automatically by Spring MVC to convert objects to JSON in controller responses.
-**If you remove it**: Jackson cannot deserialize Kotlin DTOs. Endpoints return errors.
+**What it does**: Jackson module for Kotlin. Allows Jackson to correctly serialize/deserialize Kotlin `data class` (recognizes constructor parameters, nullable types, default values, etc.).
+**Where it is used**: Automatically by Spring MVC to convert objects to JSON in controller responses.
+**If you remove it**: Jackson can’t deserialize Kotlin DTOs. The endpoints return errors.
 
 > **GOTCHA Spring Boot 4**: The package changed from `com.fasterxml.jackson.module:jackson-module-kotlin` (Jackson 2) to `tools.jackson.module:jackson-module-kotlin` (Jackson 3). Spring Boot 4 uses **Jackson 3**, which changed its Maven group from `com.fasterxml` to `tools.jackson`.
 
@@ -199,8 +199,8 @@ implementation("org.mapstruct:mapstruct:1.6.3")
 kapt("org.mapstruct:mapstruct-processor:1.6.3")
 ```
 
-**What it does**: MapStruct automatically generates the mapping code between Entity and DTO at compile time. `mapstruct` is the annotation library. `mapstruct-processor` is the annotation processor that generates the implementations.
-**Where used**: The 4 mappers in [`mapper/`](../../src/main/kotlin/com/example/whoopdavidapi/mapper/). For example, [`mapper/CycleMapper.kt`](../../src/main/kotlin/com/example/whoopdavidapi/mapper/CycleMapper.kt):
+**What it does**: MapStruct automatically generates the mapping code between Entity and DTO at compile time. `mapstruct` is the annotations library. `mapstruct-processor` is the annotation processor that generates the implementations.
+**Where it is used**: The 4 mappers in [`mapper/`](../../src/main/kotlin/com/example/whoopdavidapi/mapper/). For example, [`mapper/CycleMapper.kt`](../../src/main/kotlin/com/example/whoopdavidapi/mapper/CycleMapper.kt):
 
 ```kotlin
 @Mapper(componentModel = "spring")
@@ -210,8 +210,8 @@ interface CycleMapper {
 }
 ```
 
-MapStruct automatically generates a class `CycleMapperImpl` with the field-by-field mapping code.
-**If you remove it**: You need to write the mapping by hand in each service. With 4 entities and many fields, it's a lot of repetitive code.
+MapStruct automatically generates a `CycleMapperImpl` class with field-by-field mapping code.
+**If you remove it**: You need to write the mapping by hand in each service. With 4 entities and many fields, it’s a lot of repetitive code.
 
 ---
 
@@ -222,8 +222,8 @@ implementation("io.github.resilience4j:resilience4j-spring-boot3:2.3.0")
 implementation("org.springframework.boot:spring-boot-starter-aspectj")
 ```
 
-**What does**: [Resilience4j](https://resilience4j.readme.io/docs/getting-started-3) provides resilience patterns (circuit breaker, retry, rate limiter) via annotations. The [AspectJ](https://docs.spring.io/spring-framework/reference/core/aop.html) starter is necessary because Resilience4j uses AOP (Aspect-Oriented Programming) to intercept calls to annotated methods.
-**Where is**  used: [`client/WhoopApiClient.kt`](../../src/main/kotlin/com/example/whoopdavidapi/client/WhoopApiClient.kt) - each method has `@CircuitBreaker`, `@Retry` and `@RateLimiter`:
+**What it does**: [Resilience4j](https://resilience4j.readme.io/docs/getting-started-3) provides resilience patterns (circuit breaker, retry, rate limiter) via annotations. The [AspectJ](https://docs.spring.io/spring-framework/reference/core/aop.html) starter is necessary because Resilience4j uses AOP (Aspect-Oriented Programming) to intercept calls to annotated methods.
+**Where it is used**: [`client/WhoopApiClient.kt`](../../src/main/kotlin/com/example/whoopdavidapi/client/WhoopApiClient.kt) - each method has `@CircuitBreaker`, `@Retry` and `@RateLimiter`:
 
 ```kotlin
 @CircuitBreaker(name = "whoopApi", fallbackMethod = "fallbackGetAllRecords")
@@ -234,25 +234,25 @@ fun getAllCycles(start: Instant? = null, end: Instant? = null): List<Map<String,
 }
 ```
 
-Set to [`application.yaml`](../../src/main/resources/application.yaml) (section `resilience4j:`).
-**If you remove resilience4j**: Whoop API errors propagate directly. There are no retries or circuit breakers. Synchronization fails completely if Whoop has temporary problems.
-**If you remove starter-aspectj**: Resilience4j annotations are silently ignored. The code is executed but without protection.
+Configured in [`application.yaml`](../../src/main/resources/application.yaml) (section `resilience4j:`).
+**If you remove resilience4j**: Whoop API errors propagate directly. There are no retries or circuit breaker. Synchronization fails completely if Whoop has temporary issues.
+**If you remove starter-aspectj**: Resilience4j annotations are silently ignored. The code runs but without protection.
 
-> **GOTCHA Spring Boot 4**: The starter was renamed from `spring-boot-starter-aop` to `spring-boot-starter-aspectj`. If you use the old name, Gradle doesn't find it.
+> **GOTCHA Spring Boot 4**: The starter was renamed from `spring-boot-starter-aop` to `spring-boot-starter-aspectj`. If you use the old name, Gradle can’t find it.
 
 ---
 
-#### OpenAPI/Swagger UI
+#### OpenAPI / Swagger UI
 
 ```kotlin
 implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
 ```
 
 **What it does**: Automatically generates OpenAPI 3.0 documentation from the controllers and exposes it in Swagger UI.
-**Where used**: Set to [`config/OpenApiConfig.kt`](../../src/main/kotlin/com/example/whoopdavidapi/config/OpenApiConfig.kt) and [`application.yaml`](../../src/main/resources/application.yaml) (section `springdoc:`). Swagger UI accessible in `/swagger-ui/index.html`.
+**Where it is used**: Configured in [`config/OpenApiConfig.kt`](../../src/main/kotlin/com/example/whoopdavidapi/config/OpenApiConfig.kt) and [`application.yaml`](../../src/main/resources/application.yaml) (section `springdoc:`). Swagger UI accessible at `/swagger-ui/index.html`.
 **If you remove it**: There is no Swagger UI or automatic API documentation.
 
-> **GOTCHA Spring Boot 4**: [springdoc-openapi](https://springdoc.org/) **v3.x** is for Spring Boot 4. Version **v2.x** is for Spring Boot 3. If you use v2.x with Spring Boot 4, it fails because incompatibilities with Jackson 3.
+> **GOTCHA Spring Boot 4**: [springdoc-openapi](https://springdoc.org/) **v3.x** is for Spring Boot 4. Version **v2.x** is for Spring Boot 3. If you use v2.x with Spring Boot 4, it fails due to incompatibilities with Jackson 3.
 
 ---
 
@@ -263,13 +263,13 @@ runtimeOnly("com.h2database:h2")
 runtimeOnly("org.postgresql:postgresql")
 ```
 
-**What they do**: JDBC drivers for [H2](https://www.h2database.com/) (BD in-memory) and [PostgreSQL](https://jdbc.postgresql.org/). `runtimeOnly` means that they are only needed in runtime, not in compilation.
+**What they do**: JDBC drivers for [H2](https://www.h2database.com/) (in-memory DB) and [PostgreSQL](https://jdbc.postgresql.org/). `runtimeOnly` means they are only needed at runtime, not at compile time.
 **Where they are used**:
 
-- H2: [`application-dev.yaml`](../../src/main/resources/application-dev.yaml) - developmental profile
+- H2: [`application-dev.yaml`](../../src/main/resources/application-dev.yaml) - development profile
 - PostgreSQL: [`application-prod.yaml`](../../src/main/resources/application-prod.yaml) - production profile
-**If you remove H2**: Profile `dev` does not work (does not have a DB)
-**If you remove PostgreSQL**: Profile `prod` does not work (cannot connect to the DB)
+**If you remove H2**: The `dev` profile does not work (it has no DB)
+**If you remove PostgreSQL**: The `prod` profile does not work (it cannot connect to the DB)
 
 ---
 
@@ -284,16 +284,16 @@ testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 ```
 
-| Dependence | What does it provide? |
+| Dependency | What it provides |
 |---|---|
-| `actuator-test` | Utilities to test actuator |
-| `data-jpa-test` | `@DataJpaTest` for repository tests with embedded DB |
-| `security-test` | `httpBasic()`, `csrf()` and other utilities to test security |
+| `actuator-test` | Utilities for testing actuator |
+| `data-jpa-test` | `@DataJpaTest` for repository tests with an embedded DB |
+| `security-test` | `httpBasic()`, `csrf()` and other utilities for testing security |
 | `webmvc-test` | `MockMvc`, `@WebMvcTest`, `@AutoConfigureMockMvc` |
 | `kotlin-test-junit5` | Kotlin Assertions + integration with JUnit 5 |
-| `junit-platform-launcher` | JUnit 5 Test Runner |
+| `junit-platform-launcher` | JUnit 5 test runner |
 
-> **GOTCHA Spring Boot 4**: Test annotation packages changed:
+> **GOTCHA Spring Boot 4**: The packages for the test annotations changed:
 >
 > - `@WebMvcTest` is now in `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`
 > - `@DataJpaTest` is now in `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`
@@ -314,9 +314,9 @@ kapt {
 }
 ```
 
-1. **`correctErrorTypes = true`**: Fix type errors when kapt cannot resolve a reference. Required for kapt to work well with Kotlin
-2. **`includeCompileClasspath = false`**: Prevent kapt from processing the entire build classpath (better performance)
-3. **`mapstruct.defaultComponentModel = "spring"`**: Tells MapStruct to generate the mappers as Spring beans (`@Component`). So they can be injected with `@Autowired` or by constructor
+1. **`correctErrorTypes = true`**: Fixes type errors when kapt cannot resolve a reference. Required for kapt to work properly with Kotlin
+2. **`includeCompileClasspath = false`**: Prevents kapt from processing the entire compilation classpath (better performance)
+3. **`mapstruct.defaultComponentModel = "spring"`**: Tells MapStruct to generate the mappers as Spring beans (`@Component`). This way they can be injected with `@Autowired` or via constructor
 
 ---
 
@@ -329,7 +329,7 @@ tasks.matching { it.name == "kaptTestKotlin" || it.name == "kaptGenerateStubsTes
 }
 ```
 
-> **GOTCHA Spring Boot 4**: kapt attempts to process test annotations (`@DataJpaTest`, `@WebMvcTest`, etc.) from Spring Boot 4 and fails because these annotations changed packages. Since there are no annotation processors needed in the tests, we disable kapt for tests completely.
+> **GOTCHA Spring Boot 4**: kapt tries to process the test annotations (`@DataJpaTest`, `@WebMvcTest`, etc.) from Spring Boot 4 and fails because these annotations changed package. Since no annotation processors are needed in tests, we disable kapt for tests completely.
 
 Without this line, the test compilation fails with kapt errors when trying to resolve the new Spring Boot 4 annotations.
 
@@ -345,9 +345,9 @@ kotlin {
 }
 ```
 
-- **`-Xjsr305=strict`**: Causes Kotlin to treat Java nullability annotations (JSR-305's `@Nullable`, `@NonNull`) as strict. This means that if a Spring API declares a parameter as `@NonNull`, Kotlin treats it as non-nullable (`String` instead of `String?`). Improves type safety in Kotlin/Java interoperability.
+- **`-Xjsr305=strict`**: Makes Kotlin treat Java nullability annotations (`@Nullable`, `@NonNull` from JSR-305) as strict. This means that if a Spring API declares a parameter as `@NonNull`, Kotlin treats it as non-nullable (`String` instead of `String?`). It improves type safety in Kotlin/Java interoperability.
 
-- **`-Xannotation-default-target=param-property`**: Controls where annotations are placed in Kotlin properties. By default in Kotlin constructors, an annotation like `@Column` could be applied to the constructor parameter instead of the field. With this option, it applies to both the parameter and the property, which is necessary for JPA/Hibernate to detect them correctly.
+- **`-Xannotation-default-target=param-property`**: Controls where annotations are placed on Kotlin properties. By default in Kotlin constructors, an annotation like `@Column` could be applied to the constructor parameter instead of the field. With this option, it is applied to both the parameter and the property, which is necessary for JPA/Hibernate to detect them correctly.
 
 ---
 
@@ -361,14 +361,14 @@ allOpen {
 }
 ```
 
-As mentioned, in Kotlin all classes are `final` by default. Hibernate needs to create proxies (subclasses) of the entities for functionality like lazy loading. Classes `final` cannot have subclasses.
+As mentioned, in Kotlin all classes are `final` by default. Hibernate needs to create proxies (subclasses) of entities for features such as lazy loading. `final` classes cannot have subclasses.
 
-Block `allOpen` complements plugin `kotlin("plugin.jpa")`:
+The `allOpen` block complements the `kotlin("plugin.jpa")` plugin:
 
-- `plugin.jpa` generates constructors with no arguments
-- `allOpen` opens classes (makes them non-final)
+- `plugin.jpa` generates no-argument constructors
+- `allOpen` opens the classes (makes them non-final)
 
-Both are required for JPA/Hibernate to work correctly with Kotlin.
+Both are necessary for JPA/Hibernate to work correctly with Kotlin.
 
 **Concrete example**: The entity `WhoopCycle` in [`model/entity/WhoopCycle.kt`](../../src/main/kotlin/com/example/whoopdavidapi/model/entity/WhoopCycle.kt):
 
@@ -383,7 +383,7 @@ class WhoopCycle(
 )
 ```
 
-Thanks to `allOpen`, this class compiles as `open class WhoopCycle` instead of `final class WhoopCycle`, allowing Hibernate to create proxies.
+Thanks to `allOpen`, this class is compiled as `open class WhoopCycle` instead of `final class WhoopCycle`, allowing Hibernate to create proxies.
 
 ---
 
@@ -395,7 +395,7 @@ tasks.withType<Test> {
 }
 ```
 
-Configure Gradle to use JUnit Platform (JUnit 5) as the test execution engine. Without this line, Gradle uses JUnit 4 by default and does not find tests annotated with `@Test` from JUnit 5.
+Configure Gradle to use the JUnit Platform (JUnit 5) as the test execution engine. Without this line, Gradle uses JUnit 4 by default and does not find the tests annotated with `@Test` from JUnit 5.
 
 ---
 
@@ -409,9 +409,9 @@ Configure Gradle to use JUnit Platform (JUnit 5) as the test execution engine. W
 
 ### Why kapt and not KSP for MapStruct?
 
-**KSP** (Kotlin Symbol Processing) is faster than kapt, but MapStruct 1.6.3 does not yet have official support for KSP. Using kapt is the only functional option currently.
+**KSP** (Kotlin Symbol Processing) is faster than kapt, but MapStruct 1.6.3 still does not have official support for KSP. Using kapt is the only functional option currently.
 
-### Why should Kotlin plugin versions match?
+### Why do the versions of the Kotlin plugins have to match?
 
 All Kotlin plugins (`jvm`, `plugin.spring`, `plugin.jpa`, `kapt`) must have the **same version** (2.2.21). If they differ, the Kotlin compiler may produce errors or unexpected behavior.
 

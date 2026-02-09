@@ -2,15 +2,15 @@
 
 ## Welcome
 
-This documentation is designed to teach each concept of [Spring Boot](https://spring.io/projects/spring-boot) used in this project. It is not a quick reference, but a **learning guide** where each technical decision is explained with the "why" behind it.
+This documentation is designed to teach each [Spring Boot](https://spring.io/projects/spring-boot) concept used in this project. It is not a quick reference, but rather a **learning guide** where each technical decision is explained with the "why" behind it.
 
-**WhoopDavidAPI** is an intermediary REST API that follows the pattern **BFF (Backend For Frontend)**. Its purpose is:
+**WhoopDavidAPI** is an intermediary REST API that follows the **BFF (Backend For Frontend)** pattern. Its purpose is:
 
-1. **Connect** to the Whoop API v2 (the official API of the Whoop bracelet)
-2. **Sync** health and fitness data to a local [PostgreSQL](https://www.postgresql.org/) database
-3. **Expose** that data through its own REST API, consumed by [Power BI](https://powerbi.microsoft.com/) for visualization
+1. **Connect** to the Whoop API v2 (the official API of the Whoop wristband)
+2. **Synchronize** health and fitness data in a local [PostgreSQL](https://www.postgresql.org/) database
+3. **Expose** that data through a proprietary REST API, consumed by [Power BI](https://www.microsoft.com/en-us/power-platform/products/power-bi/) for visualization
 
-It is a project for a single **user** (David), which simplifies many architectural decisions.
+It is a project for a **single user** (David), which simplifies many architectural decisions.
 
 ---
 
@@ -27,21 +27,21 @@ It is a project for a single **user** (David), which simplifies many architectur
                       └──────────────────────┘
 ```
 
-The BFF acts as an intermediary: it does not directly expose the Whoop API, but instead stores the data locally and serves it in the format Power BI needs. This avoids relying on real-time Whoop availability and allows pagination, filtering and data transformation.
+The BFF acts as an intermediary: it does not directly expose the Whoop API, but instead stores the data locally and serves it in the format that Power BI needs. This avoids depending on Whoop’s real-time availability and enables pagination, filtering, and data transformation.
 
 ---
 
-## Technological stack
+## Tech stack
 
 | Technology | Version | Purpose |
 |---|---|---|
-| **[Kotlin](https://kotlinlang.org/)** | 2.2.21 | Primary language |
-| **Spring Boot** | 4.0.2 | Backend framework |
+| **[Kotlin](https://kotlinlang.org/)** | 2.2.21 | Main language |
+| **Spring Boot** | 4.0.2 | Framework backend |
 | **Java** | 24 | JVM runtime |
-| **PostgreSQL** | - | Database in production |
-| **H2** | - | Database under development (in-memory) |
+| **PostgreSQL** | - | Production database |
+| **H2** | - | Development database (in-memory) |
 | **[MapStruct](https://mapstruct.org/)** | 1.6.3 | Entity <-> DTO Mapping |
-| **[Resilience4j](https://resilience4j.readme.io/)** | 2.3.0 | Circuit breaker, retry, rate limiter |
+| **[Resilience4j](https://resilience4j.readme.io/docs/getting-started)** | 2.3.0 | Circuit breaker, retry, rate limiter |
 | **[springdoc-openapi](https://springdoc.org/)** | 3.0.1 | Swagger UI Documentation |
 | **Gradle** | - | Build system (Kotlin DSL) |
 | **[Docker](https://www.docker.com/)** | - | Containerization |
@@ -51,7 +51,7 @@ The BFF acts as an intermediary: it does not directly expose the Whoop API, but 
 
 ## Swagger UI (Interactive API)
 
-| Around | URL |
+| Environment | URL |
 |---|---|
 | **DEV** | [https://david-whoop-dev.apptolast.com/swagger-ui/index.html](https://david-whoop-dev.apptolast.com/swagger-ui/index.html) |
 | **PROD** | [https://david-whoop.apptolast.com/swagger-ui/index.html](https://david-whoop.apptolast.com/swagger-ui/index.html) |
@@ -163,31 +163,31 @@ WhoopDavidAPI/
 
 ## Documentation index
 
-Each document explains a Spring Boot concept with references to the actual project code:
+Each document explains a Spring Boot concept with references to the project's actual code:
 
 | # | Document | Description |
 |---|---|---|
-| **01** | [Architecture and pattern BFF](01-architecture.md) | General architecture, data flow, why WebMVC and not WebFlux |
-| **02** | [Gradle and dependencies](02-gradle-dependencies.md) | Every dependency explained, Kotlin plugins, Spring Boot 4 gotchas |
+| **01** | [Architecture and BFF pattern](01-architecture.md) | General architecture, data flow, why WebMVC and not WebFlux |
+| **02** | [Gradle and dependencies](02-gradle-dependencies.md) | Each dependency explained, Kotlin plugins, Spring Boot 4 gotchas |
 | **03** | [JPA and Hibernate Entities](03-jpa-entities.md) | `@Entity`, `@Table`, `@Column`, data types, token encryption |
 | **04** | [Spring Data JPA Repositories](04-repositories.md) | Interfaces, derived queries, pagination, `JpaRepository` |
 | **05** | [DTOs and MapStruct](05-dtos-mapstruct.md) | Entity/DTO separation, automatic mappers with kapt |
-| **06** | [Service Layer](06-services.md) | `@Service`, business logic, `WhoopSyncService` |
+| **06** | [Services layer](06-services.md) | `@Service`, business logic, `WhoopSyncService` |
 | **07** | [REST Controllers](07-controllers.md) | `@RestController`, `@GetMapping`, validation, `ResponseEntity` |
 | **08** | [Spring Security](08-security.md) | Multi-chain: Basic Auth, OAuth2, public endpoints, deny-all |
 | **09** | [RestClient and Resilience4j](09-http-client.md) | HTTP client, circuit breaker, retry, rate limiter |
-| **10** | [Synchronization scheduled](10-synchronization.md) | `@Scheduled`, cron, incremental synchronization |
-| **11** | [Spring Profiles](11-profiles.md) | dev/prod/demo, `@Profile`, environment configuration |
+| **10** | [Scheduled synchronization](10-synchronization.md) | `@Scheduled`, cron, incremental synchronization |
+| **11** | [Spring Profiles](11-profiles.md) | dev/prod/demo, `@Profile`, environment-based configuration |
 | **12** | [Testing in Spring Boot](12-testing.md) | `@SpringBootTest`, `@DataJpaTest`, `@MockitoBean`, MockMvc |
 | **13** | [Docker and Kubernetes](13-docker-k8s.md) | Multi-stage Dockerfile, K8s manifests, Traefik, cert-manager |
-| **14** | [CI/CD with GitHub Actions](14-cicd.md) | CI workflows (test), CD (deploy), doc updates |
+| **14** | [CI/CD with GitHub Actions](14-cicd.md) | CI workflows (test), CD (deploy), docs update |
 
 ---
 
 ## How to use this documentation
 
 1. **Read in order** if you are new to Spring Boot: start with the architecture (01) and move forward sequentially
-2. **Skip to what you need** if you are looking for something specific: each document is self-contained
+2. **Jump to what you need** if you’re looking for something specific: each document is self-contained
 3. **Follow the links to the code**: each document references the actual source files with clickable relative paths on GitHub
 4. **Consult the official documentation**: each document includes links to the official Spring Boot and Kotlin documentation
 
@@ -199,6 +199,6 @@ Each document explains a Spring Boot concept with references to the actual proje
 - [Kotlin Language Reference](https://kotlinlang.org/docs/reference/)
 - [Spring Data JPA Reference](https://docs.spring.io/spring-data/jpa/reference/)
 - [Spring Security Reference](https://docs.spring.io/spring-security/reference/)
-- [Resilience4j Documentation](https://resilience4j.readme.io/docs)
+- [Resilience4j Documentation](https://resilience4j.readme.io/docs/getting-started)
 - [MapStruct Reference Guide](https://mapstruct.org/documentation/stable/reference/html/)
 - [springdoc-openapi](https://springdoc.org/)

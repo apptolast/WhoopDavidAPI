@@ -3,17 +3,17 @@
 ## Table of contents
 
 - [What are Spring profiles?](#what-are-spring-profiles)
-- [How to activate profiles](#how-to-activate-profiles)
-- [Configuration load: base + profile](#configuration-load-base--profile)
+- [How are profiles activated](#how-do-you-activate-profiles)
+- [Configuration loading: base + profile](#configuration-loading-base--profile)
 - [Profile annotations in beans](#profile-annotations-in-beans)
-- [The 3 profiles of the project](#the-3-profiles-of-the-project)
+- [The 3 project profiles](#the-3-project-profiles)
   - [Dev profile (development)](#dev-profile-development)
   - [Prod profile (production)](#prod-profile-production)
   - [Demo profile (testing without real API keys)](#demo-profile-testing-without-real-api-keys)
-- [Exclusive beans from the demo profile](#exclusive-demo-profile-beans)
+- [Beans exclusive to the demo profile](#exclusive-beans-from-the-demo-profile)
   - [MockWhoopApiController](#mockwhoopapicontroller)
   - [MockWhoopDataGenerator](#mockwhoopdatagenerator)
-  - [DemoTokenSeeder and CommandLineRunner](#demotokenseeder-vs-commandlinerunner)
+  - [DemoTokenSeeder and CommandLineRunner](#demotokenseeder-and-commandlinerunner)
   - [DemoWhoopTokenManager and @Primary](#demowhooptokenmanager-and-primary)
 - [Summary table of differences between profiles](#summary-table-of-differences-between-profiles)
 - [Official documentation](#official-documentation)
@@ -22,46 +22,46 @@
 
 ## What are Spring profiles?
 
-The [Spring profiles](https://docs.spring.io/spring-boot/reference/features/profiles.html) allow you to have **different configurations** for different environments (development, production, testing) within the same application. Instead of maintaining multiple versions of code or multiple loose configuration files, Spring allows you to activate/deactivate components and properties based on the active profile.
+Spring [profiles](https://docs.spring.io/spring-boot/reference/features/profiles.html) allow you to have **different configurations** for different environments (development, production, testing) within the same application. Instead of maintaining multiple versions of the code or multiple separate configuration files, Spring allows you to enable/disable components and properties depending on the active profile.
 
 A profile affects two things:
 
-1. **Configuration properties**: What YAML file is loaded (database, URLs, credentials, etc.)
+1. **Configuration properties**: Which YAML file is loaded (database, URLs, credentials, etc.)
 2. **Spring Beans**: Which classes are registered in the container (beans can be created only for certain profiles)
 
 ---
 
-## How to activate profiles
+## How do you activate profiles?
 
-There are several ways to activate a profile. In order of priority (highest to lowest):
+There are several ways to activate a profile. In order of priority (from highest to lowest):
 
-| Method | Example | Where is it used |
+| Metodo | Example | Where is it used? |
 |---|---|---|
 | **Environment variable** | `SPRING_PROFILES_ACTIVE=prod` | Production (Kubernetes, Docker) |
 | **JVM argument** | `-Dspring.profiles.active=dev` | IDE (IntelliJ, Eclipse) |
-| **Command line argument** | `--spring.profiles.active=dev,demo` | Terminal, scripts |
-| **In application.yaml** | `spring.profiles.active: dev` | Not recommended (hardcode profile) |
+| **Command-line argument** | `--spring.profiles.active=dev,demo` | Terminal, scripts |
+| **In application.yaml** | `spring.profiles.active: dev` | Not recommended (hardcodes the profile) |
 
 In this project:
 
-- **Local Development**: Executed with [`--spring.profiles.active=dev`](https://docs.spring.io/spring-boot/reference/features/profiles.html) or `SPRING_PROFILES_ACTIVE=dev`
+- **Local development**: It runs with [`--spring.profiles.active=dev`](https://docs.spring.io/spring-boot/reference/features/profiles.html) or `SPRING_PROFILES_ACTIVE=dev`
 - **Production (Kubernetes)**: The environment variable `SPRING_PROFILES_ACTIVE=prod` is defined in the Kubernetes manifest
-- **Demo**: Runs with `--spring.profiles.active=dev,demo` (demo is combined with dev to have H2)
+- **Demo**: It runs with `--spring.profiles.active=dev,demo` (demo is combined with dev to have H2)
 
-**multiple profiles** can be activated by separating them by commas: `dev,demo` activates both profiles simultaneously.
+You can activate **multiple profiles** by separating them with a comma: `dev,demo` activates both profiles simultaneously.
 
 ---
 
-## Configuration load: base + profile
+## Configuration loading: base + profile
 
-Spring loads the [YAML files](https://docs.spring.io/spring-boot/reference/features/external-config.html) in a specific order and **merges** (merge):
+Spring loads the [YAML files](https://docs.spring.io/spring-boot/reference/features/external-config.html) in a specific order and **merges** them (merge):
 
 ```
 1. application.yaml           ← Se carga SIEMPRE (configuracion base)
 2. application-{perfil}.yaml  ← Se carga SOLO si el perfil esta activo
 ```
 
-**The profile properties override those of the base one.** Those that are not redefined in the profile maintain the base value.
+**The profile properties override the base properties.** Those that are not redefined in the profile keep the base value.
 
 Concrete example with `app.whoop.sync-cron`:
 
@@ -81,33 +81,33 @@ app:
     sync-cron: "0 */5 * * * *"     # Cada 5 minutos (sobreescribe el base)
 ```
 
-| Active profile | Value of `app.whoop.sync-cron` | Fountain |
+| Active profile | Value of `app.whoop.sync-cron` | Source |
 |---|---|---|
 | `dev` | `"0 */30 * * * *"` | application.yaml (base, not overridden) |
 | `prod` | `"0 */30 * * * *"` | application.yaml (base, not overridden) |
-| `demo` | `"0 */5 * * * *"` | application-demo.yaml (overrides base) |
+| `demo` | `"0 */5 * * * *"` | application-demo.yaml (overwrites base) |
 
-The same goes for `app.whoop.base-url`:
+The same happens with `app.whoop.base-url`:
 
-| Active profile | Worth | Fountain |
+| Active profile | Value | Source |
 |---|---|---|
 | `dev` or `prod` | `https://api.prod.whoop.com` | application.yaml (base) |
-| `demo` | `http://localhost:8080/mock` | application-demo.yaml (override) |
+| `demo` | `http://localhost:8080/mock` | application-demo.yaml (overwrites) |
 
 ---
 
 ## Profile annotations in beans
 
-The annotation [`@Profile`](https://docs.spring.io/spring-framework/reference/core/beans/environment.html) controls which profiles a bean is registered in:
+The annotation [`@Profile`](https://docs.spring.io/spring-framework/reference/core/beans/environment.html) controls in which profiles a bean is registered:
 
 | Annotation | Meaning | Example |
 |---|---|---|
-| `@Profile("demo")` | It is only created when profile `demo` is active | `DemoWhoopTokenManager` |
-| `@Profile("!demo")` | Created on all profiles **except**  `demo` | `WhoopTokenManager` |
-| `@Profile("dev")` | It is only created when profile `dev` is active | (not used in this project) |
+| `@Profile("demo")` | It is only created when the `demo` profile is active | `DemoWhoopTokenManager` |
+| `@Profile("!demo")` | It is created in all profiles **except** `demo` | `WhoopTokenManager` |
+| `@Profile("dev")` | It is only created when the `dev` profile is active | (not used in this project) |
 | Without `@Profile` | It is always created, regardless of the profile | `WhoopApiClient`, `WhoopSyncService`, etc. |
 
-The `!` (negation) operator is key for the Strategy pattern that this project uses with `TokenManager`:
+The `!` operator (negation) is key to the Strategy pattern used by this project with `TokenManager`:
 
 ```
 Perfil activo  │  @Profile("!demo")         │  @Profile("demo")
@@ -121,7 +121,7 @@ dev,demo       │  NO se crea (demo activo)  │  SE CREA
 
 ---
 
-## The 3 profiles of the project
+## The 3 project profiles
 
 ### Dev profile (development)
 
@@ -177,22 +177,22 @@ Key points of the dev profile:
 
 **Database [H2](https://www.h2database.com/) in-memory**:
 
-- `jdbc:h2:mem:whoop_dev` creates an in-memory database **2⟩. It is created when starting and destroyed when stopping. You don't need to install anything.
+- `jdbc:h2:mem:whoop_dev` creates an **in-memory** database. It is created at startup and destroyed at shutdown. You don’t need to install anything.
 - `DB_CLOSE_DELAY=-1` prevents H2 from closing the database when there are no active connections.
-- `DB_CLOSE_ON_EXIT=FALSE` prevents H2 from closing the database when exiting the JVM (required for tests).
+- `DB_CLOSE_ON_EXIT=FALSE` prevents H2 from closing the database when exiting the JVM (necessary for tests).
 - `driver-class-name: org.h2.Driver` indicates the JDBC driver for H2.
 
 **`ddl-auto: update`**:
-Hibernate **creates and modifies** tables automatically based on entities `@Entity`. If you add a field to `WhoopCycle`, Hibernate adds the column to the table. Ideal for rapid development, but **dangerous in production** (could make unwanted changes).
+Hibernate **creates and modifies** tables automatically based on the entities `@Entity`. If a field is added to `WhoopCycle`, Hibernate adds the column to the table. Ideal for rapid development, but **dangerous in production** (it could make unwanted changes).
 
 **H2 Console**:
 
 - `h2.console.enabled: true` enables a web interface to query the H2 database.
 - Accessible at `http://localhost:8080/h2-console`.
-- Useful to verify that data is being saved correctly during development.
+- Useful for verifying that data is being saved correctly during development.
 
 **`show-sql: true` and `format_sql: true`**:
-Displays the SQL queries that Hibernate generates in the console, formatted for readability. Output example:
+Show the SQL queries that Hibernate generates in the console, formatted for readability. Example output:
 
 ```sql
 select
@@ -208,10 +208,10 @@ limit 1
 ```
 
 **Encryption key with default**:
-`${ENCRYPTION_KEY:YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU=}` provides a default key for development. In production, the variable `ENCRYPTION_KEY` must be defined without default (see prod profile).
+`${ENCRYPTION_KEY:YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU=}` provides a default key for development. In production, the `ENCRYPTION_KEY` variable must be defined without a default (see the prod profile).
 
 **OAuth2 client-id/secret with defaults**:
-`${WHOOP_CLIENT_ID:dev-client-id}` allows booting without the actual Whoop environment variables. This is useful in development when you don't need to connect to the real API.
+`${WHOOP_CLIENT_ID:dev-client-id}` allows starting up without Whoop’s real environment variables. This is useful in development when there’s no need to connect to the real API.
 
 ### Prod profile (production)
 
@@ -258,22 +258,22 @@ Key points of the prod profile:
 
 **PostgreSQL with HikariCP**:
 
-- `${DATABASE_URL}`, `${DB_USERNAME}`, `${DB_PASSWORD}`: No default values. Application **does not start** if these variables are not defined. This is intentional - it forces credentials to be set correctly.
-- `driver-class-name: org.postgresql.Driver`: JDBC Driver for PostgreSQL.
-- **HikariCP** is Spring Boot's default database connection pool. Reuse connections instead of opening/closing a new one for each query:
+- `${DATABASE_URL}`, `${DB_USERNAME}`, `${DB_PASSWORD}`: No default values. The **application does not start** if these variables are not defined. This is intentional: it forces you to configure the credentials correctly.
+- `driver-class-name: org.postgresql.Driver`: JDBC driver for PostgreSQL.
+- **HikariCP** is Spring Boot’s default database connection pool. It reuses connections instead of opening/closing a new one for each query:
 
-| Property | Worth | Meaning |
+| Property | Value | Meaning |
 |---|---|---|
-| `maximum-pool-size` | `10` | Maximum 10 simultaneous connections to PostgreSQL |
-| `minimum-idle` | `2` | Keep at least 2 connections always open (for quick response) |
-| `connection-timeout` | `30000` | 30 seconds max to get a pool connection |
-| `idle-timeout` | `600000` | 10 minutes: an idle connection is closed |
-| `max-lifetime` | `1800000` | 30 minutes: maximum life of a connection (it is recycled to avoid leaks) |
+| `maximum-pool-size` | `10` | Maximum of 10 simultaneous connections to PostgreSQL |
+| `minimum-idle` | `2` | Keeps at least 2 connections open at all times (for a quick response) |
+| `connection-timeout` | `30000` | 30 seconds max to obtain a connection from the pool |
+| `idle-timeout` | `600000` | 10 minutes: an inactive connection is closed |
+| `max-lifetime` | `1800000` | 30 minutes: maximum lifetime of a connection (it is recycled to avoid leaks) |
 
 **`ddl-auto: validate`**:
-Unlike `update` in dev, `validate` **does not modify**  the database. It only checks that the existing tables match the JPA entities. If they do not match, the application **does not start**. This protects against accidental changes in production. Schema changes must be done with migration tools (such as Flyway or Liquibase).
+Unlike `update` in dev, `validate` **does not modify** the database. It only checks that the existing tables match the JPA entities. If they don’t match, the application **does not start**. This protects against accidental changes in production. Schema changes must be made with migration tools (such as Flyway or Liquibase).
 
-**Logging reduced**:
+**Reduced logging**:
 
 - `com.example.whoopdavidapi: INFO` (instead of DEBUG)
 - `org.hibernate.SQL: WARN` (does not show SQL queries)
@@ -304,27 +304,27 @@ logging:
     com.example.whoopdavidapi.mock: DEBUG
 ```
 
-Profile `demo` is designed to run the full **application** without needing actual Whoop API credentials. It is ideal for:
+The `demo` profile is designed to run the full **application** without needing real Whoop API credentials. It is ideal for:
 
-- Try the application for the first time
-- Do demonstrations
-- Frontend development (Power BI) without depending on the real API
+- Test the application for the first time
+- Give demonstrations
+- Frontend development (Power BI) without relying on the real API
 
 **`base-url: http://localhost:8080/mock`**:
-Redirect all HTTP requests from `WhoopApiClient` to the mock controller that runs within the application itself (at `/mock/developer/v1/...`). That is, the application calls itself.
+Redirect all HTTP requests from `WhoopApiClient` to the mock controller running within the application itself (at `/mock/developer/v1/...`). That is, the application calls itself.
 
 **`sync-cron: "0 */5 * * * *"`**:
-Synchronization every 5 minutes (instead of 30). Since the data is mocked, there is no risk of overwhelming any API.
+Synchronization every 5 minutes (instead of 30). Since the data is mock, there is no risk of saturating any API.
 
-**Demo Credentials**: `demo-client-id` and `demo-client-secret` are false values. The mock driver does not validate credentials.
+**Demo credentials**: `demo-client-id` and `demo-client-secret` are fake values. The mock controller does not validate credentials.
 
-Profile `demo` is typically used  **combined with dev**: `--spring.profiles.active=dev,demo`. This is how you have H2 in-memory (from dev) + API mock (from demo).
+The `demo` profile is normally used **combined with dev**: `--spring.profiles.active=dev,demo`. This way you have H2 in-memory (from dev) + mock API (from demo).
 
 ---
 
-## Exclusive demo profile beans
+## Exclusive beans from the demo profile
 
-The demo profile activates 4 classes annotated with `@Profile("demo")`, located in package `mock/`.
+The demo profile activates 4 classes annotated with `@Profile("demo")`, located in the `mock/` package.
 
 ### MockWhoopApiController
 
@@ -408,17 +408,17 @@ class MockWhoopApiController(
 }
 ```
 
-This driver **simulates the Whoop API** within the application itself. The endpoints replicate the same structure as the real API:
+This controller **simulates the Whoop API** within the application itself. The endpoints replicate the same structure as the real API:
 
 - Same paths: `/developer/v1/cycle`, `/developer/v1/recovery`, `/developer/v1/activity/sleep`, `/developer/v1/activity/workout`, `/developer/v1/user/profile/basic`
 - Same parameters: `limit`, `nextToken`, `start`, `end`
 - Same response structure: `{ "records": [...], "next_token": "..." }`
 
-The `@RequestMapping("/mock/developer/v1")` adds the prefix `/mock` to avoid colliding with the application's real endpoints (which are in `/api/v1/...`).
+The `@RequestMapping("/mock/developer/v1")` adds the `/mock` prefix to avoid colliding with the application's real endpoints (which are in `/api/v1/...`).
 
-**Mock paging logic**: The `paginate()` function simulates real Whoop pagination. Use `nextToken` as a numeric offset (index in the list of records), return `limit` records from that offset, and generate a `next_token` if more records remain.
+**Mock pagination logic**: The function `paginate()` simulates Whoop’s real pagination. It uses `nextToken` as a numeric offset (index in the list of records), returns `limit` records from that offset, and generates a `next_token` if there are more records remaining.
 
-The `WhoopApiClient` does not know that it is calling a mock. For him, it is the same base URL (configured as `http://localhost:8080/mock` via YAML) with the same endpoints. This is possible because the `base-url` is injected from the configuration.
+The `WhoopApiClient` does not know that it is calling a mock. For it, it is the same base URL (configured as `http://localhost:8080/mock` via YAML) with the same endpoints. This is possible because the `base-url` is injected from the configuration.
 
 ### MockWhoopDataGenerator
 
@@ -450,12 +450,12 @@ class MockWhoopDataGenerator {
 
 Important features:
 
-- **`Random(42)`**: A deterministic seed (`42`) is used. This means that the data generated is **always the same** in each run. This facilitates reproducible testing and consistent demonstrations.
-- **`by lazy { ... }`**: Kotlin Delegation `lazy`. The data is not generated when the bean is created, but rather the **first time** the property is accessed. Afterwards they are cached (they are not generated again).
-- **30 days of data**: Cycles, recoveries, sleeps and workouts are generated for the last 30 days, with realistic values ​​(strain between 4-21, recovery score between 20-99, etc.).
-- **Workouts with probability of 70%**: To simulate that not every day they have training, `if (random.nextFloat() > 0.70f) continue` is used (approximately 4-5 workouts per week).
+- **`Random(42)`**: A deterministic seed (`42`) is used. This means that the generated data is **always the same** in each run. This facilitates reproducible testing and consistent demonstrations.
+- **`by lazy { ... }`**: Kotlin `lazy` delegation. The data is not generated when creating the bean, but rather the **first time** the property is accessed. Afterwards it is cached (it is not generated again).
+- **30 days of data**: cycles, recoveries, sleeps, and workouts are generated for the last 30 days, with realistic values (strain between 4-21, recovery score between 20-99, etc.).
+- **Workouts with a 70% probability**: To simulate that not every day has training, `if (random.nextFloat() > 0.70f) continue` is used (approximately 4–5 workouts per week).
 
-### DemoTokenSeeder vs CommandLineRunner
+### DemoTokenSeeder and CommandLineRunner
 
 **File**: `src/main/kotlin/com/example/whoopdavidapi/mock/DemoTokenSeeder.kt`
 
@@ -486,11 +486,11 @@ class DemoTokenSeeder(
 }
 ```
 
-**[`CommandLineRunner`](https://docs.spring.io/spring-boot/reference/features/spring-application.html)** is a Spring Boot interface that allows code  **to be executed right after the application starts** . Method `run()` is automatically invoked only once at startup.
+**[`CommandLineRunner`](https://docs.spring.io/spring-boot/reference/features/spring-application.html)** is a Spring Boot interface that allows you to execute code **right after the application starts**. The `run()` method is automatically invoked only once at startup.
 
-In this case, it inserts a fake OAuth2 token into the database so that the application works without having gone through the actual Whoop authorization flow. The `if (tokenRepository.count() == 0L)` condition prevents inserting duplicates if the application is restarted without cleaning the database.
+In this case, insert a fake OAuth2 token into the database so that the application works without having gone through Whoop’s real authorization flow. The `if (tokenRepository.count() == 0L)` condition prevents inserting duplicates if the application is restarted without clearing the database.
 
-The `accessToken` is `"demo-access-token"`, the same value that `DemoWhoopTokenManager.getValidAccessToken()` returns. The `expiresAt` is set to 24 hours in the future (`86400` seconds) so that it does not expire during a normal development session.
+The `accessToken` is `"demo-access-token"`, the same value returned by `DemoWhoopTokenManager.getValidAccessToken()`. The `expiresAt` is set to 24 hours in the future (`86400` seconds) so that it does not expire during a normal development session.
 
 ### DemoWhoopTokenManager and @Primary
 
@@ -508,9 +508,9 @@ class DemoWhoopTokenManager : TokenManager {
 
 Two annotations work together here:
 
-**`@Profile("demo")`**: This bean only exists when profile `demo` is active.
+**`@Profile("demo")`**: This bean only exists when the `demo` profile is active.
 
-**[`@Primary`](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html)**: If Spring finds **more than one** bean of the same type (`TokenManager`), it uses the one marked as `@Primary`. It's a safety measure: although `@Profile("!demo")` in `WhoopTokenManager` should prevent the two from coexisting, `@Primary` guarantees that in case of conflict, the mock wins.
+**[`@Primary`](https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html)**: If Spring finds **more than one bean** of the same type (`TokenManager`), it uses the one marked as `@Primary`. It’s a safety measure: even though `@Profile("!demo")` in `WhoopTokenManager` should prevent both from coexisting, `@Primary` ensures that in case of conflict, the mock wins.
 
 The counterpart is `WhoopTokenManager`:
 
@@ -522,7 +522,7 @@ The counterpart is `WhoopTokenManager`:
 class WhoopTokenManager(...) : TokenManager {
 ```
 
-**`@Profile("!demo")`** means "active on any NON-demo profile." It is logical denial. If the active profile is `dev`, `prod`, or anything other than `demo`, this bean is created. If the active profile includes `demo`, this bean is not created.
+**`@Profile("!demo")`** means "active in any profile that is NOT demo". It is the logical negation. If the active profile is `dev`, `prod`, or any other that is not `demo`, this bean is created. If the active profile includes `demo`, this bean is not created.
 
 ---
 
@@ -531,24 +531,24 @@ class WhoopTokenManager(...) : TokenManager {
 | Aspect | dev | prod | demo (with dev) |
 |---|---|---|---|
 | **Database** | H2 in-memory | PostgreSQL | H2 in-memory |
-| **DDL** | `update` (auto-create) | `validate` (check only) | `update` (auto-create) |
-| **H2 console** | Enabled | Disabled | Enabled |
+| **DDL** | `update` (auto-create) | `validate` (just verify) | `update` (auto-create) |
+| **H2 Console** | Enabled | Disabled | Enabled |
 | **SQL in logs** | Yes (DEBUG) | No (WARN) | Yes (DEBUG) |
-| **WhoopURL** | `https://api.prod.whoop.com` | `https://api.prod.whoop.com` | `http://localhost:8080/mock` |
+| **Whoop URL** | `https://api.prod.whoop.com` | `https://api.prod.whoop.com` | `http://localhost:8080/mock` |
 | **Sync cron** | Every 30 min | Every 30 min | Every 5 min |
 | **TokenManager** | `WhoopTokenManager` (real) | `WhoopTokenManager` (real) | `DemoWhoopTokenManager` (mock) |
 | **API keys** | Defaults (`dev-client-id`) | Required (no default) | Demo values |
-| **Encryption key** | Default hardcoding | Required (no default) | Default hardcoding |
-| **MockWhoopApiController** | Does not exist | Does not exist | Active on `/mock/...` |
-| **DemoTokenSeeder** | Does not exist | Does not exist | Insert token at boot |
-| **Log level** | DEBUGS | INFO | DEBUG + mock: DEBUG |
+| **Encryption key** | Hardcoded default | Required (no default) | Hardcoded default |
+| **MockWhoopApiController** | It does not exist | It does not exist | Active in `/mock/...` |
+| **DemoTokenSeeder** | It does not exist | It does not exist | Insert token at startup |
+| **Log level** | DEBUG | INFO | DEBUG + mock: DEBUG |
 
 ---
 
 ## Official documentation
 
-- [Spring Boot Profiles](https://docs.spring.io/spring-boot/reference/features/profiles.html) - Official profile documentation
-- [Spring @Profile](https://docs.spring.io/spring-framework/reference/core/beans/environment.html#beans-definition-profiles) - Annotation @Profile
+- [Spring Boot Profiles](https://docs.spring.io/spring-boot/reference/features/profiles.html) - Official documentation on profiles
+- [Spring @Profile](https://docs.spring.io/spring-framework/reference/core/beans/environment.html#beans-definition-profiles) - @Profile Annotation
 - [Spring Boot External Configuration](https://docs.spring.io/spring-boot/reference/features/external-config.html) - Property precedence order
-- [Spring Boot CommandLineRunner](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/CommandLineRunner.html) - Code execution at boot
+- [Spring Boot CommandLineRunner](https://docs.spring.io/spring-boot/api/java/org/springframework/boot/CommandLineRunner.html) - Code execution on startup
 - [HikariCP Configuration](https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby) - Connection pool configuration

@@ -9,7 +9,7 @@
 [![Java](https://img.shields.io/badge/Java-24-orange.svg)](https://openjdk.org/)
 [![License](https://img.shields.io/badge/License-Private-red.svg)]()
 
-Intermediary REST API that connects **Whoop API v2** to **Power BI**, eliminating manual data entry. It follows a **Backend-For-Frontend (BFF)** pattern: periodically synchronizes sports performance data from the WHOOP bracelet to PostgreSQL and exposes it as plain JSON optimized for the Power BI Web Connector.
+Intermediate REST API that connects the **Whoop API v2** with **Power BI**, eliminating manual data entry. It follows a **Backend-For-Frontend (BFF)** pattern: it periodically synchronizes sports performance data from the WHOOP wristband to PostgreSQL and exposes it as plain JSON optimized for Power BI’s Web connector.
 
 ## Architecture
 
@@ -31,7 +31,7 @@ Intermediary REST API that connects **Whoop API v2** to **Power BI**, eliminatin
 ### Data flow
 
 1. **Automatic synchronization** (every 30 min): `@Scheduled` → `WhoopSyncService` → `WhoopApiClient` → Whoop API v2 → PostgreSQL
-2. **Power BI consumption** (on demand): Power BI → `GET /api/v1/*` (Basic Auth) → Controller → Service → Repository → Plain JSON
+2. **Power BI Consumption** (on demand): Power BI → `GET /api/v1/*` (Basic Auth) → Controller → Service → Repository → plain JSON
 
 ### Project structure
 
@@ -51,11 +51,11 @@ com.example.whoopdavidapi
 └── exception/                      # GlobalExceptionHandler, WhoopApiException
 ```
 
-## technical stack
+## Technical stack
 
 | Technology | Version | Use |
 |------------|---------|-----|
-| **Kotlin** | 2.2.21 | Primary language |
+| **Kotlin** | 2.2.21 | Main language |
 | **Spring Boot** | 4.0.2 | Framework |
 | **Java** | 24 | Runtime |
 | **Spring Security** | 7.x | Basic Auth (Power BI) + OAuth2 (Whoop) |
@@ -64,7 +64,7 @@ com.example.whoopdavidapi
 | **H2** | - | Database (development) |
 | **Resilience4j** | 2.3.0 | Circuit breaker, retry, rate limiter |
 | **MapStruct** | 1.6.3 | Entity ↔ DTO Mapping |
-| **Jackson 3** | - | JSON serialization (ISO-8601 by default) |
+| **Jackson 3** | - | JSON Serialization (ISO-8601 by default) |
 | **Gradle** | 9.3 | Build tool (Kotlin DSL) |
 
 ## Prerequisites
@@ -72,7 +72,7 @@ com.example.whoopdavidapi
 - **Java 24** (JDK)
 - **Gradle 9.3+** (or use `./gradlew`)
 - **Docker** (for deployment)
-- Developer account on [Whoop Developer Portal](https://developer.whoop.com/)
+- Developer account in [Whoop Developer Portal](https://developer.whoop.com/)
 
 ## Installation and configuration
 
@@ -98,7 +98,7 @@ export POWERBI_PASSWORD=tu-password-seguro
 SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 ```
 
-The application starts at `http://localhost:8080` with:
+The application starts in `http://localhost:8080` with:
 
 - H2 Console: `http://localhost:8080/h2-console`
 - Health check: `http://localhost:8080/actuator/health`
@@ -116,24 +116,24 @@ SPRING_PROFILES_ACTIVE=prod ./gradlew bootRun
 
 | Variable | Mandatory | Description |
 |----------|-------------|-------------|
-| `WHOOP_CLIENT_ID` | Yeah | Client ID of the app in Whoop Developer |
-| `WHOOP_CLIENT_SECRET` | Yeah | Client Secret of the app in Whoop Developer |
-| `ENCRYPTION_KEY` | Yes (prod), No (dev) | AES-256-GCM key to encrypt OAuth2 tokens - **Base64 of exactly 32 bytes** (ex: `openssl rand -base64 32`). Profile 'dev' uses default key. |
+| `WHOOP_CLIENT_ID` | Yes | App Client ID in Whoop Developer |
+| `WHOOP_CLIENT_SECRET` | Yes | App Client Secret in Whoop Developer |
+| `ENCRYPTION_KEY` | Yes (prod), No (dev) | AES-256-GCM key to encrypt OAuth2 tokens - **Base64 of exactly 32 bytes** (e.g.: `openssl rand -base64 32`). 'dev' profile uses default key. |
 | `POWERBI_USERNAME` | No (default: `powerbi`) | User for Power BI Basic Auth |
 | `POWERBI_PASSWORD` | No (default: `changeme`) | Password for Power BI Basic Auth |
 | `DATABASE_URL` | Yes (prod) | PostgreSQL JDBC URL |
 | `DB_USERNAME` | Yes (prod) | PostgreSQL user |
-| `DB_PASSWORD` | Yes (prod) | PostgreSQL Password |
+| `DB_PASSWORD` | Yes (prod) | PostgreSQL password |
 | `SPRING_PROFILES_ACTIVE` | No (default: `dev`) | Active profile (`dev` or `prod`) |
 
-## API endpoints
+## API Endpoints
 
-All `GET /api/v1/*` endpoints require **Basic Auth** and support:
+All endpoints `GET /api/v1/*` require **Basic Auth** and support:
 
 - **Pagination**: `page` (default 1), `pageSize` (default 100)
 - **Date filters**: `from`, `to` (ISO 8601 UTC)
 
-| Method | Endpoint | Description |
+| Metodo | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/api/v1/cycles` | Physiological cycles (strain, kJ, HR) |
 | `GET` | `/api/v1/recovery` | Daily recovery (HRV, recovery score, resting HR) |
@@ -186,8 +186,8 @@ All `GET /api/v1/*` endpoints require **Basic Auth** and support:
 
 The tests include:
 
-- **Context load**: Spring context boot verification
-- **Repository**: tests with H2 (`@DataJpaTest`) for queries with date range
+- **Context load**: Spring context startup verification
+- **Repository**: tests with H2 (`@DataJpaTest`) for queries with a date range
 - **Controller**: tests with MockMvc (`@WebMvcTest`) for endpoints and authentication
 - **Service**: unit tests with Mockito for business logic
 
@@ -212,9 +212,9 @@ docker run -p 8080:8080 \
 
 ### Kubernetes
 
-The application is deployed on a cluster **RKE2/Rancher** with:
+The application is deployed in an **RKE2/Rancher** cluster with:
 
-- **Traefik** as ingress controller
+- **Traefik** as an ingress controller
 - **cert-manager** for TLS (Let's Encrypt via Cloudflare)
 - **Longhorn** for persistent volumes
 - **Keel** for auto-deploy (poll every 1 min)
@@ -232,18 +232,18 @@ kubectl apply -f k8s/04-ingress.yaml
 
 ### CI/CD Pipeline
 
-- **CI** (`ci.yml`): build + test in each PR to `main` and `dev`
-- **CD** (`cd.yml`): build Docker + push to Docker Hub on push to `main`
-- **Keel** detects the new image and updates the deployment automatically
+- **CI** (`ci.yml`): build + test on every PR to `main` and `dev`
+- **CD** (`cd.yml`): build Docker + push to Docker Hub and push to `main`
+- **Keel** detects the new image and automatically updates the deployment
 
 ## Resilience
 
-Communication with Whoop API v2 is protected by Resilience4j:
+Communication with the Whoop API v2 is protected by Resilience4j:
 
 | Pattern | Configuration |
 |--------|---------------|
-| **Circuit Breaker** | 10 call window, failure threshold 50%, pause 30s |
-| **Retry** | 3 attempts, exponential backoff (base 2s, x2 multiplier) |
+| **Circuit Breaker** | 10-call window, 50% failure threshold, 30s pause |
+| **Retry** | 3 attempts, exponential backoff (2s base, x2 multiplier) |
 | **Rate Limiter** | 90 requests/min (Whoop limits to 100/min) |
 
 ## Authentication

@@ -1,23 +1,23 @@
-# 08 - Spring Security (Multi-String Configuration)
+# 08 - Spring Security (Multi-Chain Configuration)
 
 ## What is Spring Security?
 
-Spring Security is the Spring security framework. It is responsible for **authentication** (verifying who you are) and **authorization** (verifying what you can do). It works as a [filter chain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-securityfilterchain) that executes **before** the request reaches the controller.
+Spring Security is Spring’s security framework. It is responsible for **authentication** (verifying who you are) and **authorization** (verifying what you can do). It works as a [filter chain](https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-securityfilterchain) that runs **before** the request reaches the controller.
 
 In this project, Spring Security protects the API with three different mechanisms:
 
-1. **[Basic Auth](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/basic.html)** for data endpoints (`/api/**`): Power BI sends credentials in each request.
-2. **[OAuth2](https://docs.spring.io/spring-security/reference/servlet/oauth2/login/index.html)** for authorization flow (`/login/**`, `/oauth2/**`): used once to connect to the Whoop API.
+1. **[Basic Auth](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/basic.html)** for the data endpoints (`/api/**`): Power BI sends credentials in each request.
+2. **[OAuth2](https://docs.spring.io/spring-security/reference/servlet/oauth2/login/index.html)** for the authorization flow (`/login/**`, `/oauth2/**`): it is used once to connect to the Whoop API.
 3. **Public access** for monitoring and documentation endpoints (`/actuator/**`, `/swagger-ui/**`, `/mock/**`).
 
 ---
 
 ## Where is it used in this project?
 
-| Archive | Responsibility |
+| File | Responsibility |
 |---|---|
 | `src/main/kotlin/com/example/whoopdavidapi/config/SecurityConfig.kt` | 4 security chains + user management |
-| `src/main/kotlin/com/example/whoopdavidapi/util/TokenEncryptor.kt` | Encryption [AES-256-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) of OAuth2 tokens in the database |
+| `src/main/kotlin/com/example/whoopdavidapi/util/TokenEncryptor.kt` | Encryption [AES-256-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) of OAuth2 tokens in the DB |
 | `src/main/kotlin/com/example/whoopdavidapi/util/EncryptedStringConverter.kt` | JPA converter that automatically encrypts/decrypts |
 | `src/main/kotlin/com/example/whoopdavidapi/model/entity/OAuthTokenEntity.kt` | JPA entity with encrypted tokens |
 
@@ -29,16 +29,16 @@ This project has **three types of consumers** with different security needs:
 
 | Consumer | Endpoints | Authentication | Reason |
 |---|---|---|---|
-| **Power BI** | `/api/**` | Basic Auth (user/password) | Power BI supports Basic Auth natively. It is simple and stateless. |
+| **Power BI** | `/api/**` | Basic Auth (username/password) | Power BI supports Basic Auth natively. It is simple and stateless. |
 | **David (once)** | `/login/**`, `/oauth2/**` | OAuth2 with Whoop | To authorize this application to read data from David's Whoop account. |
 | **Monitoring/docs** | `/actuator/**`, `/swagger-ui/**` | None (public) | Kubernetes health checks and interactive documentation must be accessible without credentials. |
 | **Everything else** | Any other route | Denied | Principle of least privilege: if a route is not explicitly allowed, it is denied. |
 
-The **multi-chain architecture with [`@Order`](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config.html)** allows different security rules to be applied to each group of endpoints, instead of a single monolithic configuration.
+The **multiple-chain architecture with [`@Order`](https://docs.spring.io/spring-framework/reference/core/beans/annotation-config.html)** makes it possible to apply different security rules to each group of endpoints, instead of a single monolithic configuration.
 
 ---
 
-## Code explained
+## Explained code
 
 ### 1. `@Configuration` and `@EnableWebSecurity`
 
@@ -53,9 +53,9 @@ class SecurityConfig(
 ) {
 ```
 
-- [`@Configuration`](https://docs.spring.io/spring-framework/reference/core/beans/java/configuration-annotation.html): Marks the class as a source of Spring beans (methods [`@Bean`](https://docs.spring.io/spring-framework/reference/core/beans/java/bean-annotation.html) that Spring manages).
-- `@EnableWebSecurity`: Activates Spring Security web security settings. Without this annotation, Spring Boot applies a default security configuration (which protects everything with a randomly generated password).
-- `@Value("\${app.powerbi.username}")`: Injects values ​​from `application.yaml`. Power BI credentials are configured externally, they are not hardcoded in the code.
+- [`@Configuration`](https://docs.spring.io/spring-framework/reference/core/beans/java/configuration-annotation.html): marks the class as a source of Spring beans (methods [`@Bean`](https://docs.spring.io/spring-framework/reference/core/beans/java/bean-annotation.html) that Spring manages).
+- `@EnableWebSecurity`: enables Spring Security’s web security configuration. Without this annotation, Spring Boot applies a default security configuration (which protects everything with a randomly generated password).
+- `@Value("\${app.powerbi.username}")`: injects values from `application.yaml`. Power BI credentials are configured externally; they are not hardcoded in the code.
 
 ### 2. `PasswordEncoder` with BCrypt
 
@@ -64,13 +64,13 @@ class SecurityConfig(
 fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 ```
 
-[`BCryptPasswordEncoder`](https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html) implements the **bcrypt** algorithm for hashing passwords. When saving a password, bcrypt:
+[`BCryptPasswordEncoder`](https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html) implements the **bcrypt** algorithm to hash passwords. When a password is saved, bcrypt:
 
-1. Generates a random **salt** (22 characters).
+1. Generate a random **salt** (22 characters).
 2. Apply the hash function with a **cost factor** (default 10, which means 2^10 = 1024 iterations).
-3. Produces a hash of ~60 characters that includes the salt, cost factor, and hash.
+3. It produces a ~60-character hash that includes the salt, the cost factor, and the hash.
 
-bcrypt hash example:
+Example of a bcrypt hash:
 
 ```
 $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
@@ -82,12 +82,12 @@ $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
 
 This is important because:
 
-- The plain text password  **is never stored** . Just the hash.
-- Even if someone gets the hash, they can't revert it to plaintext (bcrypt is a one-way function).
-- Random salt prevents attacks with rainbow tables.
-- The cost factor makes hashing intentionally slow, making brute force attacks difficult.
+- The plaintext password **is never stored**. Only the hash.
+- Even if someone obtains the hash, they cannot reverse it to plaintext (bcrypt is a one-way function).
+- The random salt prevents rainbow table attacks.
+- The cost factor makes hashing intentionally slow, making brute-force attacks more difficult.
 
-### 3. `UserDetailsService` with user in memory
+### 3. `UserDetailsService` with in-memory user
 
 ```kotlin
 @Bean
@@ -101,23 +101,23 @@ fun userDetailsService(passwordEncoder: PasswordEncoder): UserDetailsService {
 }
 ```
 
-[`UserDetailsService`](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/user-details-service.html) is the interface that Spring Security uses to find users. When a request arrives with Basic Auth, Spring:
+[`UserDetailsService`](https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/user-details-service.html) is the interface that Spring Security uses to look up users. When a request with Basic Auth arrives, Spring:
 
-1. Extracts the `username` and `password` from header `Authorization`.
-2. Call `userDetailsService.loadUserByUsername(username)` to get the stored user.
+1. Extract `username` and `password` from the `Authorization` header.
+2. Call `userDetailsService.loadUserByUsername(username)` to retrieve the stored user.
 3. Compare the sent password with the stored hash using `passwordEncoder.matches()`.
 4. If they match, the request is authenticated.
 
-`InMemoryUserDetailsManager` is an implementation that stores users  **in memory** (not in the database). It is appropriate for this project because there is only one user: Power BI. It doesn't make sense to use a user table in the database for a single record.
+`InMemoryUserDetailsManager` is an implementation that stores users **in memory** (not in a database). It is appropriate for this project because there is only a single user: the Power BI user. It makes no sense to use a users table in the database for a single record.
 
-- `User.builder()`: Fluent API to construct a `UserDetails` object.
-- `.username(powerBiUsername)`: the username comes from the settings (`application.yaml`).
+- `User.builder()`: Fluent API for building a `UserDetails` object.
+- `.username(powerBiUsername)`: the username comes from the configuration (`application.yaml`).
 - `.password(passwordEncoder.encode(powerBiPassword))`: the password is hashed with bcrypt **before** being stored.
-- `.roles("POWERBI")`: Assigns the "POWERBI" role. Internally Spring converts it to authority `ROLE_POWERBI`. In this project, roles are not used for granular access control, but it is good practice to assign them.
+- `.roles("POWERBI")`: assigns the "POWERBI" role. Internally, Spring converts it to the authority `ROLE_POWERBI`. In this project, roles are not used for granular access control, but it is good practice to assign it.
 
-### 4. Multi-string architecture with `@Order`
+### 4. Multi-chain architecture with `@Order`
 
-Spring Security allows you to define **multiple [`SecurityFilterChain`](https://docs.spring.io/spring-security/reference/servlet/architecture.html)**, each with its own rules. Each string has a `securityMatcher` that defines which URLs it applies to. Strings are evaluated in order of `@Order` (lower number = higher priority).
+Spring Security allows you to define **multiple [`SecurityFilterChain`](https://docs.spring.io/spring-security/reference/servlet/architecture.html)**, each with its own rules. Each chain has a `securityMatcher` that defines which URLs it applies to. The chains are evaluated in `@Order` order (lower number = higher priority).
 
 ```
 Peticion HTTP entrante
@@ -141,7 +141,7 @@ Peticion HTTP entrante
 @Order(4): todo lo demas   -- Catch-all --> DENEGAR
 ```
 
-A request is only processed by **a string**: the first whose `securityMatcher` matches the URL.
+A request is only processed by **a chain**: the first one whose `securityMatcher` matches the URL.
 
 ### 5. String 1 (`@Order(1)`): API endpoints with Basic Auth
 
@@ -162,21 +162,21 @@ fun apiSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
 }
 ```
 
-Line by line breakdown:
+Line-by-line breakdown:
 
-**`.securityMatcher("/api/**")`**: This string only applies to URLs starting with `/api/`. The `**` is an Ant pattern that matches any subpath (e.g., `/api/v1/cycles`, `/api/v1/profile`).
+**`.securityMatcher("/api/**")`**: this string only applies to URLs that start with `/api/`. `**` is an Ant pattern that matches any subpath (e.g., `/api/v1/cycles`, `/api/v1/profile`).
 
-**`.csrf { it.disable() }`**: disables the [CSRF](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html) (Cross-Site Request Forgery) protection. CSRF is relevant for HTML forms with cookie-based sessions, but this API is **stateless** and uses Basic Auth, not cookies. Disabling CSRF is fine and necessary for REST APIs.
+**`.csrf { it.disable() }`**: disables [CSRF](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html) (Cross-Site Request Forgery) protection. CSRF is relevant for HTML forms with cookie-based sessions, but this API is **stateless** and uses Basic Auth, not cookies. Disabling CSRF is correct and necessary for REST APIs.
 
-**`.sessionManagement { it.sessionCreationPolicy(`[`SessionCreationPolicy`](https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html)`.STATELESS) }`**: Indicates that Spring  **will never** create an HTTP session for these endpoints. Each request must include Basic Auth credentials. This is important because:
+**`.sessionManagement { it.sessionCreationPolicy(`[`SessionCreationPolicy`](https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html)`.STATELESS) }`**: indicates that Spring **never** will create an HTTP session for these endpoints. Each request must include the Basic Auth credentials. This is important because:
 
-- Power BI sends credentials in each request (does not maintain a session).
-- No server memory is wasted storing sessions.
-- Facilitates horizontal scaling (no shared state between replicas).
+- Power BI sends credentials with each request (it does not maintain a session).
+- Server memory is not wasted storing sessions.
+- It facilitates horizontal scaling (there is no shared state between replicas).
 
-**`.authorizeHttpRequests { auth -> auth.anyRequest().authenticated() }`**: all requests to `/api/**` require authentication. There are no public endpoints within `/api/`.
+**`.authorizeHttpRequests { auth -> auth.anyRequest().authenticated() }`**: every request to `/api/**` requires authentication. There are no public endpoints within `/api/`.
 
-**`.httpBasic { }`**: Enable HTTP Basic authentication. The client must send the header:
+**`.httpBasic { }`**: enables HTTP Basic authentication. The client must send the header:
 
 ```
 Authorization: Basic base64(username:password)
@@ -197,18 +197,18 @@ fun oauth2SecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
 }
 ```
 
-**`.securityMatcher("/login/**", "/oauth2/**")`**: Applies to routes in the OAuth2 flow. `/login/oauth2/code/whoop` is where the Whoop API redirects after David authorizes the application. `/oauth2/**` are Spring's internal routes to handle the handshake.
+**`.securityMatcher("/login/**", "/oauth2/**")`**: applies to the OAuth2 flow routes. `/login/oauth2/code/whoop` is where the Whoop API redirects after David authorizes the application. `/oauth2/**` are Spring’s internal routes to handle the handshake.
 
-**`.oauth2Login { }`**: Activates the OAuth2 Authorization Code flow. Spring Security takes care of:
+**`.oauth2Login { }`**: enables the OAuth2 Authorization Code flow. Spring Security takes care of:
 
 1. Redirect the user to the Whoop authorization page.
 2. Receive the callback with the authorization code.
-3. Exchange the code for access tokens and refreshments.
+3. Exchange the code for access and refresh tokens.
 4. Store the tokens (in this project, in the database via `OAuthTokenEntity`).
 
-This flow is executed only once: David visits `/login` in a browser, authorizes the application, and the tokens are saved. From then on, automatic sync uses the stored tokens (and automatically renews them when they expire).
+This flow runs only once: David visits `/login` in a browser, authorizes the application, and the tokens are saved. From that point on, automatic synchronization uses the stored tokens (and renews them automatically when they expire).
 
-### 7. Chain 3 (`@Order(3)`): Public endpoints
+### 7. String 3 (`@Order(3)`): Public endpoints
 
 ```kotlin
 // Cadena para endpoints publicos (actuator, H2 console)
@@ -233,15 +233,15 @@ fun publicSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
 
 | Route | Purpose |
 |---|---|
-| `/actuator/**` | Kubernetes health checks (`/actuator/health`). They must be accessible without auth for K8s to detect if the pod is alive. |
+| `/actuator/**` | Kubernetes health checks (`/actuator/health`). They must be accessible without auth so that K8s can detect whether the pod is alive. |
 | `/h2-console/**` | H2 web console for development. Only available in profile `dev`. |
 | `/mock/**` | Mock endpoints for testing without real API keys (profile `demo`). |
 | `/v3/api-docs/**` | OpenAPI definition in JSON (used by Swagger UI). |
-| `/swagger-ui/**`, `/swagger-ui.html` | Interactive web interface to test the API. |
+| `/swagger-ui/**`, `/swagger-ui.html` | Interactive web interface for testing the API. |
 
-**`.headers { headers -> headers.frameOptions { it.sameOrigin() } }`**: Allows the H2 console to load within a `<iframe>`. By default, Spring Security blocks iframes as protection against clickjacking. `sameOrigin()` allows iframes only if they come from the same domain.
+**`.headers { headers -> headers.frameOptions { it.sameOrigin() } }`**: allows the H2 console to load inside an `<iframe>`. By default, Spring Security blocks iframes as protection against clickjacking. `sameOrigin()` allows iframes only if they come from the same domain.
 
-**`.authorizeHttpRequests { auth -> auth.anyRequest().permitAll() }`**: All requests to these endpoints are allowed without authentication.
+**`.authorizeHttpRequests { auth -> auth.anyRequest().permitAll() }`**: all requests to these endpoints are allowed without authentication.
 
 ### 8. String 4 (`@Order(4)`): Deny-all (catch-all)
 
@@ -259,15 +259,15 @@ fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
 }
 ```
 
-This string **does not have `securityMatcher`**, so it matches any URL that has not been captured by the previous strings. `denyAll()` returns HTTP 403 Forbidden for any request.
+This string **has no `securityMatcher`**, so it matches any URL that has not been captured by the previous strings. `denyAll()` returns HTTP 403 Forbidden for any request.
 
-This implements the **principle of least privilege** (principle of least privilege): everything is prohibited by default. Only endpoints explicitly configured in chains 1, 2 and 3 are accessible.
+This implements the **principle of least privilege** (principle of least privilege): everything is forbidden by default. Only the endpoints explicitly configured in chains 1, 2, and 3 are accessible.
 
-Without this string, Spring Boot would apply its default security settings, which could allow unwanted access.
+Without this chain, Spring Boot would apply its default security configuration, which could allow unwanted access.
 
 ### 9. OAuth2 token encryption: `TokenEncryptor`
 
-OAuth2 tokens (access token and refresh token) are stored in the database. It is **extremely sensitive** data: anyone with an access token can access David's health data in the Whoop API. That is why they are encrypted at rest with AES-256-GCM.
+OAuth2 tokens (access token and refresh token) are stored in the database. They are **extremely sensitive** data: whoever has an access token can access David’s health data in the Whoop API. That’s why they are encrypted at rest with AES-256-GCM.
 
 ```kotlin
 // src/main/kotlin/com/example/whoopdavidapi/util/TokenEncryptor.kt
@@ -289,16 +289,16 @@ class TokenEncryptor(
 **AES-256-GCM** (Advanced Encryption Standard with Galois/Counter Mode):
 
 - **AES-256**: symmetric encryption with a 256-bit key. It is the industry standard, approved by NIST and used by governments and financial institutions.
-- **GCM** (Galois/Counter Mode): mode of operation that provides **confidentiality** (the data is unreadable without the key) and **authenticity** (it is detected if the encrypted data has been modified). GCM is a **AEAD** (Authenticated Encryption with Associated Data) mode.
-- **NoPadding**: GCM does not need padding because it operates as a stream cipher.
+- **GCM** (Galois/Counter Mode): mode of operation that provides **confidentiality** (the data is unreadable without the key) and **authenticity** (it is detected if the encrypted data has been modified). GCM is an **AEAD** mode (Authenticated Encryption with Associated Data).
+- **NoPadding**: GCM does not need padding because it operates like a stream cipher.
 
 **Encryption parameters**:
 
-- **IV (Initialization Vector)**: 12 bytes (96 bits) random, generated with `SecureRandom`. A different IV for each encryption operation ensures that the same plaintext produces different ciphertexts each time. This is critical: reusing an IV with the same key completely breaks GCM security.
-- **Authentication tag**: 128 bits. It is a "cryptographic checksum" that detects if the ciphertext has been modified (tamper detection).
-- **Key**: 32 bytes (256 bits) encoded in Base64. It is set to `application.yaml` and can be generated with `openssl rand -base64 32`.
+- **IV (Initialization Vector)**: 12 random bytes (96 bits), generated with `SecureRandom`. A different IV for each encryption operation ensures that the same plaintext produces different ciphertexts each time. This is critical: reusing an IV with the same key completely breaks the security of GCM.
+- **Authentication tag**: 128 bits. It is a "cryptographic checksum" that detects whether the ciphertext has been modified (tamper detection).
+- **Key**: 32 bytes (256 bits) encoded in Base64. It is configured in `application.yaml` and can be generated with `openssl rand -base64 32`.
 
-#### Validation of the key in block `init`
+#### Key validation in block `init`
 
 ```kotlin
 init {
@@ -329,11 +329,11 @@ init {
 }
 ```
 
-The Kotlin block `init` is executed when the bean instance is created. Here the encryption key is strictly validated:
+Kotlin’s `init` block runs when the bean instance is created. Here, the encryption key is validated strictly:
 
-1. **Cannot be empty**: a default key is not allowed (`#{null}` in `@Value` means that if the property does not exist, it will be `null`). If the key is not configured, the application **does not start**. This is intentional: crashing at startup is preferable to running without encryption.
-2. **Must be valid Base64**: it is decoded to obtain the real bytes.
-3. **Must be exactly 32 bytes**: AES-256 requires a key of exactly 256 bits (32 bytes). If the key is another size, the application fails with a message explaining how to generate a correct key.
+1. **It cannot be empty**: a default key is not allowed (`#{null}` in `@Value` means that if the property does not exist, it will be `null`). If the key is not configured, the application **does not start**. This is intentional: it is preferable to fail at startup than to run without encryption.
+2. **It must be valid Base64**: it is decoded to obtain the actual bytes.
+3. **It must be exactly 32 bytes**: AES-256 requires a key of exactly 256 bits (32 bytes). If the key has a different size, the application fails with a message explaining how to generate a correct key.
 
 #### Encryption process
 
@@ -383,9 +383,9 @@ Base64 encode
 String almacenado en BD ("SGVsbG8gV29ybGQ...")
 ```
 
-The IV is prefixed to the ciphertext because it is necessary for decryption. It is not secret (it can be in plain text), but it must be unique for each encryption operation.
+The IV is prepended to the ciphertext because it is necessary for decryption. It is not secret (it can be in plaintext), but it must be unique for each encryption operation.
 
-The generic error message (`"Error procesando credenciales"`) is intentional: no cryptographic details are revealed to the outside.
+The generic error message (`"Error procesando credenciales"`) is intentional: no cryptographic details are revealed externally.
 
 #### Decryption process
 
@@ -417,7 +417,7 @@ fun decrypt(encryptedText: String?): String? {
 }
 ```
 
-Decryption flow (reverse of encryption):
+Decryption flow (inverse of encryption):
 
 ```
 String de BD ("SGVsbG8gV29ybGQ...")
@@ -437,7 +437,7 @@ UTF-8 string -> Texto plano ("eyJhbGci...")
 
 Validation `combined.size <= GCM_IV_LENGTH` prevents an edge case: if the encrypted data is corrupted or truncated, it is detected before attempting to decrypt.
 
-If the authentication tag does not match (because the data was modified), `cipher.doFinal()` throws a `AEADBadTagException`. This is captured in the catch block and becomes a generic error.
+If the authentication tag doesn’t match (because the data was modified), `cipher.doFinal()` throws a `AEADBadTagException`. This is caught in the catch block and converted into a generic error.
 
 ### 10. `EncryptedStringConverter`: automatic encryption with JPA
 
@@ -462,10 +462,10 @@ class EncryptedStringConverter(
 
 [`AttributeConverter`](https://jakarta.ee/specifications/persistence/3.2/)`<String?, String?>` is a JPA interface that allows you to automatically transform an entity attribute before saving it and after reading it from the database:
 
-- `convertToDatabaseColumn`: Called when JPA is going to do INSERT or UPDATE. Encrypt the token before saving it.
-- `convertToEntityAttribute`: called when JPA reads from the DB. Decrypt the token so that the application works with plain text.
+- `convertToDatabaseColumn`: it is called when JPA is going to do an INSERT or UPDATE. It encrypts the token before saving it.
+- `convertToEntityAttribute`: it is called when JPA reads from the DB. It decrypts the token so that the application works with plain text.
 
-The converter is applied to the entity with the annotation `@Convert`:
+The converter is applied in the entity with the `@Convert` annotation:
 
 ```kotlin
 // src/main/kotlin/com/example/whoopdavidapi/model/entity/OAuthTokenEntity.kt
@@ -489,7 +489,7 @@ class OAuthTokenEntity(
 )
 ```
 
-The column has `length = 4096` because the encryption adds overhead:
+The column has `length = 4096` because encryption adds overhead:
 
 - IV: 12 bytes
 - Original token: up to ~2KB
@@ -497,13 +497,13 @@ The column has `length = 4096` because the encryption adds overhead:
 - Base64 encoding: +33% overhead
 - Total: the ciphertext is significantly longer than the original
 
-This means that the application code works with tokens in plain text (to send them to the Whoop API), but they are always encrypted in the database. The encryption/decryption is **transparent**: neither the services nor the repositories need to know that the tokens are encrypted.
+This means that the application code works with tokens in plain text (to send them to the Whoop API), but in the database they are always encrypted. The encryption/decryption is **transparent**: neither the services nor the repositories need to know that the tokens are encrypted.
 
 ---
 
 ## Complete authentication flow
 
-### Basic Auth request (Power BI requests data)
+### Basic Auth Request (Power BI asks for data)
 
 ```
 1. Power BI envia: GET /api/v1/cycles
