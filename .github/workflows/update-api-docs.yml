@@ -149,7 +149,7 @@ jobs:
 
           Co-Authored-By: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
 
-          git pull --rebase
+          git pull --rebase -X theirs
           git push
 
       - name: Summary
