@@ -5,7 +5,7 @@
       "description": "",
       "item": [
         {
-          "id": "61fd046c-4e37-4fa0-a18e-ef1c612b5eab",
+          "id": "370e3a42-2b19-49e7-8bd4-68b6dfd9a0ce",
           "name": "get Workouts",
           "request": {
             "name": "get Workouts",
@@ -71,7 +71,7 @@
           },
           "response": [
             {
-              "id": "8faf91ed-b907-4d69-a0d2-9af535570280",
+              "id": "8aaf6c84-c53f-4b27-be5b-91049124bcf8",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -165,7 +165,7 @@
       "description": "",
       "item": [
         {
-          "id": "8bfac9b3-c266-4eb5-be4b-f7ddff05f774",
+          "id": "77e9dcfb-86d2-4598-ae4f-dd7bd6e7b889",
           "name": "get Sleeps",
           "request": {
             "name": "get Sleeps",
@@ -231,7 +231,7 @@
           },
           "response": [
             {
-              "id": "bd9d31be-2432-4fc6-8c83-c17fc2039a02",
+              "id": "c31f48e2-bb6d-484c-942e-cafdf3d364b3",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -325,7 +325,7 @@
       "description": "",
       "item": [
         {
-          "id": "7889f774-8c63-4ee0-966b-353b0f4c3679",
+          "id": "74c8517b-5ce3-4023-afdd-7222761a270f",
           "name": "get Recoveries",
           "request": {
             "name": "get Recoveries",
@@ -391,7 +391,7 @@
           },
           "response": [
             {
-              "id": "d1280170-2677-484c-a329-80b08791b741",
+              "id": "08ba6acf-415d-4235-a969-672825f132df",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -485,7 +485,7 @@
       "description": "",
       "item": [
         {
-          "id": "4d666f7c-6a26-4a31-adb6-334867c3c312",
+          "id": "aaf5bd22-95c1-4616-b07b-05564de69d5a",
           "name": "get Profile",
           "request": {
             "name": "get Profile",
@@ -514,7 +514,7 @@
           },
           "response": [
             {
-              "id": "8bfd703f-9fca-4e13-beb8-abc914b989da",
+              "id": "c5889cac-5afc-4c43-81fa-f7618186a7c4",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -554,7 +554,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": 4231.462248040297\n}",
+              "body": "{\n  \"key_0\": 4580.860729380811,\n  \"key_1\": 7973.978592031428\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -571,7 +571,7 @@
       "description": "",
       "item": [
         {
-          "id": "c3d00131-6694-4a6f-9923-8c7d6b0b9f46",
+          "id": "a1f938ad-861b-48e6-a7d9-a179e5d4c302",
           "name": "get Cycles",
           "request": {
             "name": "get Cycles",
@@ -637,7 +637,7 @@
           },
           "response": [
             {
-              "id": "b2141ab2-355f-4c1e-a2a1-2d606b2313d0",
+              "id": "2dbf8b65-4ba6-4782-b292-f0df032ea545",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -750,9 +750,9 @@
     }
   ],
   "info": {
-    "_postman_id": "0ae22426-afa2-4e49-b167-acf9e5180dea",
+    "_postman_id": "83a8f831-1b14-43f5-912e-453c55571250",
     "name": "Whoop David API - Auto-generated",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Coleccion generada automaticamente desde OpenAPI spec.\n\nFecha: 2026-02-09 11:10 UTC\nRama: main\nEntorno: prod\n\nGenerado por GitHub Actions workflow."
+    "description": "Coleccion generada automaticamente desde OpenAPI spec.\n\nFecha: 2026-02-09 11:37 UTC\nRama: main\nEntorno: prod\n\nGenerado por GitHub Actions workflow."
   }
 }
