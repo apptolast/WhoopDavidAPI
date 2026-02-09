@@ -5,7 +5,7 @@
       "description": "",
       "item": [
         {
-          "id": "307cb825-c01c-4be5-9497-60f33e634393",
+          "id": "00f68199-6cfb-45cb-8c31-50865a9b2848",
           "name": "get Profile",
           "request": {
             "name": "get Profile",
@@ -37,7 +37,7 @@
           },
           "response": [
             {
-              "id": "2dbe24fd-22d1-4e3d-84e8-a95f6c545724",
+              "id": "bc52414f-d3c5-48a3-bed7-9d23d1f3f3be",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -80,7 +80,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": 2195.652798239567,\n  \"key_1\": \"string\"\n}",
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -91,7 +91,7 @@
           }
         },
         {
-          "id": "f94e99d7-82e4-47c4-924c-91f6bb00f323",
+          "id": "899eef9a-c0cf-401f-bdd2-b69063415cfe",
           "name": "get Recoveries",
           "request": {
             "name": "get Recoveries",
@@ -158,7 +158,7 @@
           },
           "response": [
             {
-              "id": "b3fa0e8a-5393-4b41-b777-d9cf55a29e8f",
+              "id": "e8efd2e0-23ae-470c-8811-69cd216c6639",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -236,7 +236,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": 2195.652798239567,\n  \"key_1\": \"string\"\n}",
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -247,7 +247,7 @@
           }
         },
         {
-          "id": "dc0f9647-f234-4830-b0c4-4efa35f09447",
+          "id": "cce5ecb1-60e4-4554-a21e-270edbc7cc9d",
           "name": "get Cycles",
           "request": {
             "name": "get Cycles",
@@ -314,7 +314,7 @@
           },
           "response": [
             {
-              "id": "8fe7365c-cc7a-4270-90f3-2ec231749978",
+              "id": "30d5673b-246c-4b67-b510-d8070f4d8f42",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -392,7 +392,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": 2195.652798239567,\n  \"key_1\": \"string\"\n}",
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -403,7 +403,7 @@
           }
         },
         {
-          "id": "89976e93-95c6-4e10-a2d3-53fbe1952e3c",
+          "id": "51a1b02f-166a-455a-95f4-ab18ad50ae39",
           "name": "get Workouts",
           "request": {
             "name": "get Workouts",
@@ -471,7 +471,7 @@
           },
           "response": [
             {
-              "id": "226ca1db-115a-408f-b2d7-edd200041e12",
+              "id": "1004c3c6-254b-49e3-8ea4-aca3c96f9376",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -550,7 +550,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": 2195.652798239567,\n  \"key_1\": \"string\"\n}",
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -561,7 +561,7 @@
           }
         },
         {
-          "id": "9d7a5661-e609-4db2-8768-880682d51a57",
+          "id": "d67ea29b-aed5-45da-ba24-dc7fc61429bc",
           "name": "get Sleeps",
           "request": {
             "name": "get Sleeps",
@@ -629,7 +629,7 @@
           },
           "response": [
             {
-              "id": "ba02e336-b838-4e8c-92a3-893de113a0a1",
+              "id": "b7408745-1944-45b8-904e-5d2b680f0ae5",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -708,7 +708,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": 2195.652798239567,\n  \"key_1\": \"string\"\n}",
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -725,7 +725,7 @@
       "description": "",
       "item": [
         {
-          "id": "a211adb2-3668-40e5-b4f0-c28d750adb80",
+          "id": "0da2e5cf-e25e-472e-a35e-90aecf633654",
           "name": "get Workouts 1",
           "request": {
             "name": "get Workouts 1",
@@ -791,7 +791,7 @@
           },
           "response": [
             {
-              "id": "935e06d7-3233-44fa-9a83-24bb383cb122",
+              "id": "b15c48bd-35db-4270-a821-e5c78b2e97aa",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -885,7 +885,7 @@
       "description": "",
       "item": [
         {
-          "id": "f5b8911d-05a3-4673-9529-8b98328fc26a",
+          "id": "f28f64ed-e57c-474c-8c9a-62539ae10a3d",
           "name": "get Sleeps 1",
           "request": {
             "name": "get Sleeps 1",
@@ -951,7 +951,7 @@
           },
           "response": [
             {
-              "id": "548215d0-e69e-490b-bbe1-bd37d25c7de4",
+              "id": "74718e2a-c870-477f-8418-0c0e33a1f98f",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -1045,7 +1045,7 @@
       "description": "",
       "item": [
         {
-          "id": "85bbad5d-06e9-4234-8174-4eb41f44e9fd",
+          "id": "f0cdf8cb-b13f-453e-96bf-1d4d788e1b09",
           "name": "get Recoveries 1",
           "request": {
             "name": "get Recoveries 1",
@@ -1111,7 +1111,7 @@
           },
           "response": [
             {
-              "id": "7ac2c83c-33f3-4363-bcb0-a86047964c9b",
+              "id": "89042a94-78e9-435d-a64c-d841449acb1e",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -1205,7 +1205,7 @@
       "description": "",
       "item": [
         {
-          "id": "f9319e06-63da-40b5-a4c6-0409802e4df8",
+          "id": "6b7c9b1a-37c0-46ed-822f-cf9aafbc13b8",
           "name": "get Profile 1",
           "request": {
             "name": "get Profile 1",
@@ -1234,7 +1234,7 @@
           },
           "response": [
             {
-              "id": "4640fe54-94d6-4c51-a963-1839cc07efa4",
+              "id": "cc7dc8a4-10ea-4add-accf-02238cb8b3b3",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -1274,7 +1274,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": 2195.652798239567,\n  \"key_1\": \"string\"\n}",
+              "body": "{\n  \"key_0\": true,\n  \"key_1\": \"string\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -1291,7 +1291,7 @@
       "description": "",
       "item": [
         {
-          "id": "404ef129-176c-46cb-ba0e-4596b23a1e9e",
+          "id": "e421d9a1-9044-4b39-a957-d4fcd62d659c",
           "name": "get Cycles 1",
           "request": {
             "name": "get Cycles 1",
@@ -1357,7 +1357,7 @@
           },
           "response": [
             {
-              "id": "c5c27af0-7539-4580-af9c-9049bd259031",
+              "id": "874e6206-ec9f-49f9-8595-88851f9c3c4d",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -1470,9 +1470,9 @@
     }
   ],
   "info": {
-    "_postman_id": "92f7cc05-60bb-4815-bae2-e7ae4d84916c",
+    "_postman_id": "0f6b7f15-80ee-4de2-8dc5-df34b20525f2",
     "name": "Whoop David API - Auto-generated",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Coleccion generada automaticamente desde OpenAPI spec.\n\nFecha: 2026-02-09 11:36 UTC\nRama: dev\nEntorno: dev\n\nGenerado por GitHub Actions workflow."
+    "description": "Coleccion generada automaticamente desde OpenAPI spec.\n\nFecha: 2026-02-09 12:22 UTC\nRama: dev\nEntorno: dev\n\nGenerado por GitHub Actions workflow."
   }
 }
