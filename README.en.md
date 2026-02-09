@@ -263,7 +263,11 @@ Communication with Whoop API v2 is protected by Resilience4j:
 ## References
 
 - [Whoop Developer Portal](https://developer.whoop.com/)
-- [Whoop API v2 Docs](https://api.prod.whoop.com/developer/)
+- [Whoop API v2 Docs](https://developer.whoop.com/api/)
+- [Whoop OAuth Documentation](https://developer.whoop.com/docs/developing/oauth/)
+- [Whoop Getting Started Guide](https://developer.whoop.com/docs/developing/getting-started/)
+- [Whoop Rate Limiting](https://developer.whoop.com/docs/developing/rate-limiting/)
+- [Whoop API Changelog](https://developer.whoop.com/docs/api-changelog/)
 - [Spring Boot 4 Reference](https://docs.spring.io/spring-boot/reference/)
 - [Spring Security Reference](https://docs.spring.io/spring-security/reference/)
 - [Resilience4j Documentation](https://resilience4j.readme.io/docs)
