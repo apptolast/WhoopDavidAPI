@@ -443,5 +443,5 @@ Ejemplo: el usuario (Power BI) pide `GET /api/v1/cycles?from=2024-01-01T00:00:00
 - **`Pageable` y `PageRequest`**: [Spring Data JPA - Paging and Sorting](https://docs.spring.io/spring-data/jpa/reference/repositories/query-methods-details.html#repositories.special-parameters)
 - **`Page<T>` result**: [Spring Data Commons - Page Interface](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/domain/Page.html)
 - **MapStruct con Spring**: [MapStruct Reference - Using dependency injection](https://mapstruct.org/documentation/stable/reference/html/#using-dependency-injection)
-- **SLF4J parameterized logging**: [SLF4J FAQ - What is the fastest way of logging?](https://www.slf4j.org/faq.html#logging_performance)
+- **SLF4J parameterized logging**: [SLF4J Manual](https://www.slf4j.org/manual.html)
 - **Kotlin safe casts y operadores**: [Kotlin Reference - Type Checks and Casts](https://kotlinlang.org/docs/typecasts.html)

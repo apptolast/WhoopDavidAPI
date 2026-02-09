@@ -37,7 +37,7 @@ RETRY_DELAY = 3  # seconds
 DOCS_DIR = Path("docs")
 EN_DOCS_DIR = Path("docs/en")
 CACHE_FILE = EN_DOCS_DIR / ".translation-cache.json"
-SCRIPT_VERSION = "1.6.0"
+SCRIPT_VERSION = "1.7.0"
 
 # Spanish filename -> English filename
 FILENAME_MAP: dict[str, str] = {
@@ -243,6 +243,86 @@ class GoogleTranslator:
                 time.sleep(RETRY_DELAY * attempt)
             # Small delay between requests to avoid rate limiting
             time.sleep(0.5)
+        return text  # fallback
+
+
+# ---------------------------------------------------------------------------
+# OpenAI Client (GPT-5.2 fallback)
+# ---------------------------------------------------------------------------
+
+OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
+OPENAI_MODEL = "gpt-5.2"
+OPENAI_SYSTEM_PROMPT = (
+    "You are a professional Spanish-to-English translator. "
+    "Translate the user's text from Spanish to English. "
+    "Rules:\n"
+    "- Preserve ALL placeholder tokens like \u27e80\u27e9, \u27e81\u27e9, \u27e82\u27e9 exactly as they appear\n"
+    "- Preserve all markdown formatting (headings, lists, bold, links, tables)\n"
+    "- Preserve all technical terms (class names, method names, URLs, code)\n"
+    "- Output ONLY the translated text, nothing else — no preamble, no notes\n"
+    "- If the input is a single technical term that doesn't need translation, output it unchanged"
+)
+
+
+class OpenAITranslator:
+    """Translates text using OpenAI Chat Completions API (GPT-5.2)."""
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.chars_used = 0
+
+    def translate_batch(self, texts: list[str]) -> list[str]:
+        """Translate a list of text segments one by one."""
+        if not texts:
+            return []
+        results: list[str] = []
+        for text in texts:
+            translated = self._call_api(text)
+            results.append(translated)
+            self.chars_used += len(text)
+        return results
+
+    def _call_api(self, text: str) -> str:
+        """Translate a single text via OpenAI Chat Completions."""
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "model": OPENAI_MODEL,
+            "messages": [
+                {"role": "developer", "content": OPENAI_SYSTEM_PROMPT},
+                {"role": "user", "content": text},
+            ],
+            "temperature": 0.1,
+        }
+
+        for attempt in range(1, RETRY_ATTEMPTS + 1):
+            try:
+                resp = requests.post(
+                    OPENAI_API_URL,
+                    json=payload,
+                    headers=headers,
+                    timeout=120,
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    return data["choices"][0]["message"]["content"].strip()
+                elif resp.status_code == 429:
+                    wait = RETRY_DELAY * attempt * 2
+                    print(f"  Rate limited, waiting {wait}s (attempt {attempt}/{RETRY_ATTEMPTS})")
+                    time.sleep(wait)
+                else:
+                    print(f"  OpenAI error {resp.status_code}: {resp.text}", file=sys.stderr)
+                    if attempt == RETRY_ATTEMPTS:
+                        sys.exit(1)
+                    time.sleep(RETRY_DELAY * attempt)
+            except requests.exceptions.RequestException as e:
+                print(f"  Request error: {e}", file=sys.stderr)
+                if attempt == RETRY_ATTEMPTS:
+                    sys.exit(1)
+                time.sleep(RETRY_DELAY * attempt)
+            time.sleep(0.3)  # small delay between requests
         return text  # fallback
 
 
@@ -689,11 +769,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Translate docs ES -> EN via DeepL")
     parser.add_argument("--force", action="store_true", help="Ignore cache, re-translate all")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be translated")
-    parser.add_argument("--backend", choices=["deepl", "google"], default="deepl",
-                        help="Translation backend (default: deepl)")
+    parser.add_argument("--backend", choices=["deepl", "openai", "google"], default="deepl",
+                        help="Translation backend (default: deepl, auto-fallback to openai/google)")
     args = parser.parse_args()
 
-    if args.backend == "deepl":
+    backend_name = args.backend
+
+    if backend_name == "deepl":
         api_key = os.environ.get("DEEPL_API_KEY")
         if not api_key:
             print("ERROR: DEEPL_API_KEY environment variable is required", file=sys.stderr)
@@ -703,9 +785,28 @@ def main() -> None:
             usage = translator.get_usage()
             used = usage.get("character_count", 0)
             limit = usage.get("character_limit", 500000)
-            print(f"DeepL API usage: {used:,}/{limit:,} chars ({used * 100 // limit}%)")
+            pct = used * 100 // limit if limit else 100
+            print(f"DeepL API usage: {used:,}/{limit:,} chars ({pct}%)")
+            if pct >= 100:
+                print("DeepL quota exceeded, switching to fallback...")
+                openai_key = os.environ.get("OPEN_AI_API_KEY")
+                if openai_key:
+                    translator = OpenAITranslator(openai_key)
+                    backend_name = "openai"
+                    print(f"Using OpenAI {OPENAI_MODEL} backend")
+                else:
+                    translator = GoogleTranslator()
+                    backend_name = "google"
+                    print("Using Google Translate backend (fallback)")
         except Exception as e:
             print(f"Warning: could not fetch API usage: {e}")
+    elif backend_name == "openai":
+        openai_key = os.environ.get("OPEN_AI_API_KEY")
+        if not openai_key:
+            print("ERROR: OPEN_AI_API_KEY environment variable is required", file=sys.stderr)
+            sys.exit(1)
+        translator = OpenAITranslator(openai_key)
+        print(f"Using OpenAI {OPENAI_MODEL} backend")
     else:
         translator = GoogleTranslator()
         print("Using Google Translate backend (fallback)")
@@ -794,9 +895,10 @@ def main() -> None:
         cache.save()
 
     print(f"\n=== Summary ===")
+    print(f"  Backend: {backend_name}")
     print(f"  Translated: {translated_count} files")
     print(f"  Skipped (cached): {skipped_count} files")
-    print(f"  DeepL chars used this run: {translator.chars_used:,}")
+    print(f"  Chars processed this run: {translator.chars_used:,}")
     if all_errors:
         print(f"\n  WARNINGS ({len(all_errors)}):")
         for err in all_errors:

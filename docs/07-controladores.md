@@ -114,7 +114,7 @@ La `IllegalArgumentException` lanzada por `require()` es capturada por el `Globa
 return ResponseEntity.ok(cycleService.getCycles(from, to, page, pageSize))
 ```
 
-[`ResponseEntity<T>`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responseentity.html) es un wrapper de Spring que permite controlar la respuesta HTTP completa: el **cuerpo** (body), el **[codigo de estado](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)** (status code) y los **headers**.
+[`ResponseEntity<T>`](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responseentity.html) es un wrapper de Spring que permite controlar la respuesta HTTP completa: el **cuerpo** (body), el **[codigo de estado](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status)** (status code) y los **headers**.
 
 `ResponseEntity.ok(body)` es un atajo para `ResponseEntity.status(200).body(body)`. Metodos estaticos comunes:
 
@@ -399,7 +399,7 @@ Ejemplo: el cliente envia `GET /api/v1/cycles?page=0`.
 
 ## Documentacion oficial
 
-- **`@RestController`**: [Spring Framework - @RestController](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-restcontroller.html)
+- **`@RestController`**: [Spring Framework - @RestController](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html)
 - **`@RequestMapping`**: [Spring Framework - Request Mapping](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html)
 - **`@RequestParam`**: [Spring Framework - @RequestParam](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/requestparam.html)
 - **`ResponseEntity`**: [Spring Framework - ResponseEntity](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responseentity.html)
