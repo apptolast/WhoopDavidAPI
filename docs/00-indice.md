@@ -8,7 +8,7 @@ Esta documentacion esta disenada para ensenar cada concepto de [Spring Boot](htt
 
 1. **Conectarse** a la Whoop API v2 (la API oficial de la pulsera Whoop)
 2. **Sincronizar** los datos de salud y fitness en una base de datos [PostgreSQL](https://www.postgresql.org/) local
-3. **Exponer** esos datos a traves de una API REST propia, consumida por [Power BI](https://powerbi.microsoft.com/) para visualizacion
+3. **Exponer** esos datos a traves de una API REST propia, consumida por [Power BI](https://www.microsoft.com/en-us/power-platform/products/power-bi/) para visualizacion
 
 Es un proyecto de un **unico usuario** (David), lo que simplifica muchas decisiones arquitectonicas.
 
@@ -41,7 +41,7 @@ El BFF actua como intermediario: no expone directamente la API de Whoop, sino qu
 | **PostgreSQL** | - | Base de datos en produccion |
 | **H2** | - | Base de datos en desarrollo (in-memory) |
 | **[MapStruct](https://mapstruct.org/)** | 1.6.3 | Mapeo Entity <-> DTO |
-| **[Resilience4j](https://resilience4j.readme.io/)** | 2.3.0 | Circuit breaker, retry, rate limiter |
+| **[Resilience4j](https://resilience4j.readme.io/docs/getting-started)** | 2.3.0 | Circuit breaker, retry, rate limiter |
 | **[springdoc-openapi](https://springdoc.org/)** | 3.0.1 | Documentacion Swagger UI |
 | **Gradle** | - | Build system (Kotlin DSL) |
 | **[Docker](https://www.docker.com/)** | - | Contenedorizacion |
@@ -199,6 +199,6 @@ Cada documento explica un concepto de Spring Boot con referencias al codigo real
 - [Kotlin Language Reference](https://kotlinlang.org/docs/reference/)
 - [Spring Data JPA Reference](https://docs.spring.io/spring-data/jpa/reference/)
 - [Spring Security Reference](https://docs.spring.io/spring-security/reference/)
-- [Resilience4j Documentation](https://resilience4j.readme.io/docs)
+- [Resilience4j Documentation](https://resilience4j.readme.io/docs/getting-started)
 - [MapStruct Reference Guide](https://mapstruct.org/documentation/stable/reference/html/)
 - [springdoc-openapi](https://springdoc.org/)

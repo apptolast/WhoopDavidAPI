@@ -452,11 +452,11 @@ var expiresAt: Instant = Instant.now(),
 ## 5. Documentacion oficial
 
 - [Jakarta Persistence API (JPA 3.2) Specification](https://jakarta.ee/specifications/persistence/3.2/)
-- [Hibernate ORM 7 User Guide](https://docs.jboss.org/hibernate/orm/7.0/userguide/html_single/Hibernate_User_Guide.html)
+- [Hibernate ORM 7 User Guide](https://docs.hibernate.org/orm/7.0/userguide/html_single/)
 - [Spring Data JPA Reference](https://docs.spring.io/spring-data/jpa/reference/)
 - [Kotlin allOpen plugin](https://kotlinlang.org/docs/all-open-plugin.html)
 - [java.time.Instant JavaDoc](https://docs.oracle.com/en/java/javase/24/docs/api/java.base/java/time/Instant.html)
-- [AES-GCM (NIST SP 800-38D)](https://csrc.nist.gov/publications/detail/sp/800-38d/final)
+- [AES-GCM (NIST SP 800-38D)](https://csrc.nist.gov/pubs/sp/800/38/d/final)
 - [JPA AttributeConverter JavaDoc](https://jakarta.ee/specifications/persistence/3.2/apidocs/jakarta.persistence/jakarta/persistence/attributeconverter)
 
 ---

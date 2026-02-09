@@ -18,7 +18,7 @@
 
 Spring Boot proporciona un framework de testing integrado que permite verificar el comportamiento de tu aplicacion a distintos niveles: desde funciones aisladas (tests unitarios) hasta la aplicacion completa funcionando con base de datos, seguridad y HTTP (tests de integracion).
 
-El framework se basa en **[JUnit 5](https://junit.org/junit5/docs/current/user-guide/)** como motor de ejecucion y ofrece anotaciones especializadas que levantan solo las partes del contexto de Spring que necesitas para cada tipo de test.
+El framework se basa en **[JUnit 5](https://docs.junit.org/6.0.2/overview.html)** como motor de ejecucion y ofrece anotaciones especializadas que levantan solo las partes del contexto de Spring que necesitas para cada tipo de test.
 
 ---
 
@@ -43,7 +43,7 @@ El framework se basa en **[JUnit 5](https://junit.org/junit5/docs/current/user-g
 |-------|-----------|-----------------|------------------------|
 | **Unitario** | Muy rapido | No | `CycleServiceTest` |
 | **Integracion (JPA)** | Medio | Solo capa JPA | `CycleRepositoryTest` |
-| **Integracion (Web)** | Medio-lento | Completo + [MockMvc](https://docs.spring.io/spring-framework/reference/testing/spring-mvc-test-framework.html) | `CycleControllerTest` |
+| **Integracion (Web)** | Medio-lento | Completo + [MockMvc](https://docs.spring.io/spring-framework/reference/testing/mockmvc.html) | `CycleControllerTest` |
 | **Contexto completo** | Lento | Todo | `WhoopDavidApiApplicationTests` |
 
 **Regla general**: cuanto mas abajo en la piramide, mas tests deberias tener. Los tests unitarios son rapidos y baratos; los de integracion son lentos pero verifican que las piezas encajan.
@@ -79,7 +79,7 @@ Se ejecutan con:
 | Decision | Razon |
 |----------|-------|
 | [`@ActiveProfiles("dev")`](https://docs.spring.io/spring-framework/reference/testing/annotations.html) en todos los tests | Usa H2 en memoria en lugar de PostgreSQL real |
-| [`@ExtendWith(MockitoExtension::class)`](https://junit.org/junit5/docs/current/user-guide/#extensions) para servicios | No necesitamos Spring para testear logica de negocio pura |
+| [`@ExtendWith(MockitoExtension::class)`](https://docs.junit.org/6.0.2/overview.html) para servicios | No necesitamos Spring para testear logica de negocio pura |
 | [`@DataJpaTest`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html#testing.spring-boot-applications.autoconfigured-spring-data-jpa) para repositorios | Levanta solo JPA + H2, mucho mas rapido que [`@SpringBootTest`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html) |
 | `@SpringBootTest` + [`@AutoConfigureMockMvc`](https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html) para controllers | Necesitamos seguridad (Basic Auth) y HTTP real para verificar endpoints |
 | [`@MockitoBean`](https://docs.spring.io/spring-framework/reference/testing/annotations.html) para inyectar mocks en tests de integracion | Aisla el controller de sus dependencias reales (servicio, repositorio) |
@@ -645,7 +645,7 @@ tasks.withType<Test> {
 ## 9. Documentacion oficial
 
 - [Spring Boot Testing - Referencia oficial](https://docs.spring.io/spring-boot/reference/testing/index.html)
-- [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)
+- [JUnit 5 User Guide](https://docs.junit.org/6.0.2/overview.html)
 - [Mockito Framework](https://site.mockito.org/)
 - [Spring Security Testing](https://docs.spring.io/spring-security/reference/servlet/test/index.html)
 - [MockMvc - Documentacion de Spring](https://docs.spring.io/spring-framework/reference/testing/spring-mvc-test-framework.html)
