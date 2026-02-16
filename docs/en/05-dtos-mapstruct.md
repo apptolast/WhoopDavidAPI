@@ -472,4 +472,4 @@ To consolidate all the concepts, let’s look at the complete flow when Power BI
 
 ---
 
-> **Previous**: [04 - Repositories](./04-repositorios.md)
+> **Previous**: [04 - Repositories](./04-repositories.md)

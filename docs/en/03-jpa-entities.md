@@ -461,4 +461,4 @@ var expiresAt: Instant = Instant.now(),
 
 ---
 
-> **Next**: [04 - Repositories](./04-repositorios.md) -- how Spring Data JPA automatically generates queries from method names.
+> **Next**: [04 - Repositories](./04-repositories.md) -- how Spring Data JPA automatically generates queries from method names.
