@@ -5,7 +5,7 @@
       "description": "",
       "item": [
         {
-          "id": "a616edd3-63fd-4636-baf3-4d3506be9291",
+          "id": "21c9db56-730b-4c74-a1fa-68dca615b943",
           "name": "get Profile",
           "request": {
             "name": "get Profile",
@@ -37,7 +37,7 @@
           },
           "response": [
             {
-              "id": "534fcc19-8a24-4392-9a04-16d0ee9f4c7a",
+              "id": "4e4b9766-40c1-485b-b5a8-692ee9705ec6",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -80,7 +80,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": true,\n  \"key_1\": false\n}",
+              "body": "{\n  \"key_0\": false,\n  \"key_1\": false\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -91,7 +91,7 @@
           }
         },
         {
-          "id": "59f75a7d-27a8-49fc-8b63-02cc968bb807",
+          "id": "d719c946-ddd8-4590-b7fd-4b20ef90b899",
           "name": "get Recoveries",
           "request": {
             "name": "get Recoveries",
@@ -158,7 +158,7 @@
           },
           "response": [
             {
-              "id": "b8d1074b-d046-44c9-befb-8e406d22e853",
+              "id": "baae7ba8-6dd3-40cb-86b9-421d805f6d9a",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -236,7 +236,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": true,\n  \"key_1\": false\n}",
+              "body": "{\n  \"key_0\": false,\n  \"key_1\": false\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -247,7 +247,7 @@
           }
         },
         {
-          "id": "42a5fe5d-f77c-4b6d-878a-9abbf01dc178",
+          "id": "6cb8f575-36a9-491d-a6dd-15c7999080d5",
           "name": "get Cycles",
           "request": {
             "name": "get Cycles",
@@ -314,7 +314,7 @@
           },
           "response": [
             {
-              "id": "89d47786-0920-4ce2-a29f-3c42578d0ab1",
+              "id": "9e9d6b98-1646-4f22-82d6-6823f0b2242a",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -392,7 +392,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": true,\n  \"key_1\": false\n}",
+              "body": "{\n  \"key_0\": false,\n  \"key_1\": false\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -403,7 +403,7 @@
           }
         },
         {
-          "id": "f7b34bee-93f3-4e81-89fa-e0602e25f192",
+          "id": "70f6d196-8f3d-46e9-95d8-abd2110d6c14",
           "name": "get Workouts",
           "request": {
             "name": "get Workouts",
@@ -471,7 +471,7 @@
           },
           "response": [
             {
-              "id": "db68d480-c365-4281-a12a-f2b5d1b961d4",
+              "id": "b0ded903-9044-4de4-a87b-5c3df730504f",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -550,7 +550,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": true,\n  \"key_1\": false\n}",
+              "body": "{\n  \"key_0\": false,\n  \"key_1\": false\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -561,7 +561,7 @@
           }
         },
         {
-          "id": "f50264e6-cdce-44cf-8c7f-61a7c764d2be",
+          "id": "e55e2bd7-c7c3-458a-8c0e-e32f2c9f850f",
           "name": "get Sleeps",
           "request": {
             "name": "get Sleeps",
@@ -629,7 +629,7 @@
           },
           "response": [
             {
-              "id": "0ea9937d-63e6-4e6b-9290-5bc4d5b9f996",
+              "id": "77dd64eb-b6da-476c-9429-9651effd9100",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -708,7 +708,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": true,\n  \"key_1\": false\n}",
+              "body": "{\n  \"key_0\": false,\n  \"key_1\": false\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -725,7 +725,7 @@
       "description": "",
       "item": [
         {
-          "id": "7d56418d-ac01-4f79-92b6-3e7ab10f2e87",
+          "id": "f883c5fc-bb2b-441f-b915-0104c4f99543",
           "name": "get Workouts 1",
           "request": {
             "name": "get Workouts 1",
@@ -791,7 +791,7 @@
           },
           "response": [
             {
-              "id": "d684eedb-86f3-45de-9e60-4e9e1c318cd3",
+              "id": "3c46d607-581d-4831-874c-94725c2dad9a",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -885,7 +885,7 @@
       "description": "",
       "item": [
         {
-          "id": "597d05c7-36b7-4f3b-b44a-7add2e23b6bd",
+          "id": "327a8e55-eca7-4bb8-9775-4aa4671fd8ed",
           "name": "get Sleeps 1",
           "request": {
             "name": "get Sleeps 1",
@@ -951,7 +951,7 @@
           },
           "response": [
             {
-              "id": "27482c73-fe56-4874-91d6-d4bd0e3b0e27",
+              "id": "621b275b-4d6c-4bf9-a353-8db763574486",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -1045,7 +1045,7 @@
       "description": "",
       "item": [
         {
-          "id": "ea1cce08-3269-4e6a-9105-7b3c2dc443c6",
+          "id": "110b2e83-a601-4873-b04b-6af772b21782",
           "name": "get Recoveries 1",
           "request": {
             "name": "get Recoveries 1",
@@ -1111,7 +1111,7 @@
           },
           "response": [
             {
-              "id": "d77b6a96-1d94-4bbb-92f4-5b3166dd6ef3",
+              "id": "6c13d8ac-8fc0-4c7e-87f7-1fce7adb2e74",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -1205,7 +1205,7 @@
       "description": "",
       "item": [
         {
-          "id": "2b7acf2a-74de-4340-8e83-2811352f2288",
+          "id": "e1809805-f65d-40e9-b98f-8f02a3601355",
           "name": "get Profile 1",
           "request": {
             "name": "get Profile 1",
@@ -1234,7 +1234,7 @@
           },
           "response": [
             {
-              "id": "36cea418-89e7-4ebd-9de7-855fbd8cb661",
+              "id": "280d2f5b-38a2-4910-bf6d-e4028e1f789d",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -1274,7 +1274,7 @@
                   "value": "*/*"
                 }
               ],
-              "body": "{\n  \"key_0\": true,\n  \"key_1\": false\n}",
+              "body": "{\n  \"key_0\": false,\n  \"key_1\": false\n}",
               "cookie": [],
               "_postman_previewlanguage": "text"
             }
@@ -1291,7 +1291,7 @@
       "description": "",
       "item": [
         {
-          "id": "23a591e6-6fc8-4b24-88ef-3827b4e78478",
+          "id": "9d268222-b0de-4e7e-93ff-dec58a96ff4b",
           "name": "get Cycles 1",
           "request": {
             "name": "get Cycles 1",
@@ -1357,7 +1357,7 @@
           },
           "response": [
             {
-              "id": "5249dfe5-22db-4045-baf1-6ce9a4b71d12",
+              "id": "f745658d-9232-44b9-8442-925162392e4c",
               "name": "OK",
               "originalRequest": {
                 "url": {
@@ -1470,9 +1470,9 @@
     }
   ],
   "info": {
-    "_postman_id": "46be5c73-0309-4c18-a042-6a782e412c0d",
+    "_postman_id": "c2759f9a-f128-411c-b578-4b888bcf69ea",
     "name": "Whoop David API - Auto-generated",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Coleccion generada automaticamente desde OpenAPI spec.\n\nFecha: 2026-02-09 13:37 UTC\nRama: dev\nEntorno: dev\n\nGenerado por GitHub Actions workflow."
+    "description": "Coleccion generada automaticamente desde OpenAPI spec.\n\nFecha: 2026-02-21 15:49 UTC\nRama: dev\nEntorno: dev\n\nGenerado por GitHub Actions workflow."
   }
 }
