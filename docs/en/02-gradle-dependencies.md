@@ -18,7 +18,7 @@ Gradle is responsible for:
 
 **Main file**: [`build.gradle.kts`](../../build.gradle.kts)
 
-**Supplementary file**: [`settings.gradle.kts`](../settings.gradle.kts) (only defines the name of the root project)
+**Supplementary file**: [`settings.gradle.kts`](../../settings.gradle.kts) (only defines the name of the root project)
 
 ```kotlin
 // settings.gradle.kts

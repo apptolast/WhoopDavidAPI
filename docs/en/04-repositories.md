@@ -353,6 +353,6 @@ The return is `WhoopCycle?` (nullable) to handle the case of the first execution
 
 ---
 
-> **Previous**: [03 - JPA Entities](./03-entidades-jpa.md)
+> **Previous**: [03 - JPA Entities](./03-jpa-entities.md)
 >
 > **Next**: [05 - DTOs and MapStruct](./05-dtos-mapstruct.md) -- how to separate what you expose in the API from what you store in the DB.
